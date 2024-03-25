@@ -1,0 +1,41 @@
+[
+    {
+        "type": "RotationSineGesture",
+        "args": {
+            "start_frame": 1,
+            "end_frame": 60,
+            "bone": "Forearm",
+            "frame_rate": 60,
+            "axis": "X",
+            "phase_shift": 0,
+            "wave_frequency": 1.0,
+            "wave_amplitude": 0.5
+        }
+    },
+    {
+        "type": "RotationSineGesture",
+        "args": {
+            "start_frame": 1,
+            "end_frame": 60,
+            "bone": "Hand",
+            "frame_rate": 60,
+            "axis": "X",
+            "phase_shift": 1.57,
+            "wave_frequency": 1.0,
+            "wave_amplitude": 0.7
+        }
+    },
+    {
+        "type": "RotationSineGesture",
+        "args": {
+            "start_frame": 1,
+            "end_frame": 60,
+            "bone": "Arm",
+            "frame_rate": 60,
+            "axis": "Z",
+            "phase_shift": 1.57,
+            "wave_frequency": 1.0,
+            "wave_amplitude": 0.2
+        }
+    }
+]

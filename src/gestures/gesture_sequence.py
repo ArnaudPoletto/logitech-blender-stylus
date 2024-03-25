@@ -20,11 +20,11 @@ class GestureSequence:
         arm: bpy.types.Bone,
         forearm: bpy.types.Bone,
         hand: bpy.types.Bone,
-        translation_acceleration_limit: float = 0.001,
-        rotation_acceleration_limit: float = 0.1,
+        translation_acceleration_limit: float = 0.005,
+        rotation_acceleration_limit: float = 0.005,
         location_range: Tuple[Vector, Vector] = (
-            Vector((-5.0, -0.5, -2.5)),
-            Vector((2.5, 2.5, 2.5)),
+            Vector((-5.0, -0.5, -1.5)),
+            Vector((1.0, 2.0, 1.5)),
         ),
         arm_rotation_range: Tuple[Euler, Euler] = (
             Euler((-np.inf, -np.inf, -np.inf)),
@@ -213,16 +213,10 @@ class GestureSequence:
                     current_displacement = displacement_data[bone][displacement_type][i]
                     displacement_difference = current_displacement - previous_displacement
                     
-                    print("previous_displacement", bone, displacement_type, i, previous_displacement)
-                    print("current_displacement", bone, displacement_type, i, current_displacement)
-                    print("displacement_difference", bone, displacement_type, i, displacement_difference)
-                    
                     # Clip displacement if acceleration limit is exceeded
                     if np.abs(displacement_difference) > acceleration_limit:
                         current_displacement = previous_displacement + np.sign(displacement_difference) * acceleration_limit
                         
-                    print("clipped_displacement", bone, displacement_type, i, current_displacement)
-                    
                     displacement_data[bone][displacement_type][i] = current_displacement
 
         return displacement_data
