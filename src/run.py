@@ -1,19 +1,17 @@
 import os
 import bpy
 import sys
-import math
-import random
+import json
 import importlib.util
-from typing import Tuple
-from mathutils import Vector
+from mathutils import Vector, Euler
+from typing import Tuple, List
 
 wrk_dir = os.getcwd()
 paths = [
     os.path.join(wrk_dir, "utils/__init__.py"),
     os.path.join(wrk_dir, "gestures/__init__.py"),
-    os.path.join(wrk_dir, "events/__init__.py"),
 ]
-names = ["utils", "gestures", "events"]
+names = ["utils", "gestures"]
 
 for path, name in zip(paths, names):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -22,20 +20,18 @@ for path, name in zip(paths, names):
     spec.loader.exec_module(module)
 
 from utils.axis import Axis
+from utils.bone import Bone
 from utils import argumentparser
-from events.rotation_event import RotationEvent
 from gestures.gesture_sequence import GestureSequence
-from events.translation_event import TranslationEvent
+from gestures.rotation_gesture import RotationGesture
+from gestures.translation_gesture import TranslationGesture
 from gestures.rotation_wave_gesture import RotationWaveGesture
 from gestures.translation_wave_gesture import TranslationWaveGesture
 
 BASE_BLENDER_FILE = os.path.join(wrk_dir, "..", "data", "base.blend")
+GESTURES_FOLDER = os.path.join(wrk_dir, "..", "data", "gestures")
 
 ARMATURE_NAME = "Armature"
-ARM_NAME = "Arm"
-FOREARM_NAME = "Forearm"
-HAND_NAME = "Hand"
-
 FRAME_RATE = 60
 
 
@@ -48,6 +44,15 @@ def get_parser() -> argumentparser.ArgumentParserForBlender:
     """
     parser = argumentparser.ArgumentParserForBlender()
 
+    parser.add_argument(
+        "-gef",
+        "--gestures_file",
+        metavar="GESTURES_FILE",
+        help="The file name of gestures.",
+        type=str,
+        default="gestures.json",
+    )
+
     return parser
 
 
@@ -57,23 +62,72 @@ def get_bones() -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone]:
 
     Returns:
         Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone]: The arm, forearm, and hand bones.
+
+    Raises:
+        ValueError: If the armature or bones are not found.
     """
     # Get armature
-    armature = bpy.data.objects.get("Armature")
+    armature = bpy.data.objects.get(ARMATURE_NAME)
     if armature is None or armature.type != "ARMATURE":
         raise ValueError("Armature not found or not of type ARMATURE.")
 
     # Get bones
     pose = armature.pose
-
-    arm = pose.bones.get("Arm")
-    forearm = pose.bones.get("Forearm")
-    hand = pose.bones.get("Hand")
+    arm = pose.bones.get(Bone.Arm.value)
+    forearm = pose.bones.get(Bone.Forearm.value)
+    hand = pose.bones.get(Bone.Hand.value)
 
     if arm is None or forearm is None or hand is None:
         raise ValueError("Bones not found.")
 
-    return arm, forearm, hand
+    return armature, arm, forearm, hand
+
+
+def get_gestures(file_path: str, armature: bpy.types.Object) -> List[Tuple[type, dict]]:
+    """
+    Get the gestures from the file.
+
+    Args:
+        file_path (str): The file path to the gestures file.
+
+    Returns:
+        List[type, dict]: The gestures.
+
+    Raises:
+        ValueError: If the bone is not found.
+    """
+    with open(file_path, "r") as file:
+        gestures = json.load(file)
+
+        # Reformat gestures
+        gestures = [
+            (globals()[gesture["type"]], gesture["args"]) for gesture in gestures
+        ]
+
+        # Reformat the arguments
+        for gesture in gestures:
+            gesture_args = gesture[1]
+            if "axis" in gesture_args:
+                gesture_args["axis"] = Axis(gesture_args["axis"])
+            if "vector" in gesture_args:
+                x = gesture_args["vector"]["x"]
+                y = gesture_args["vector"]["y"]
+                z = gesture_args["vector"]["z"]
+                gesture_args["vector"] = Vector((x, y, z))
+            if "euler" in gesture_args:
+                x = gesture_args["euler"]["x"]
+                y = gesture_args["euler"]["y"]
+                z = gesture_args["euler"]["z"]
+                gesture_args["euler"] = Euler((x, y, z))
+            if "bone" in gesture_args:
+                bone_name = gesture_args["bone"]
+                if bone_name not in Bone.__members__:
+                    raise ValueError(f"Bone {bone_name} not found.")
+
+                bone = armature.pose.bones.get(bone_name)
+                gesture_args["bone"] = bone
+
+        return gestures
 
 
 def main(args) -> None:
@@ -83,143 +137,16 @@ def main(args) -> None:
     Args:
         args (argparse.Namespace): The command line arguments.
     """
-    # Load the base Blender file
     bpy.ops.wm.open_mainfile(filepath=BASE_BLENDER_FILE)
 
-    arm, forearm, hand = get_bones()
+    # Get bones and gestures
+    armature, arm, forearm, hand = get_bones()
+    gestures_file = os.path.join(GESTURES_FOLDER, args.gestures_file)
+    gestures = get_gestures(gestures_file, armature)
 
-    gestures_events = [
-        (
-            RotationWaveGesture,
-            {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.X_AXIS,
-                "wave_frequency": 1.0,
-                "wave_amplitude": 0.5,
-                "arm_phase_shift": 0.0,
-                "forearm_phase_shift": math.pi / 4,
-                "hand_phase_shift": math.pi / 4,
-                "hand_amplitude_factor": 0.5,
-            },
-        ),
-        (
-            RotationWaveGesture,
-            {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.X_AXIS,
-                "wave_frequency": 2.5,
-                "wave_amplitude": 0.2,
-                "arm_phase_shift": 0.0,
-                "forearm_phase_shift": math.pi / 4,
-                "hand_phase_shift": math.pi / 4,
-                "hand_amplitude_factor": 0.5,
-            },
-        ),
-        (
-            RotationWaveGesture,
-            {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.X_AXIS,
-                "wave_frequency": 5.5,
-                "wave_amplitude": 0.05,
-                "arm_phase_shift": 0.0,
-                "forearm_phase_shift": math.pi / 4,
-                "hand_phase_shift": math.pi / 4,
-                "hand_amplitude_factor": 0.5,
-            },
-        ),
-        (
-            TranslationWaveGesture,
-            {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.Y_AXIS,
-                "phase_shift": 0,
-                "wave_frequency": 3.0,
-                "wave_amplitude": 0.1,
-            },
-        ),
-
-        (
-            RotationWaveGesture,
-            {
-                "start_frame": 120,
-                "end_frame": 240,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.X_AXIS,
-                "wave_frequency": 2.0,
-                "wave_amplitude": 0.3,
-                "arm_phase_shift": 0.0,
-                "forearm_phase_shift": math.pi / 4,
-                "hand_phase_shift": math.pi / 4,
-                "hand_amplitude_factor": 0.5,
-            },
-        ),
-        (
-            RotationWaveGesture,
-            {
-                "start_frame": 120,
-                "end_frame": 240,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.Y_AXIS,
-                "wave_frequency": 1.0,
-                "wave_amplitude": 0.7,
-                "arm_phase_shift": 0.0,
-                "forearm_phase_shift": math.pi / 4,
-                "hand_phase_shift": math.pi / 4,
-                "hand_amplitude_factor": 0.5,
-            },
-        ),
-        (
-            RotationWaveGesture,
-            {
-                "start_frame": 120,
-                "end_frame": 240,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.Z_AXIS,
-                "wave_frequency": 5.0,
-                "wave_amplitude": 0.2,
-                "arm_phase_shift": 0.0,
-                "forearm_phase_shift": math.pi / 4,
-                "hand_phase_shift": math.pi / 4,
-                "hand_amplitude_factor": 0.5,
-            },
-        ),
-        (
-            TranslationWaveGesture,
-            {
-                "start_frame": 120,
-                "end_frame": 240,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.X_AXIS,
-                "phase_shift": math.pi / 2,
-                "wave_frequency": 1.0,
-                "wave_amplitude": 0.5,
-            },
-        ),
-        (
-            TranslationWaveGesture,
-            {
-                "start_frame": 120,
-                "end_frame": 240,
-                "frame_rate": FRAME_RATE,
-                "axis": Axis.Z_AXIS,
-                "phase_shift": 0,
-                "wave_frequency": 1.0,
-                "wave_amplitude": 0.5,
-            },
-        ),
-    ]
-
+    # Apply gesture sequence
     gesture_sequence = GestureSequence(
-        gestures_events=gestures_events,
+        gestures=gestures,
         scene=bpy.context.scene,
         arm=arm,
         forearm=forearm,
@@ -227,8 +154,11 @@ def main(args) -> None:
     )
     gesture_sequence.apply()
 
+    # TODO: render the animation
+
 
 if __name__ == "__main__":
+    # blender --python run.py -- -gef "gestures.json"
     parser = get_parser()
     args = parser.parse_args()
 

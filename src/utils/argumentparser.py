@@ -27,8 +27,8 @@ class ArgumentParserForBlender(argparse.ArgumentParser):
         an empty list).
         """
         try:
-            idx = sys.argv.index("--python")
-            return sys.argv[idx + 2 :]  # the list after '--'
+            idx = sys.argv.index("--")
+            return sys.argv[idx + 1 :]  # the list after '--'
         except ValueError as e:  # '--' not in the list:
             return []
 

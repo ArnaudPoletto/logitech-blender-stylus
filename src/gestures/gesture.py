@@ -57,6 +57,7 @@ class Gesture:
         Apply the gesture to the armature.
         
         Args:
+            displacement_data (dict): The displacement data to update.
             current_frame (int): The current frame of the gesture.
 
         Returns:
