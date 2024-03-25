@@ -3,8 +3,10 @@ import bpy
 import sys
 import json
 import importlib.util
-from mathutils import Vector, Euler
+from tqdm import tqdm
 from typing import Tuple, List
+from mathutils import Vector, Euler
+from bpy_extras.object_utils import world_to_camera_view
 
 wrk_dir = os.getcwd()
 paths = [
@@ -31,7 +33,11 @@ from gestures.translation_sine_gesture import TranslationSineGesture
 
 BASE_BLENDER_FILE = os.path.join(wrk_dir, "..", "data", "base.blend")
 GESTURES_FOLDER = os.path.join(wrk_dir, "..", "data", "gestures")
+OUTPUT_FILE = os.path.join(wrk_dir, "..", "data", "output.json")
+RENDER_FOLDER_PATH = os.path.join(wrk_dir, "..", "data", "images")
 
+CAMERA_NAME = "Camera"
+STYLUS_OUTER_NAME = "Outer"
 ARMATURE_NAME = "Armature"
 FRAME_RATE = 60
 
@@ -52,6 +58,15 @@ def get_parser() -> argumentparser.ArgumentParserForBlender:
         help="The file name of gestures.",
         type=str,
         default="gestures.json",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--render",
+        metavar="RENDER",
+        help="Whether to render the animation after applying the gestures.",
+        type=bool,
+        default=False,
     )
 
     return parser
@@ -131,6 +146,132 @@ def get_gestures(file_path: str, armature: bpy.types.Object) -> List[Tuple[type,
         return gestures
 
 
+def is_led_occluded(led, camera, stylus_outer, leds):
+    """
+    Check if an LED is occluded by any object between the camera and the LED.
+
+    Args:
+        camera: The camera object.
+        led: The LED object.
+
+    Returns:
+        True if the LED is occluded, False otherwise.
+    """
+    # Get the direction from the camera to the LED
+    led_location = get_object_center(led)
+    direction = camera.location - led_location
+    direction.normalize()
+
+    # Remove stylus outer and all LEDs from the scene
+    stylus_outer.hide_set(True)
+    for l in leds:
+        l.hide_set(True)
+
+    # Cast a ray from the camera to the LED
+    scene = bpy.context.scene
+    result = scene.ray_cast(
+        depsgraph=bpy.context.evaluated_depsgraph_get(),
+        origin=led_location,
+        direction=direction,
+    )
+
+    # Add stylus outer back to the scene
+    stylus_outer.hide_set(False)
+    for l in leds:
+        l.hide_set(False)
+
+    return result[0]
+
+
+def get_object_center(object):
+    """
+    Get the bounding box center of an object.
+
+    Args:
+        object: The object to get the bounding box center of.
+
+    Returns:
+        The bounding box center of the object.
+    """
+
+    local_bbox_center = 0.125 * sum((Vector(b) for b in object.bound_box), Vector())
+    global_bbox_center = object.matrix_world @ local_bbox_center
+
+    return global_bbox_center
+
+
+def render_and_get_frame_info(frame, camera, stylus_outer, leds):
+    """
+    Render a frame and get the camera projection coordinates of LED.
+
+    Args:
+        frame: The frame to render.
+        leds: The LED objects to get the 3D object center of.
+        camera: The camera to render from.
+
+    Returns:
+        The 3D object center in the frame.
+    """
+
+    # Render frame
+    bpy.context.scene.frame_set(frame)
+    bpy.data.scenes["Scene"].render.filepath = os.path.join(
+        RENDER_FOLDER_PATH, f"{frame:04d}.png"
+    )
+    bpy.ops.render.render(
+        animation=False, write_still=True
+    )  # Animation set to False to render the current frame only
+
+    # Get pixel coordinates of LEDs
+    leds_data = {}
+    for led in leds:
+        led_center = get_object_center(led)
+        led_projected_coordinates = world_to_camera_view(
+            bpy.context.scene, camera, led_center
+        )
+        leds_data[led.name] = {
+            "x_cam": led_projected_coordinates.x,
+            "y_cam": led_projected_coordinates.y,
+            "x_world": led_center.x,
+            "y_world": led_center.y,
+            "z_world": led_center.z,
+            "occluded": is_led_occluded(led, camera, stylus_outer, leds),
+        }
+
+    return leds_data
+
+
+def render():
+    """
+    Render the animation and collect data.
+
+    Raises:
+        ValueError: If the camera or stylus outer is not found.
+    """
+    camera = bpy.data.objects.get(CAMERA_NAME)
+    if camera is None:
+        raise ValueError("Camera not found.")
+
+    stylus_outer = bpy.data.objects.get(STYLUS_OUTER_NAME)
+    if stylus_outer is None:
+        raise ValueError("Stylus outer not found.")
+
+    leds = [obj for obj in bpy.data.objects if "LED" in obj.name]
+
+    data = {}
+    for frame in tqdm(
+        range(bpy.context.scene.frame_start, bpy.context.scene.frame_end + 1),
+        desc="Rendering frames",
+    ):
+        data[frame] = render_and_get_frame_info(frame, camera, stylus_outer, leds)
+
+    # Write data to JSON file
+    with open(OUTPUT_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+    print("Data collection complete!")
+
+
 def main(args) -> None:
     """
     The main function.
@@ -155,11 +296,13 @@ def main(args) -> None:
     )
     gesture_sequence.apply()
 
-    # TODO: render the animation
+    # Render the animation if specified
+    if args.render:
+        render()
 
 
 if __name__ == "__main__":
-    # blender --python run.py -- -gef "gestures.json"
+    # blender --python run.py -- -gef "gestures.json" -r false
     parser = get_parser()
     args = parser.parse_args()
 
