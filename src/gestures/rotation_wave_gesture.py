@@ -76,7 +76,7 @@ class RotationWaveGesture(Gesture):
     def _get_arm_rotation_at_frame(self, frame) -> float:
         """
         Get the rotation of the arm at the specified frame.
-        
+
         Returns:
             float: The rotation of the arm at the specified frame.
         """
@@ -89,7 +89,7 @@ class RotationWaveGesture(Gesture):
     def _get_forearm_rotation_at_frame(self, frame) -> float:
         """
         Get the rotation of the forearm at the specified frame.
-        
+
         Returns:
             float: The rotation of the forearm at the specified frame.
         """
@@ -102,7 +102,7 @@ class RotationWaveGesture(Gesture):
     def _get_hand_rotation_at_frame(self, frame) -> float:
         """
         Get the rotation of the hand at the specified frame.
-        
+
         Returns:
             float: The rotation of the hand at the specified frame.
         """

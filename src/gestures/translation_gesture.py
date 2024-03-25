@@ -20,7 +20,7 @@ class TranslationGesture(Gesture):
         forearm: bpy.types.Bone,
         hand: bpy.types.Bone,
         vector: Vector,
-        relative: bool = True
+        relative: bool = True,
     ) -> None:
         """
         Initialize the gesture.
@@ -42,7 +42,7 @@ class TranslationGesture(Gesture):
         self.vector = vector
         self.relative = relative
         self.duration = self.end_frame - self.start_frame
-        
+
         # The object is always instantiated at the start frame, so we can store the initial location
         self.initial_location = arm.location.copy()
 

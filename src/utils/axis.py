@@ -5,7 +5,7 @@ class Axis(Enum):
     """
     Represents the axis of a 3D space.
     """
-    
+
     X_AXIS = "X"
     Y_AXIS = "Y"
     Z_AXIS = "Z"
@@ -13,7 +13,7 @@ class Axis(Enum):
     def index(self) -> int:
         """
         Returns the index of the axis.
-        
+
         Returns:
             int: The index of the axis.
         """

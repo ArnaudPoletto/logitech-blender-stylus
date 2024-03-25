@@ -64,10 +64,10 @@ class GestureSequence:
         """
         if translation_acceleration_limit < 0:
             raise ValueError("Translation acceleration limit must be positive.")
-        
+
         if rotation_acceleration_limit < 0:
             raise ValueError("Rotation acceleration limit must be positive.")
-        
+
         if momentum_weight < 0 or momentum_weight > 1:
             raise ValueError("Momentum weight must be between 0 and 1.")
 
@@ -150,11 +150,11 @@ class GestureSequence:
             else:
                 new_remaining_gestures.append((gesture_type, gesture_args))
         self.remaining_gestures = new_remaining_gestures
-        
+
     def _get_default_displacement_data(self) -> dict:
         """
         Get the default displacement data, with no movement.
-        
+
         Returns:
             dict: The default displacement data.
         """
@@ -165,9 +165,8 @@ class GestureSequence:
                 "location": Vector((0, 0, 0)),
                 "rotation_euler": Euler((0, 0, 0)),
             }
-            
+
         return displacement_data
-        
 
     def _get_displacement_data(
         self, current_frame: int, previous_displacement_data: dict
@@ -187,7 +186,7 @@ class GestureSequence:
         # Compute movement difference for current frame
         for gesture_object, _ in self.current_gestures:
             displacement_data = gesture_object.apply(displacement_data, current_frame)
-            
+
         # Apply momentum
         bones = [self.arm, self.forearm, self.hand]
         for bone in bones:
@@ -209,14 +208,21 @@ class GestureSequence:
             ):
                 for i in range(3):
                     # Compute difference between consecutive displacements
-                    previous_displacement = previous_displacement_data[bone][displacement_type][i]
+                    previous_displacement = previous_displacement_data[bone][
+                        displacement_type
+                    ][i]
                     current_displacement = displacement_data[bone][displacement_type][i]
-                    displacement_difference = current_displacement - previous_displacement
-                    
+                    displacement_difference = (
+                        current_displacement - previous_displacement
+                    )
+
                     # Clip displacement if acceleration limit is exceeded
                     if np.abs(displacement_difference) > acceleration_limit:
-                        current_displacement = previous_displacement + np.sign(displacement_difference) * acceleration_limit
-                        
+                        current_displacement = (
+                            previous_displacement
+                            + np.sign(displacement_difference) * acceleration_limit
+                        )
+
                     displacement_data[bone][displacement_type][i] = current_displacement
 
         return displacement_data

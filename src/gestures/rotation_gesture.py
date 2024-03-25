@@ -21,7 +21,7 @@ class RotationGesture(Gesture):
         hand: bpy.types.Bone,
         bone: bpy.types.Bone,
         euler: Euler,
-        relative: bool = True
+        relative: bool = True,
     ) -> None:
         """
         Initialize the gesture.
@@ -45,7 +45,7 @@ class RotationGesture(Gesture):
         self.euler = euler
         self.relative = relative
         self.duration = self.end_frame - self.start_frame
-        
+
         # The object is always instantiated at the start frame, so we can store the initial rotation
         self.initial_rotation = self.bone.rotation_euler.copy()
 
