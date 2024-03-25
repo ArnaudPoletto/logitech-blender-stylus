@@ -12,8 +12,9 @@ wrk_dir = os.getcwd()
 paths = [
     os.path.join(wrk_dir, "utils/__init__.py"),
     os.path.join(wrk_dir, "gestures/__init__.py"),
+    os.path.join(wrk_dir, "backgrounds/__init__.py"),
 ]
-names = ["utils", "gestures"]
+names = ["utils", "gestures", "backgrounds"]
 
 for path, name in zip(paths, names):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -24,6 +25,8 @@ for path, name in zip(paths, names):
 from utils.axis import Axis
 from utils.bone import Bone
 from utils import argumentparser
+from backgrounds.wall import Wall
+from backgrounds.background import Background
 from gestures.gesture_sequence import GestureSequence
 from gestures.rotation_gesture import RotationGesture
 from gestures.translation_gesture import TranslationGesture
@@ -40,36 +43,6 @@ CAMERA_NAME = "Camera"
 STYLUS_OUTER_NAME = "Outer"
 ARMATURE_NAME = "Armature"
 FRAME_RATE = 60
-
-
-def get_parser() -> argumentparser.ArgumentParserForBlender:
-    """
-    Get the argument parser for Blender.
-
-    Returns:
-        argparse.ArgumentParser: The argument parser.
-    """
-    parser = argumentparser.ArgumentParserForBlender()
-
-    parser.add_argument(
-        "-gf",
-        "--gestures_file",
-        metavar="GESTURES_FILE",
-        help="The file name of gestures.",
-        type=str,
-        default="gestures.json",
-    )
-
-    parser.add_argument(
-        "-r",
-        "--render",
-        metavar="RENDER",
-        help="Whether to render the animation after applying the gestures.",
-        type=bool,
-        default=False,
-    )
-
-    return parser
 
 
 def get_bones() -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone]:
@@ -268,8 +241,55 @@ def render():
     # Write data to JSON file
     with open(OUTPUT_FILE, "w") as f:
         json.dump(data, f, indent=4)
+        
+        
+def get_background() -> None:
+    # Get objects
+    objects = []
+    
+    wall = Wall(
+        name="Wall",
+        p=(0, 0, 0),
+        width=10,
+        height=10
+    )
+    objects.append(wall)
+    
+    # Get background and all objects
+    background = Background()
+    background.add_all_objects(objects)
+    
+    return background
+        
+        
+def get_parser() -> argumentparser.ArgumentParserForBlender:
+    """
+    Get the argument parser for Blender.
 
-    print("Data collection complete!")
+    Returns:
+        argparse.ArgumentParser: The argument parser.
+    """
+    parser = argumentparser.ArgumentParserForBlender()
+
+    parser.add_argument(
+        "-gf",
+        "--gestures_file",
+        metavar="GESTURES_FILE",
+        help="The file name of gestures.",
+        type=str,
+        default="gestures.json",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--render",
+        metavar="RENDER",
+        help="Whether to render the animation after applying the gestures.",
+        type=bool,
+        default=False,
+    )
+
+    return parser
 
 
 def main(args) -> None:
@@ -295,6 +315,10 @@ def main(args) -> None:
         hand=hand,
     )
     gesture_sequence.apply()
+    
+    # Add background
+    background = get_background()
+    background.add_to_scene(bpy.context.scene)
 
     # Render the animation if specified
     if args.render:
