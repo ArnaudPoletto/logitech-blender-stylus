@@ -20,7 +20,7 @@ class GestureSequence:
         arm: bpy.types.Bone,
         forearm: bpy.types.Bone,
         hand: bpy.types.Bone,
-        translation_acceleration_limit: float = 0.1,
+        translation_acceleration_limit: float = 0.001,
         rotation_acceleration_limit: float = 0.1,
         location_range: Tuple[Vector, Vector] = (
             Vector((-5.0, -0.5, -2.5)),
@@ -58,8 +58,16 @@ class GestureSequence:
             momentum_weight (float, optional): The ratio of the previous frame's displacement mixed with the current frame's displacement. Defaults to 0.1.
 
         Raises:
+            ValueError: If the translation acceleration limit is not positive.
+            ValueError: If the rotation acceleration limit is not positive.
             ValueError: If the momentum weight is not between 0 and 1.
         """
+        if translation_acceleration_limit < 0:
+            raise ValueError("Translation acceleration limit must be positive.")
+        
+        if rotation_acceleration_limit < 0:
+            raise ValueError("Rotation acceleration limit must be positive.")
+        
         if momentum_weight < 0 or momentum_weight > 1:
             raise ValueError("Momentum weight must be between 0 and 1.")
 
@@ -142,6 +150,24 @@ class GestureSequence:
             else:
                 new_remaining_gestures.append((gesture_type, gesture_args))
         self.remaining_gestures = new_remaining_gestures
+        
+    def _get_default_displacement_data(self) -> dict:
+        """
+        Get the default displacement data, with no movement.
+        
+        Returns:
+            dict: The default displacement data.
+        """
+        bones = [self.arm, self.forearm, self.hand]
+        displacement_data = {}
+        for bone in bones:
+            displacement_data[bone] = {
+                "location": Vector((0, 0, 0)),
+                "rotation_euler": Euler((0, 0, 0)),
+            }
+            
+        return displacement_data
+        
 
     def _get_displacement_data(
         self, current_frame: int, previous_displacement_data: dict
@@ -156,49 +182,48 @@ class GestureSequence:
         Returns:
             dict: The displacement data for the current frame.
         """
-        bones = [self.arm, self.forearm, self.hand]
-
-        # Get empty displacement data
-        displacement_data = {}
-        for bone in bones:
-            displacement_data[bone] = {
-                "location": Vector((0, 0, 0)),
-                "rotation_euler": Euler((0, 0, 0)),
-            }
+        displacement_data = self._get_default_displacement_data()
 
         # Compute movement difference for current frame
         for gesture_object, _ in self.current_gestures:
             displacement_data = gesture_object.apply(displacement_data, current_frame)
-
+            
         # Apply momentum
-        if previous_displacement_data is not None:
-            for bone in bones:
-                for displacement_type in ["location", "rotation_euler"]:
-                    for i in range(3):
-                        displacement_data[bone][displacement_type][i] = (
-                            previous_displacement_data[bone][displacement_type][i]
-                            * self.momentum_weight
-                        ) + (
-                            displacement_data[bone][displacement_type][i]
-                            * (1 - self.momentum_weight)
-                        )
+        bones = [self.arm, self.forearm, self.hand]
+        for bone in bones:
+            for displacement_type in ["location", "rotation_euler"]:
+                for i in range(3):
+                    displacement_data[bone][displacement_type][i] = (
+                        previous_displacement_data[bone][displacement_type][i]
+                        * self.momentum_weight
+                    ) + (
+                        displacement_data[bone][displacement_type][i]
+                        * (1 - self.momentum_weight)
+                    )
 
         # Limit acceleration
-        if previous_displacement_data is None:
-            return displacement_data
-
         for bone in bones:
             for displacement_type, acceleration_limit in zip(
                 ["location", "rotation_euler"],
                 [self.translation_acceleration_limit, self.rotation_acceleration_limit],
             ):
                 for i in range(3):
-                    displacement_data[bone][displacement_type][i] = np.sign(
-                        displacement_data[bone][displacement_type][i]
-                    ) * min(
-                        abs(displacement_data[bone][displacement_type][i]),
-                        acceleration_limit,
-                    )
+                    # Compute difference between consecutive displacements
+                    previous_displacement = previous_displacement_data[bone][displacement_type][i]
+                    current_displacement = displacement_data[bone][displacement_type][i]
+                    displacement_difference = current_displacement - previous_displacement
+                    
+                    print("previous_displacement", bone, displacement_type, i, previous_displacement)
+                    print("current_displacement", bone, displacement_type, i, current_displacement)
+                    print("displacement_difference", bone, displacement_type, i, displacement_difference)
+                    
+                    # Clip displacement if acceleration limit is exceeded
+                    if np.abs(displacement_difference) > acceleration_limit:
+                        current_displacement = previous_displacement + np.sign(displacement_difference) * acceleration_limit
+                        
+                    print("clipped_displacement", bone, displacement_type, i, current_displacement)
+                    
+                    displacement_data[bone][displacement_type][i] = current_displacement
 
         return displacement_data
 
@@ -332,7 +357,7 @@ class GestureSequence:
         end_frame = self._get_end_frame()
 
         # Apply gestures over time
-        previous_displacement_data = None
+        previous_displacement_data = self._get_default_displacement_data()
         for current_frame in range(start_frame, end_frame):
             bpy.context.scene.frame_set(current_frame)
 

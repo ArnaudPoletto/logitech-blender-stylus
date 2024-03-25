@@ -45,7 +45,7 @@ def get_parser() -> argumentparser.ArgumentParserForBlender:
     parser = argumentparser.ArgumentParserForBlender()
 
     parser.add_argument(
-        "-gef",
+        "-gf",
         "--gestures_file",
         metavar="GESTURES_FILE",
         help="The file name of gestures.",
