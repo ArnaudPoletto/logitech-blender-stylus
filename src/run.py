@@ -25,8 +25,9 @@ from utils import argumentparser
 from gestures.gesture_sequence import GestureSequence
 from gestures.rotation_gesture import RotationGesture
 from gestures.translation_gesture import TranslationGesture
+from gestures.rotation_sine_gesture import RotationSineGesture
 from gestures.rotation_wave_gesture import RotationWaveGesture
-from gestures.translation_wave_gesture import TranslationWaveGesture
+from gestures.translation_sine_gesture import TranslationSineGesture
 
 BASE_BLENDER_FILE = os.path.join(wrk_dir, "..", "data", "base.blend")
 GESTURES_FOLDER = os.path.join(wrk_dir, "..", "data", "gestures")
