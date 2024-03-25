@@ -1,0 +1,18 @@
+[
+    {
+        "type": "RotationWaveGesture",
+        "args": {
+            "start_frame": 1,
+            "end_frame": 60,
+            "frame_rate": 60,
+            "axis": "X",
+            "wave_frequency": 2.0,
+            "wave_amplitude": 0.5,
+            "arm_phase_shift": 0.0,
+            "forearm_phase_shift": 0.78539816339,
+            "forearm_amplitude_factor": 0.5,
+            "hand_phase_shift": 0.78539816339,
+            "hand_amplitude_factor": 0.5
+        }
+    }
+]

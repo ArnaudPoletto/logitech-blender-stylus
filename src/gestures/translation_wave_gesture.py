@@ -65,9 +65,6 @@ class TranslationWaveGesture(Gesture):
         self.wave_frequency = wave_frequency
         self.wave_amplitude = wave_amplitude
 
-        # Since the object is instanciated at frame start_frame, we store the initial location of the arm at this frame
-        self.initial_arm_location = arm.location.copy()
-
     def _get_arm_rotation_at_frame(self, frame):
         wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_frequency
         return math.sin(wave_offset + self.phase_shift) * self.wave_amplitude
