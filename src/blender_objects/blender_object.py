@@ -17,8 +17,12 @@ class BlenderObject:
             location (Vector): The location of the Blender object.
 
         Raises:
+            ValueError: If the location is not a 3D vector.
             ValueError: If a mesh with the same name already exists.
         """
+        if len(location) != 3:
+            raise ValueError("The location must be a 3D vector.")
+        
         mesh_name = f"{name}Mesh"
         if bpy.data.meshes.get(mesh_name) is not None:
             raise ValueError(f"A mesh with the name {mesh_name} already exists.")
