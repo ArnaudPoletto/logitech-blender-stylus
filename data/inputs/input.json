@@ -1,0 +1,20 @@
+{
+    "background": [
+
+    ],
+    "gestures": [
+        {
+            "type": "TranslationGesture",
+            "args": {
+                "start_frame": 1,
+                "end_frame": 5,
+                "vector": {
+                    "x": 2,
+                    "y": 2,
+                    "z": 2
+                },
+                "relative": true
+            }
+        }
+    ]
+}

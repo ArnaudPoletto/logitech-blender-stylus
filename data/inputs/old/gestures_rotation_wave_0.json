@@ -1,0 +1,15 @@
+[
+    {
+        "type": "RotationGesture",
+        "args": {
+            "start_frame": 1,
+            "end_frame": 60,
+            "bone": "Arm",
+            "euler": {
+                "x": 1.57079,
+                "y": 0,
+                "z": 0
+            }
+        }
+    }
+]
