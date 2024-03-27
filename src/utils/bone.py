@@ -9,7 +9,7 @@ class Bone(Enum):
     Arm = "Arm"
     Forearm = "Forearm"
     Hand = "Hand"
-
+    
     def index(self) -> int:
         """
         Returns the index of the bone.

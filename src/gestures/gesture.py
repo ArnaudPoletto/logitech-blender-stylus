@@ -1,4 +1,5 @@
 import bpy
+from abc import abstractmethod
 
 
 class Gesture:
@@ -54,6 +55,7 @@ class Gesture:
         self.forearm = forearm
         self.hand = hand
 
+    @abstractmethod
     def apply(self, displacement_data: dict, current_frame: int) -> dict:
         """
         Apply the gesture to the armature.

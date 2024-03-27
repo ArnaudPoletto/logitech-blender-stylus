@@ -36,7 +36,12 @@ class TranslationGesture(Gesture):
             relative (bool): Whether the translation is relative to the current location. Defaults to True.
         """
         super(TranslationGesture, self).__init__(
-            start_frame, end_frame, scene, arm, forearm, hand
+            start_frame=start_frame,
+            end_frame=end_frame,
+            scene=scene,
+            arm=arm,
+            forearm=forearm,
+            hand=hand,
         )
 
         self.vector = vector

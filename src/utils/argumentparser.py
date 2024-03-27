@@ -40,4 +40,4 @@ class ArgumentParserForBlender(argparse.ArgumentParser):
         _get_argv_after_doubledash before. See the docstring of the class for
         usage examples and details.
         """
-        return super().parse_args(args=self._get_argv_after_doubledash())
+        return super(ArgumentParserForBlender, self).parse_args(args=self._get_argv_after_doubledash())

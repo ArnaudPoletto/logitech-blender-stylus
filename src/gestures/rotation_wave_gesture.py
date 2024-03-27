@@ -54,7 +54,12 @@ class RotationWaveGesture(Gesture):
             ValueError: If the wave frequency is less than or equal to 0.
         """
         super(RotationWaveGesture, self).__init__(
-            start_frame, end_frame, scene, arm, forearm, hand
+            start_frame=start_frame,
+            end_frame=end_frame,
+            scene=scene,
+            arm=arm,
+            forearm=forearm,
+            hand=hand,
         )
 
         if not isinstance(axis, Axis):

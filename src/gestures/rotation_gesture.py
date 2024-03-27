@@ -38,7 +38,12 @@ class RotationGesture(Gesture):
             relative (bool): Whether the translation is relative to the current rotation. Defaults to True.
         """
         super(RotationGesture, self).__init__(
-            start_frame, end_frame, scene, arm, forearm, hand
+            start_frame=start_frame,
+            end_frame=end_frame,
+            scene=scene,
+            arm=arm,
+            forearm=forearm,
+            hand=hand,
         )
 
         self.bone = bone
