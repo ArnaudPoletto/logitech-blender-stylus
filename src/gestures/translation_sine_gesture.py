@@ -46,7 +46,12 @@ class TranslationSineGesture(Gesture):
             ValueError: If the wave amplitude is less than 0.
         """
         super(TranslationSineGesture, self).__init__(
-            start_frame, end_frame, scene, arm, forearm, hand
+            start_frame=start_frame,
+            end_frame=end_frame,
+            scene=scene,
+            arm=arm,
+            forearm=forearm,
+            hand=hand,
         )
 
         if not isinstance(axis, Axis):

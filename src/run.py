@@ -12,9 +12,15 @@ wrk_dir = os.getcwd()
 paths = [
     os.path.join(wrk_dir, "utils/__init__.py"),
     os.path.join(wrk_dir, "gestures/__init__.py"),
-    os.path.join(wrk_dir, "backgrounds/__init__.py"),
+    os.path.join(wrk_dir, "blender_objects/__init__.py"),
+    os.path.join(wrk_dir, "blender_collections/__init__.py"),
 ]
-names = ["utils", "gestures", "backgrounds"]
+names = [
+    "utils",
+    "gestures",
+    "blender_objects",
+    "blender_collections",
+]
 
 for path, name in zip(paths, names):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -25,8 +31,8 @@ for path, name in zip(paths, names):
 from utils.axis import Axis
 from utils.bone import Bone
 from utils import argumentparser
-from backgrounds.wall import Wall
-from backgrounds.background import Background
+from blender_objects.wall_blender_object import WallBlenderObject
+from blender_collections.blender_collection import BlenderCollection
 from gestures.gesture_sequence import GestureSequence
 from gestures.rotation_gesture import RotationGesture
 from gestures.translation_gesture import TranslationGesture
@@ -34,6 +40,7 @@ from gestures.rotation_sine_gesture import RotationSineGesture
 from gestures.rotation_wave_gesture import RotationWaveGesture
 from gestures.translation_sine_gesture import TranslationSineGesture
 
+ARMATURE_MESH_FILE = os.path.join(wrk_dir, "..", "data", "armature.fbx")
 BASE_BLENDER_FILE = os.path.join(wrk_dir, "..", "data", "base.blend")
 GESTURES_FOLDER = os.path.join(wrk_dir, "..", "data", "gestures")
 OUTPUT_FILE = os.path.join(wrk_dir, "..", "data", "output.json")
@@ -45,7 +52,7 @@ ARMATURE_NAME = "Armature"
 FRAME_RATE = 60
 
 
-def get_bones() -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone]:
+def get_bones() -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, bpy.types.Bone|None]:
     """
     Get the bones from the armature.
 
@@ -65,11 +72,12 @@ def get_bones() -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone]:
     arm = pose.bones.get(Bone.Arm.value)
     forearm = pose.bones.get(Bone.Forearm.value)
     hand = pose.bones.get(Bone.Hand.value)
+    hand_end = pose.bones.get('Hand_end')
 
     if arm is None or forearm is None or hand is None:
         raise ValueError("Bones not found.")
 
-    return armature, arm, forearm, hand
+    return armature, arm, forearm, hand, hand_end
 
 
 def get_gestures(file_path: str, armature: bpy.types.Object) -> List[Tuple[type, dict]]:
@@ -241,27 +249,33 @@ def render():
     # Write data to JSON file
     with open(OUTPUT_FILE, "w") as f:
         json.dump(data, f, indent=4)
-        
-        
-def get_background() -> None:
+
+
+def get_background() -> BlenderCollection:
     # Get objects
     objects = []
-    
-    wall = Wall(
+
+    wall = WallBlenderObject(
         name="Wall",
-        p=(0, 0, 0),
-        width=10,
-        height=10
+        location=Vector((1, 1, 1)),
+        rotation=Vector((1, 1, 1)),
+        scale=Vector((10, 5)),
+        centered=True,
     )
+    wall.add_window("Window1", Vector((4.5, 1)), Vector((1, 1)))
+    # wall.add_window("Window2", Vector((1, 1)), Vector((2, 1)))
     objects.append(wall)
-    
+
     # Get background and all objects
-    background = Background()
-    background.add_all_objects(objects)
-    
-    return background
-        
-        
+    background_collection = BlenderCollection(
+        name="Background",
+        parent_collection=bpy.context.scene.collection,
+    )
+    background_collection.add_all_objects(objects)
+
+    return background_collection
+
+
 def get_parser() -> argumentparser.ArgumentParserForBlender:
     """
     Get the argument parser for Blender.
@@ -299,10 +313,19 @@ def main(args) -> None:
     Args:
         args (argparse.Namespace): The command line arguments.
     """
-    bpy.ops.wm.open_mainfile(filepath=BASE_BLENDER_FILE)
+    # bpy.ops.wm.open_mainfile(filepath=BASE_BLENDER_FILE)
+
+    # Delete all existing objects and load armature and camera
+    # TODO: improve this
+    for obj in bpy.data.objects:
+        bpy.data.objects.remove(obj)
+
+    bpy.ops.import_scene.fbx(filepath=ARMATURE_MESH_FILE)
 
     # Get bones and gestures
-    armature, arm, forearm, hand = get_bones()
+    armature, arm, forearm, hand, hand_end = get_bones()
+    if hand_end is not None:
+        armature.data.bones.remove(hand_end)
     gestures_file = os.path.join(GESTURES_FOLDER, args.gestures_file)
     gestures = get_gestures(gestures_file, armature)
 
@@ -315,10 +338,10 @@ def main(args) -> None:
         hand=hand,
     )
     gesture_sequence.apply()
-    
+
     # Add background
     background = get_background()
-    background.add_to_scene(bpy.context.scene)
+    background.apply()
 
     # Render the animation if specified
     if args.render:
