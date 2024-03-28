@@ -1,7 +1,168 @@
 {
-    "background": [
-
-    ],
+    "blender_objects": {
+        "room": {
+            "type": "Room",
+            "args": {
+                "name": "Room",
+                "location": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "width": 50,
+                "height": 25,
+                "depth": 75
+            }
+        },
+        "back_wall_window_1": {
+            "type": "Window",
+            "args": {
+                "name": "Window",
+                "location": {
+                    "x": 0,
+                    "y": 0
+                },
+                "scale": {
+                    "x": 5,
+                    "y": 10
+                }
+            },
+            "parents": [
+                "room.back_wall"
+            ]
+        },
+        "back_wall_window_2": {
+            "type": "Window",
+            "args": {
+                "name": "Window",
+                "location": {
+                    "x": 6,
+                    "y": 1
+                },
+                "scale": {
+                    "x": 5,
+                    "y": 10
+                }
+            },
+            "parents": [
+                "room.back_wall"
+            ]
+        },
+        "back_wall_window_3": {
+            "type": "Window",
+            "args": {
+                "name": "Window",
+                "location": {
+                    "x": -6,
+                    "y": 1
+                },
+                "scale": {
+                    "x": 5,
+                    "y": 10
+                }
+            },
+            "parents": [
+                "room.back_wall"
+            ]
+        },
+        "right_wall_window_1": {
+            "type": "Window",
+            "args": {
+                "name": "Window",
+                "location": {
+                    "x": -31,
+                    "y": 1
+                },
+                "scale": {
+                    "x": 5,
+                    "y": 10
+                }
+            },
+            "parents": [
+                "room.right_wall"
+            ]
+        },
+        "left_wall_window_1": {
+            "type": "Window",
+            "args": {
+                "name": "Window",
+                "location": {
+                    "x": -31,
+                    "y": 1
+                },
+                "scale": {
+                    "x": 5,
+                    "y": 10
+                }
+            },
+            "parents": [
+                "room.left_wall"
+            ]
+        },
+        "blinds_decorator_1": {
+            "type": "Blinds",
+            "args": {
+                "name": "Blinds",
+                "n_blinds": 10,
+                "angle": 0.78539,
+                "vertical": false
+            },
+            "parents": [
+                "back_wall_window_1"
+            ]
+        },
+        "blinds_decorator_2": {
+            "type": "Blinds",
+            "args": {
+                "name": "Blinds",
+                "n_blinds": 25,
+                "angle": 1.04719,
+                "vertical": false
+            },
+            "parents": [
+                "back_wall_window_2",
+                "back_wall_window_3"
+            ]
+        },
+        "muntins_decorator_1": {
+            "type": "Muntins",
+            "args": {
+                "name": "Muntins",
+                "size": 0.1,
+                "n_muntins_width": 4,
+                "n_muntins_height": 5
+            },
+            "parents": [
+                "left_wall_window_1",
+                "right_wall_window_1"
+            ]
+        },
+        "shades_decorator_1": {
+            "type": "Shades",
+            "args": {
+                "name": "Shades",
+                "shade_ratio": 0.2
+            },
+            "parents": [
+                "right_wall_window_1",
+                "left_wall_window_1"
+            ]
+        },
+        "christmas_tree": {
+            "type": "ChristmasTree",
+            "args": {
+                "name": "ChristmasTree",
+                "location": {
+                    "x": -30,
+                    "y": 15,
+                    "z": -12.5
+                },
+                "height": 20,
+                "radius": 3,
+                "n_leds": 100
+            }
+        }
+    },
     "gestures": [
         {
             "type": "TranslationGesture",

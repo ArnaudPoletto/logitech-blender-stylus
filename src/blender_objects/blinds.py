@@ -58,7 +58,7 @@ class Blinds(WindowDecorator):
             window_object (bpy.types.Object): The window object to which the blinds are applied.
         """
         # Add blinds to the wall
-        axis = Axis.Y_AXIS if self.vertical else Axis.X_AXIS
+        axis = Axis.X_AXIS if self.vertical else Axis.Y_AXIS
         for i in range(self.n_blinds):
             bpy.ops.mesh.primitive_plane_add(size=1)
             blind_object = bpy.context.view_layer.objects.active

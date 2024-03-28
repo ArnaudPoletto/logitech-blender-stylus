@@ -4,6 +4,7 @@ from mathutils import Vector
 
 from blender_objects.window import Window
 from blender_objects.blender_object import BlenderObject
+from blender_objects.wall_decorator import WallDecorator
 
 class Wall(BlenderObject):
     """
@@ -112,23 +113,24 @@ class Wall(BlenderObject):
             
         return True
 
-    def add_window(self, window: Window) -> None:
+    def add_decorator(self, decorator: WallDecorator) -> None:
         """
         Add a window to the wall.
 
         Args:
-            window (Window): The window to add to the wall.
+            decorator (WallDecorator): The decorator to add to the wall.
 
         Raises:
-            ValueError: If the window is not in bounds of the wall.
-            ValueError: If the window overlaps with existing windows.
+            ValueError: If the decorator is a window and the window is not in bounds of the wall.
+            ValueError: If the decorator is a window and the window overlaps with existing windows.
         """
-        if not self._window_is_in_bounds(window):
-            raise ValueError("The window is not in bounds of the wall.")
-        if not self._window_do_not_overlap(window):
-            raise ValueError("The window overlaps with existing windows.")
+        if isinstance(decorator, Window):
+            if not self._window_is_in_bounds(decorator):
+                raise ValueError("The window is not in bounds of the wall.")
+            if not self._window_do_not_overlap(decorator):
+                raise ValueError("The window overlaps with existing windows.")
         
-        self.windows.append(window)
+            self.windows.append(decorator)
 
     def apply_to_collection(self, collection: bpy.types.Collection) -> None:
         # Add wall
