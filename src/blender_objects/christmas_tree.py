@@ -64,10 +64,8 @@ class ChristmasTree(BlenderObject):
         christmas_tree_object = bpy.context.object
         christmas_tree_object.name = self.name
         
-        # set transparent tecture
-        christmas_tree_object
-        
         # Add LEDs to the Christmas tree
+        # TODO: remov randomness in LED location
         for i in range(self.n_leds):
             x = random.uniform(-self.radius, self.radius)
             y_bound = math.sin(math.acos(x / self.radius)) * self.radius
@@ -85,6 +83,7 @@ class ChristmasTree(BlenderObject):
             )
             led_object = bpy.context.object
             led_object.name = f"{self.name}LED{i}"
-            led_object.data.energy = 10
+            # TODO: remove randomness in LED energy
+            led_object.data.energy = random.uniform(1, 10)
             led_object.data.color = (1, 1, 1)
         

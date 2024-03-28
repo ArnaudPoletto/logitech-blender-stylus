@@ -207,9 +207,15 @@ def render():
 
 
 def get_background(blender_objects: dict) -> BlenderCollection:
-    # TODO: remove hardcoding
-    # TODO: add documentation
+    """
+    Get the blender objects to add to the background.
     
+    Args:
+        blender_objects (dict): The blender objects.
+        
+    Returns:
+        BlenderCollection: The background collection.
+    """
     background_collection = BlenderCollection("Background")
     
     objects = []

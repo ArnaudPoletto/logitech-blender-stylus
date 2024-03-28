@@ -35,6 +35,36 @@ class InputFileParser:
         """
         self.input_file_path = input_file_path
 
+    @staticmethod
+    def _parse_dimension_argument(args, arg_name, arg_type):
+        """
+        Parse a 2D or 3D dimension argument from the arguments dictionary.
+
+        Args:
+            args (dict): The arguments dictionary.
+            arg_name (str): The name of the argument.
+            arg_type (type): The type of the argument.
+
+        Raises:
+            ValueError: If the argument is not found in the arguments dictionary.
+            ValueError: If the argument is not a dimension argument.
+        """
+        if arg_name not in args:
+            raise ValueError(f"Argument {arg_name} not found in the arguments.")
+
+        if "x" not in args[arg_name] or "y" not in args[arg_name]:
+            raise ValueError(f"Argument {arg_name} is not a 2D or 3D argument.")
+
+        x = args[arg_name]["x"]
+        y = args[arg_name]["y"]
+
+        if "z" not in args[arg_name]:
+            return arg_type((x, y))
+
+        z = args[arg_name]["z"]
+
+        return arg_type((x, y, z))
+
     def _parse_gestures(self, input_data: dict, armature: bpy.types.Object) -> dict:
         """
         Parse the gestures data from the input file.
@@ -47,16 +77,33 @@ class InputFileParser:
             dict: The parsed gestures data.
 
         Raises:
-            ValueError: If no gestures are found in the input file.
+            ValueError: If no gestures section are found in the input file.
+            ValueError: If the gesture type of a gesture is not specified.
+            ValueError: If the gesture args of a gesture is not specified.
+            ValueError: If the gesture type of a gesture is not found.
+            ValueError: If the axis of a gesture is invalid.
+            ValueError: If the bone of a gesture is invalid.
         """
         if "gestures" not in input_data:
             raise ValueError("No gestures found in the input file.")
         gestures = input_data["gestures"]
 
         # Reformat gestures
-        gestures = [
-            (globals()[gesture["type"]], gesture["args"]) for gesture in gestures
-        ]
+        new_gestures = []
+        for gesture in gestures:
+            if "type" not in gesture:
+                raise ValueError("No gesture type found in the input file.")
+            
+            if "args" not in gesture:
+                raise ValueError("No gesture args found in the input file.")
+            
+            if gesture['type'] not in globals():
+                raise ValueError(f"Gesture type {gesture['type']} not found.")
+
+            gesture_type = globals()[gesture["type"]]
+            gesture_args = gesture["args"]
+            new_gestures.append((gesture_type, gesture_args))
+        gestures = new_gestures
 
         for _, gesture_args in gestures:
             if "axis" in gesture_args:
@@ -67,16 +114,14 @@ class InputFileParser:
                 gesture_args["axis"] = Axis(axis_name)
 
             if "vector" in gesture_args:
-                x = gesture_args["vector"]["x"]
-                y = gesture_args["vector"]["y"]
-                z = gesture_args["vector"]["z"]
-                gesture_args["vector"] = Vector((x, y, z))
+                gesture_args["vector"] = InputFileParser._parse_dimension_argument(
+                    gesture_args, "vector", Vector
+                )
 
             if "euler" in gesture_args:
-                x = gesture_args["euler"]["x"]
-                y = gesture_args["euler"]["y"]
-                z = gesture_args["euler"]["z"]
-                gesture_args["euler"] = Euler((x, y, z))
+                gesture_args["euler"] = InputFileParser._parse_dimension_argument(
+                    gesture_args, "euler", Euler
+                )
 
             if "bone" in gesture_args:
                 bone_name = gesture_args["bone"]
@@ -97,71 +142,88 @@ class InputFileParser:
 
         Returns:
             dict: The parsed blender objects data.
-            
+
         Raises:
-            ValueError: If no blender_objects is found in the input file.
+            ValueError: If no blender_objects section is found in the input file.
+            ValueError: If the blender object type is not specified.
+            ValueError: If the blender object args are not specified.
+            ValueError: If the blender object type is not found.
         """
         if "blender_objects" not in input_data:
             raise ValueError("No blender_objects found in the input file.")
         blender_objects = input_data["blender_objects"]
-        
+
         background_data = {}
         for blender_object_name, blender_object in blender_objects.items():
+            if "type" not in blender_object:
+                raise ValueError("No type found in the blender object.")
+            
+            if "args" not in blender_object:
+                raise ValueError("No args found in the blender object.")
+            
+            if blender_object["type"] not in globals():
+                raise ValueError(f"Blender object type {blender_object['type']} not found.")
+            
             # Get object information
             blender_object_type = globals()[blender_object["type"]]
             blender_object_args = blender_object["args"]
-            
+
             if "location" in blender_object_args:
-                x = blender_object_args["location"]["x"]
-                y = blender_object_args["location"]["y"]
-                if "z" in blender_object_args["location"]:
-                    z = blender_object_args["location"]["z"]
-                    blender_object_args["location"] = Vector((x, y, z))
-                else:
-                    blender_object_args["location"] = Vector((x, y))
+                blender_object_args["location"] = (
+                    InputFileParser._parse_dimension_argument(
+                        blender_object_args, "location", Vector
+                    )
+                )
             if "scale" in blender_object_args:
-                x = blender_object_args["scale"]["x"]
-                y = blender_object_args["scale"]["y"]
-                if "z" in blender_object_args["scale"]:
-                    z = blender_object_args["scale"]["z"]
-                    blender_object_args["scale"] = Vector((x, y, z))
-                else:
-                    blender_object_args["scale"] = Vector((x, y))
-            
+                blender_object_args["scale"] = (
+                    InputFileParser._parse_dimension_argument(
+                        blender_object_args, "scale", Vector
+                    )
+                )
+
             # Get parents information
             blender_object_parents = None
             if "parents" in blender_object:
                 blender_object_parents = blender_object["parents"]
-                
+
             blender_object_data = {
                 "object": blender_object_type(**blender_object_args),
                 "parents": blender_object_parents,
             }
             background_data[blender_object_name] = blender_object_data
-            
+
         # Traverse the background data to set the parents as objects
         for blender_object_name, blender_object_data in background_data.items():
             if blender_object_data["parents"] is None:
                 continue
-            
+
             blender_object_parents = blender_object_data["parents"]
             new_blender_object_parents = []
             for blender_object_parent in blender_object_parents:
                 blender_object_parent_split = blender_object_parent.split(".")
                 if len(blender_object_parent_split) == 1:
                     # If the parent is a direct object...
-                    blender_object_parent_object = background_data[blender_object_parent]["object"]
+                    blender_object_parent_object = background_data[
+                        blender_object_parent
+                    ]["object"]
                     new_blender_object_parents.append(blender_object_parent_object)
                 else:
                     # To access an object as a parameter of another object, we need to traverse the object attributes...
                     blender_object_parent_name = blender_object_parent_split[0]
                     blender_object_parent_parameters = blender_object_parent_split[1:]
-                    blender_object_parent_object = background_data[blender_object_parent_name]["object"]
-                    for blender_object_parent_parameter in blender_object_parent_parameters:
-                        blender_object_parent_object = getattr(blender_object_parent_object, blender_object_parent_parameter)
+                    blender_object_parent_object = background_data[
+                        blender_object_parent_name
+                    ]["object"]
+                    for (
+                        blender_object_parent_parameter
+                    ) in blender_object_parent_parameters:
+                        blender_object_parent_object = getattr(
+                            blender_object_parent_object,
+                            blender_object_parent_parameter,
+                        )
                     new_blender_object_parents.append(blender_object_parent_object)
             background_data[blender_object_name]["parents"] = new_blender_object_parents
-            
+
         return background_data
 
     def parse(self, armature: bpy.types.Object) -> dict:
