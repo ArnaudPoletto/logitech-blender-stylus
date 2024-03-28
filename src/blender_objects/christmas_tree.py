@@ -46,7 +46,7 @@ class ChristmasTree(BlenderObject):
         self.radius = radius
         self.n_leds = n_leds
         
-    def apply_to_collection(self, collection: bpy.types.Collection) -> None:
+    def apply_to_collection(self, collection: bpy.types.Collection, z_eps=1e-1) -> None:
         """
         Apply the Christmas tree to the collection.
         
@@ -72,7 +72,7 @@ class ChristmasTree(BlenderObject):
             x = random.uniform(-self.radius, self.radius)
             y_bound = math.sin(math.acos(x / self.radius)) * self.radius
             y = random.uniform(-y_bound, y_bound)
-            z = -self.height * math.sqrt(((x * x) + (y * y))) / self.radius + self.height + 1e-1
+            z = -self.height * math.sqrt(((x * x) + (y * y))) / self.radius + self.height + z_eps
             led_location = Vector((
                 self.location.x + x,
                 self.location.y + y,
