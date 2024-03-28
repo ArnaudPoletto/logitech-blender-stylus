@@ -52,7 +52,7 @@ class Shades(WindowDecorator):
         shape_object = bpy.context.view_layer.objects.active
         shape_object.name = f"{window_object.name}{self.name}"
         shape_object.rotation_euler = window_object.rotation_euler
-        location_offset = self.shade_ratio / 2 - 0.5
+        location_offset = 0.5 - self.shade_ratio / 2
         shape_object.location = window_object.matrix_world @ Vector(
             (0, location_offset, 0)
         )

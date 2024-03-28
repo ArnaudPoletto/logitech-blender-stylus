@@ -5,14 +5,14 @@ from typing import List, Tuple
 from mathutils import Vector, Matrix
 
 from utils.axis import Axis
-from blender_objects.blender_object import BlenderObject
+from blender_objects.wall_decorator import WallDecorator
 from blender_objects.window_decorator import WindowDecorator
 
 # TODO: Add material to the window decorators / windows
 # TODO: refactor decorators to be separate classes
 
 
-class Window(BlenderObject):
+class Window(WallDecorator):
     """
     A window in a wall.
     """

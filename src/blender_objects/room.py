@@ -24,8 +24,8 @@ class Room(BlenderObject):
         wall = Wall(
             name=f"{self.name}RightWall",
             location=right_wall_location,
-            rotation=Vector((math.pi / 2, math.pi / 2, 0)),
-            scale=Vector((height, depth)),
+            rotation=Vector((math.pi / 2, 0, 0)),
+            scale=Vector((depth, height)),
             centered=True,
         )
         self.right_wall = wall
@@ -35,8 +35,8 @@ class Room(BlenderObject):
         wall = Wall(
             name=f"{self.name}LeftWall",
             location=left_wall_location,
-            rotation=Vector((math.pi / 2, math.pi / 2, 0)),
-            scale=Vector((height, depth)),
+            rotation=Vector((math.pi / 2, 0, 0)),
+            scale=Vector((depth, height)),
             centered=True,
         )
         self.left_wall = wall
@@ -46,8 +46,8 @@ class Room(BlenderObject):
         wall = Wall(
             name=f"{self.name}FrontWall",
             location=front_wall_location,
-            rotation=Vector((0, math.pi / 2, 0)),
-            scale=Vector((height, width)),
+            rotation=Vector((math.pi / 2, 0, math.pi / 2)),
+            scale=Vector((width, height)),
             centered=True,
         )
         self.front_wall = wall
@@ -57,8 +57,8 @@ class Room(BlenderObject):
         wall = Wall(
             name=f"{self.name}BackWall",
             location=back_wall_location,
-            rotation=Vector((0, math.pi / 2, 0)),
-            scale=Vector((height, width)),
+            rotation=Vector((math.pi / 2, 0, math.pi / 2)),
+            scale=Vector((width, height)),
             centered=True,
         )
         self.back_wall = wall

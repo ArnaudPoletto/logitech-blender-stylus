@@ -20,5 +20,4 @@ class WindowDecorator(BlenderObject):
             name (str): The name of the window decorator.
             location (Vector): The location of the window decorator, generally the center of the window.
         """
-        self.name = name
-        self.location = location
+        super(WindowDecorator, self).__init__(name=name, location=location)

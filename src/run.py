@@ -6,7 +6,7 @@ import math
 import importlib.util
 from tqdm import tqdm
 from typing import Tuple, List
-from mathutils import Vector, Euler
+from mathutils import Vector
 from bpy_extras.object_utils import world_to_camera_view
 
 wrk_dir = os.getcwd()
@@ -31,20 +31,16 @@ for path, name in zip(paths, names):
 
 from utils.axis import Axis
 from utils.bone import Bone
-from utils import argumentparser
+from utils import argument_parser
 from blender_objects.room import Room
 from blender_objects.wall import Wall
 from blender_objects.blinds import Blinds
 from blender_objects.shades import Shades
 from blender_objects.window import Window
 from blender_objects.muntins import Muntins
+from utils.input_file_parser import InputFileParser
 from gestures.gesture_sequence import GestureSequence
-from gestures.rotation_gesture import RotationGesture
-from gestures.translation_gesture import TranslationGesture
-from gestures.rotation_sine_gesture import RotationSineGesture
-from gestures.rotation_wave_gesture import RotationWaveGesture
 from blender_collections.blender_collection import BlenderCollection
-from gestures.translation_sine_gesture import TranslationSineGesture
 
 INPUTS_FOLDER = os.path.join(wrk_dir, "..", "data", "inputs")
 OUTPUT_FILE = os.path.join(wrk_dir, "..", "data", "output.json")
@@ -84,64 +80,6 @@ def get_bones() -> (
         raise ValueError("Bones not found.")
 
     return armature, arm, forearm, hand, hand_end
-
-
-def get_gestures(file_path: str, armature: bpy.types.Object) -> List[Tuple[type, dict]]:
-    """
-    Get the gestures from the file.
-
-    Args:
-        file_path (str): The file path to the input file.
-
-    Returns:
-        List[type, dict]: The gestures.
-
-    Raises:
-        ValueError: If no gestures are found in the input file.
-        ValueError: If the bone is not found.
-    """
-    with open(file_path, "r") as file:
-        input = json.load(file)
-        if "gestures" not in input:
-            raise ValueError("No gestures found in the input file.")
-        gestures = input["gestures"]
-
-        # Reformat gestures
-        gestures = [
-            (globals()[gesture["type"]], gesture["args"]) for gesture in gestures
-        ]
-
-        # Reformat the arguments
-        for gesture in gestures:
-            gesture_args = gesture[1]
-            if "axis" in gesture_args:
-                axis_name = gesture_args["axis"]
-                if axis_name not in Axis.__members__:
-                    raise ValueError(f"Axis {axis_name} not found.")
-
-                gesture_args["axis"] = Axis(axis_name)
-
-            if "vector" in gesture_args:
-                x = gesture_args["vector"]["x"]
-                y = gesture_args["vector"]["y"]
-                z = gesture_args["vector"]["z"]
-                gesture_args["vector"] = Vector((x, y, z))
-
-            if "euler" in gesture_args:
-                x = gesture_args["euler"]["x"]
-                y = gesture_args["euler"]["y"]
-                z = gesture_args["euler"]["z"]
-                gesture_args["euler"] = Euler((x, y, z))
-
-            if "bone" in gesture_args:
-                bone_name = gesture_args["bone"]
-                if bone_name not in Bone.__members__:
-                    raise ValueError(f"Bone {bone_name} not found.")
-
-                bone = armature.pose.bones.get(bone_name)
-                gesture_args["bone"] = bone
-
-        return gestures
 
 
 def is_led_occluded(led, camera, stylus_outer, leds):
@@ -268,82 +206,35 @@ def render():
         json.dump(data, f, indent=4)
 
 
-def get_background() -> BlenderCollection:
+def get_background(blender_objects: dict) -> BlenderCollection:
     # TODO: remove hardcoding
     # TODO: add documentation
-    # Get objects
+    
+    background_collection = BlenderCollection("Background")
+    
     objects = []
+    for _, blender_object_args in blender_objects.items():
+        blender_object_object = blender_object_args["object"]
+        blender_object_parents = blender_object_args["parents"]
+        if blender_object_parents is None:
+            objects.append(blender_object_object)
+        else:
+            for blender_object_parent in blender_object_parents:
+                blender_object_parent.add_decorator(blender_object_object)
 
-    room = Room(
-        name="Room",
-        location=Vector((0, 0, 0)),
-        width=50,
-        height=25,
-        depth=75,
-    )
-
-    back_wall_window = Window(
-        name="Window",
-        location=Vector((0, 0)),
-        scale=Vector((10, 5)),
-    )
-    back_wall_window_decorator = Blinds(
-        name="Blinds",
-        n_blinds=10,
-        angle=math.pi / 4,
-        vertical=False,
-    )
-    back_wall_window.add_decorator(back_wall_window_decorator)
-    room.back_wall.add_window(back_wall_window)
-
-    right_wall_window = Window(
-        name="Window",
-        location=Vector((-1, -31)),
-        scale=Vector((10, 5)),
-    )
-    right_wall_window_decorator = Muntins(
-        name="Muntins",
-        size=0.1,
-        n_muntins_width=5,
-        n_muntins_height=5,
-    )
-    right_wall_window.add_decorator(right_wall_window_decorator)
-    room.right_wall.add_window(right_wall_window)
-
-    left_wall_window = Window(
-        name="Window",
-        location=Vector((-1, -31)),
-        scale=Vector((10, 5)),
-    )
-    left_wall_window_decorator = Muntins(
-        name="Muntins",
-        size=0.1,
-        n_muntins_width=5,
-        n_muntins_height=5,
-    )
-    left_wall_window.add_decorator(left_wall_window_decorator)
-    room.left_wall.add_window(left_wall_window)
-
-    objects.append(room)
-
-    # Get background and all objects
-    background_collection = BlenderCollection(
-        name="Background",
-        parent_collection=bpy.context.scene.collection,
-    )
     background_collection.add_all_objects(objects)
 
     return background_collection
 
 
-def get_parser() -> argumentparser.ArgumentParserForBlender:
+def get_parser() -> argument_parser.ArgumentParserForBlender:
     """
     Get the argument parser for Blender.
 
     Returns:
         argparse.ArgumentParser: The argument parser.
     """
-    parser = argumentparser.ArgumentParserForBlender()
+    parser = argument_parser.ArgumentParserForBlender()
 
     parser.add_argument(
         "-if",
@@ -373,14 +264,18 @@ def main(args) -> None:
     Args:
         args (argparse.Namespace): The command line arguments.
     """
-    # Get bones and gestures
+    # Get bones
     armature, arm, forearm, hand, hand_end = get_bones()
     if hand_end is not None:
         armature.data.bones.remove(hand_end)
-    input_file = os.path.join(INPUTS_FOLDER, args.input_file)
-    gestures = get_gestures(input_file, armature)
+        
+    # Get input data
+    input_file_path = os.path.join(INPUTS_FOLDER, args.input_file)
+    input_file_parser = InputFileParser(input_file_path)
+    input_data = input_file_parser.parse(armature)
 
     # Apply gesture sequence
+    gestures = input_data["gestures"]
     gesture_sequence = GestureSequence(
         gestures=gestures,
         scene=bpy.context.scene,
@@ -391,8 +286,8 @@ def main(args) -> None:
     gesture_sequence.apply()
 
     # Add background
-    # TODO: add background information to input file and remove hardcoding
-    background = get_background()
+    blender_objects = input_data["blender_objects"]
+    background = get_background(blender_objects)
     background.apply()
 
     # Render the animation if specified
