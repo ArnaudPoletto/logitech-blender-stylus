@@ -14,6 +14,7 @@ class Shades(WindowDecorator):
         self,
         name: str,
         shade_ratio: float,
+        transmission: float,
     ) -> None:
         """
         Initialize the shades window decorator.
@@ -21,12 +22,16 @@ class Shades(WindowDecorator):
         Args:
             name (str): The name of the window decorator.
             shade_ratio (float): The ratio of the window that is shaded.
+            transmission (float): The material transmission of the shades, to make them transparent.
 
         Raises:
             ValueError: If the shade ratio is not between 0 and 1.
+            ValueError: If the transmission is not between 0 and 1.
         """
         if shade_ratio < 0 or shade_ratio > 1:
             raise ValueError("The shade ratio must be between 0 and 1.")
+        if transmission < 0 or transmission > 1:
+            raise ValueError("The transmission must be between 0 and 1.")
 
         super().__init__(
             name=name,
@@ -34,6 +39,7 @@ class Shades(WindowDecorator):
         )
 
         self.shade_ratio = shade_ratio
+        self.transmission = transmission
 
     def apply_to_collection(
         self,
@@ -57,7 +63,16 @@ class Shades(WindowDecorator):
             (0, location_offset, 0)
         )
         shape_object.scale = Vector((window_object.scale.x, window_object.scale.y * self.shade_ratio, 1))
-
+        
+        # Change material of shade to make it transparent
+        if "Shade" not in bpy.data.materials:
+            bpy.data.materials.new(name="Shade")
+            material = bpy.data.materials["Shade"]
+            material.use_nodes = True
+            material.node_tree.nodes["Principled BSDF"].inputs["Transmission Weight"].default_value = self.transmission
+        shape_object.data.materials.append(bpy.data.materials["Shade"])
+        
+            
         # Add shade to collection
         collection.objects.link(shape_object)
         bpy.context.view_layer.update()

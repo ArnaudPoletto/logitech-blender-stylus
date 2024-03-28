@@ -9,8 +9,6 @@ from blender_objects.wall_decorator import WallDecorator
 from blender_objects.window_decorator import WindowDecorator
 
 # TODO: Add material to the window decorators / windows
-# TODO: refactor decorators to be separate classes
-
 
 class Window(WallDecorator):
     """
