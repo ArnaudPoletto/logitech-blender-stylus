@@ -141,7 +141,8 @@
             "type": "Shades",
             "args": {
                 "name": "Shades",
-                "shade_ratio": 0.2
+                "shade_ratio": 0.2,
+                "transmission": 0.5
             },
             "parents": [
                 "right_wall_window_1",
