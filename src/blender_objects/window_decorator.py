@@ -1,9 +1,9 @@
 from mathutils import Vector
 
-from blender_objects.blender_object import BlenderObject
+from blender_objects.relative_blender_object import RelativeBlenderObject
 
 
-class WindowDecorator(BlenderObject):
+class WindowDecorator(RelativeBlenderObject):
     """
     A window decorator of a window.
     """
@@ -11,13 +11,14 @@ class WindowDecorator(BlenderObject):
     def __init__(
         self,
         name: str,
-        location: Vector,
+        relative_location: Vector,
     ) -> None:
         """
         Initialize the window decorator.
 
         Args:
             name (str): The name of the window decorator.
-            location (Vector): The location of the window decorator, generally the center of the window.
+            location (Vector): The relative location of the window decorator from the location of the window as a 2D vector.
         """
-        super(WindowDecorator, self).__init__(name=name, location=location)
+        relative_location = Vector((relative_location.x, relative_location.y, 0))
+        super(WindowDecorator, self).__init__(name=name, relative_location=relative_location)

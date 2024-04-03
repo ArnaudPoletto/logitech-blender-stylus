@@ -33,15 +33,16 @@ class Shades(WindowDecorator):
         if transmission < 0 or transmission > 1:
             raise ValueError("The transmission must be between 0 and 1.")
 
-        super().__init__(
+        relative_location = Vector((0, 0, 0))
+        super(Shades, self).__init__(
             name=name,
-            location=Vector((0, 0, 0)), # The location of the blinds is always relative to the window.
+            relative_location=relative_location, # The location of the blinds is always relative to the window.
         )
 
         self.shade_ratio = shade_ratio
         self.transmission = transmission
 
-    def apply_to_collection(
+    def apply_to_blender_object(
         self,
         collection: bpy.types.Collection,
         window_object: bpy.types.Object,
@@ -53,6 +54,8 @@ class Shades(WindowDecorator):
             collection (bpy.types.Collection): The collection to which the shades are applied.
             window_object (bpy.types.Object): The window object to which the shades are applied.
         """
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
         # Add shade to the wall
         bpy.ops.mesh.primitive_plane_add(size=1)
         shape_object = bpy.context.view_layer.objects.active

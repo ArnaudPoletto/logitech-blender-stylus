@@ -89,5 +89,6 @@ class BlenderCollection:
 
         for obj in self.objects:
             obj.apply_to_collection(self.collection)
+        bpy.context.view_layer.update()
 
         self.is_added_to_collection = True

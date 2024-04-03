@@ -2,7 +2,7 @@ import os
 import bpy
 import sys
 import json
-import math
+import random
 import importlib.util
 from tqdm import tqdm
 from typing import Tuple, List
@@ -29,15 +29,8 @@ for path, name in zip(paths, names):
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
 
-from utils.axis import Axis
 from utils.bone import Bone
 from utils import argument_parser
-from blender_objects.room import Room
-from blender_objects.wall import Wall
-from blender_objects.blinds import Blinds
-from blender_objects.shades import Shades
-from blender_objects.window import Window
-from blender_objects.muntins import Muntins
 from utils.input_file_parser import InputFileParser
 from gestures.gesture_sequence import GestureSequence
 from blender_collections.blender_collection import BlenderCollection
@@ -82,7 +75,7 @@ def get_bones() -> (
     return armature, arm, forearm, hand, hand_end
 
 
-def is_led_occluded(led, camera, stylus_outer, leds):
+def is_led_occluded(led, camera, stylus_outer, leds) -> bool:
     """
     Check if an LED is occluded by any object between the camera and the LED.
 
@@ -119,7 +112,7 @@ def is_led_occluded(led, camera, stylus_outer, leds):
     return result[0]
 
 
-def get_object_center(object):
+def get_object_center(object) -> Vector:
     """
     Get the bounding box center of an object.
 
@@ -226,7 +219,7 @@ def get_background(blender_objects: dict) -> BlenderCollection:
             objects.append(blender_object_object)
         else:
             for blender_object_parent in blender_object_parents:
-                blender_object_parent.add_decorator(blender_object_object)
+                blender_object_parent.add_relative_blender_object(blender_object_object)
 
     background_collection.add_all_objects(objects)
 
@@ -279,6 +272,12 @@ def main(args) -> None:
     input_file_path = os.path.join(INPUTS_FOLDER, args.input_file)
     input_file_parser = InputFileParser(input_file_path)
     input_data = input_file_parser.parse(armature)
+    
+    # Set random seed
+    random_seed = input_data["seed"]
+    if random_seed is not None:
+        print(f"Setting random seed to {random_seed}.")
+        random.seed(random_seed)
 
     # Apply gesture sequence
     gestures = input_data["gestures"]
