@@ -1,133 +1,105 @@
 import bpy
 import math
-from mathutils import Vector
+from mathutils import Vector, Euler
 
 from blender_objects.blender_object import BlenderObject
 from blender_objects.wall import Wall
+
 
 class Room(BlenderObject):
     """
     A room in a scene.
     """
 
-    def _define_walls(self, width: float, height: float, depth: float) -> None:
+    def _define_walls(self, scale: Vector) -> None:
         """
-        Define the walls of the room.
+        Define the room.
 
         Args:
-            width (float): The width of the room.
-            height (float): The length of the room.
-            depth (float): The height of the room.
+            scale (Vector): The scale of the room as a 3D vector.
         """
-        # Right wall
-        right_wall_location = self.location + Vector((0, -width / 2, 0))
-        wall = Wall(
-            name=f"{self.name}RightWall",
-            location=right_wall_location,
-            rotation=Vector((math.pi / 2, 0, 0)),
-            scale=Vector((depth, height)),
-            centered=True,
-        )
-        self.right_wall = wall
+        attributes = [
+            "right_wall",
+            "left_wall",
+            "front_wall",
+            "back_wall",
+            "ceiling",
+            "floor",
+        ]
+        names = ["RightWall", "LeftWall", "FrontWall", "BackWall", "Ceiling", "Floor"]
+        locations = [
+            Vector((0, -scale.x / 2, 0)),
+            Vector((0, scale.x / 2, 0)),
+            Vector((scale.y / 2, 0, 0)),
+            Vector((-scale.y / 2, 0, 0)),
+            Vector((0, 0, scale.z / 2)),
+            Vector((0, 0, -scale.z / 2)),
+        ]
+        rotations = [
+            Euler((math.pi / 2, 0, 0)),
+            Euler((math.pi / 2, 0, 0)),
+            Euler((math.pi / 2, 0, math.pi / 2)),
+            Euler((math.pi / 2, 0, math.pi / 2)),
+            Euler((0, 0, 0)),
+            Euler((0, 0, 0)),
+        ]
+        scales = [
+            Vector((scale.y, scale.z)),
+            Vector((scale.y, scale.z)),
+            Vector((scale.x, scale.z)),
+            Vector((scale.x, scale.z)),
+            Vector((scale.y, scale.x)),
+            Vector((scale.y, scale.x)),
+        ]
 
-        # Left wall
-        left_wall_location = self.location + Vector((0, width / 2, 0))
-        wall = Wall(
-            name=f"{self.name}LeftWall",
-            location=left_wall_location,
-            rotation=Vector((math.pi / 2, 0, 0)),
-            scale=Vector((depth, height)),
-            centered=True,
-        )
-        self.left_wall = wall
+        for attribute, name, location, rotation, scale in zip(
+            attributes, names, locations, rotations, scales
+        ):
+            wall = Wall(
+                name=f"{self.name}{name}",
+                location=location,
+                rotation=rotation,
+                scale=scale,
+            )
+            setattr(self, attribute, wall)
+            self.add_relative_blender_object(getattr(self, attribute))
 
-        # Front wall
-        front_wall_location = self.location + Vector((depth / 2, 0, 0))
-        wall = Wall(
-            name=f"{self.name}FrontWall",
-            location=front_wall_location,
-            rotation=Vector((math.pi / 2, 0, math.pi / 2)),
-            scale=Vector((width, height)),
-            centered=True,
-        )
-        self.front_wall = wall
-
-        # Back wall
-        back_wall_location = self.location + Vector((-depth / 2, 0, 0))
-        wall = Wall(
-            name=f"{self.name}BackWall",
-            location=back_wall_location,
-            rotation=Vector((math.pi / 2, 0, math.pi / 2)),
-            scale=Vector((width, height)),
-            centered=True,
-        )
-        self.back_wall = wall
-
-        # Ceiling
-        ceiling_location = self.location + Vector((0, 0, height / 2))
-        wall = Wall(
-            name=f"{self.name}Ceiling",
-            location=ceiling_location,
-            rotation=Vector((0, 0, 0)),
-            scale=Vector((depth, width)),
-            centered=True,
-        )
-        self.ceiling = wall
-
-        # Floor
-        floor_location = self.location + Vector((0, 0, -height / 2))
-        wall = Wall(
-            name=f"{self.name}Floor",
-            location=floor_location,
-            rotation=Vector((0, 0, 0)),
-            scale=Vector((depth, width)),
-            centered=True,
-        )
-        self.floor = wall
-    
     def __init__(
-            self,
-            name: str,
-            location: Vector,
-            width: float,
-            height: float,
-            depth: float,
-            ):
+        self,
+        name: str,
+        location: Vector,
+        scale: Vector,
+    ):
         """
         Initialize the room.
 
         Args:
             name (str): The name of the room.
-            location (Vector): The location of the room as a 3D vector.
-            width (float): The width of the room.
-            height (float): The height of the room.
-            depth (float): The depth of the room.
-
-        Raises:
-            ValueError: If the width is not a positive number.
-            ValueError: If the height is not a positive number.
-            ValueError: If the depth is not a positive number.
+            location (Vector): The location of the room in the world as a 3D vector.
+            scale (Vector): The scale of the room as a 3D vector.
         """
-        if width <= 0:
-            raise ValueError("The width must be a positive number.")
-        
-        if height <= 0:
-            raise ValueError("The height must be a positive number.")
-        
-        if depth <= 0:
-            raise ValueError("The depth must be a positive number.")
-
-        super().__init__(
+        super(Room, self).__init__(
             name=name,
             location=location,
+            scale=scale,
         )
 
-        self._define_walls(width, height, depth)
-
+        self._define_walls(scale)
+        
     def apply_to_collection(self, collection: bpy.types.Collection) -> None:
-        self.right_wall.apply_to_collection(collection)
-        self.left_wall.apply_to_collection(collection)
-        self.front_wall.apply_to_collection(collection)
-        self.back_wall.apply_to_collection(collection)
-        self.ceiling.apply_to_collection(collection)
-        self.floor.apply_to_collection(collection)
+        """
+        Apply the Blender object to the collection.
+
+        Args:
+            collection (bpy.types.Collection): The collection to add the Blender object to.
+        """
+        # Walls are not relative blender objects as they are the main tangible objects in the room.
+        for wall in [
+            self.right_wall,
+            self.left_wall,
+            self.front_wall,
+            self.back_wall,
+            self.ceiling,
+            self.floor,
+        ]:
+            wall.apply_to_collection(collection)

@@ -40,9 +40,10 @@ class Muntins(WindowDecorator):
         if n_muntins_height < 1:
             raise ValueError("The number of muntins in the height must be greater than 0.")
         
-        super().__init__(
+        relative_location = Vector((0, 0, 0))
+        super(Muntins, self).__init__(
             name=name,
-            location=Vector((0, 0, 0)), # The location of the blinds is always relative to the window.
+            relative_location=relative_location, # The location of the blinds is always relative to the window.
         )
 
         self.size = size
@@ -100,7 +101,7 @@ class Muntins(WindowDecorator):
             collection.objects.link(muntin_object)
             bpy.context.view_layer.update()
 
-    def apply_to_collection(
+    def apply_to_blender_object(
         self,
         collection: bpy.types.Collection,
         window_object: bpy.types.Object,
@@ -112,5 +113,8 @@ class Muntins(WindowDecorator):
             collection (bpy.types.Collection): The collection to which the muntins are applied.
             window_object (bpy.types.Object): The window object to which the muntins are applied.
         """
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
         self._apply_muntins(collection, window_object, Axis.X_AXIS, self.n_muntins_width)
         self._apply_muntins(collection, window_object, Axis.Y_AXIS, self.n_muntins_height)
+        bpy.context.view_layer.update()

@@ -36,16 +36,17 @@ class Blinds(WindowDecorator):
         if angle < 0 or angle > math.pi:
             raise ValueError("The angle of the blinds must be between 0 and pi.")
 
-        super().__init__(
+        relative_location = Vector((0, 0, 0))
+        super(Blinds, self).__init__(
             name=name,
-            location=Vector((0, 0, 0)), # The location of the blinds is always relative to the window.
+            relative_location=relative_location, # The location of the blinds is always relative to the window.
         )
 
         self.n_blinds = n_blinds
         self.angle = angle
         self.vertical = vertical
 
-    def apply_to_collection(
+    def apply_to_blender_object(
         self,
         collection: bpy.types.Collection,
         window_object: bpy.types.Object,
@@ -57,6 +58,8 @@ class Blinds(WindowDecorator):
             collection (bpy.types.Collection): The collection to which the blinds are applied.
             window_object (bpy.types.Object): The window object to which the blinds are applied.
         """
+        bpy.ops.object.mode_set(mode='OBJECT')
+        
         # Add blinds to the wall
         axis = Axis.X_AXIS if self.vertical else Axis.Y_AXIS
         for i in range(self.n_blinds):

@@ -4,21 +4,21 @@ from mathutils import Vector, Euler
 
 from utils.axis import Axis
 from utils.bone import Bone
+from blender_objects.sun import Sun
 from blender_objects.wall import Wall
 from blender_objects.room import Room
+from blender_objects.table import Table
 from blender_objects.blinds import Blinds
 from blender_objects.shades import Shades
 from blender_objects.window import Window
 from blender_objects.muntins import Muntins
+from blender_objects.wall_lamp import WallLamp
 from gestures.rotation_gesture import RotationGesture
 from blender_objects.christmas_tree import ChristmasTree
 from gestures.translation_gesture import TranslationGesture
 from gestures.rotation_sine_gesture import RotationSineGesture
 from gestures.rotation_wave_gesture import RotationWaveGesture
 from gestures.translation_sine_gesture import TranslationSineGesture
-
-# TODO: refactor code repetition
-# TODO: add fail cases for missing keys
 
 
 class InputFileParser:
@@ -93,11 +93,11 @@ class InputFileParser:
         for gesture in gestures:
             if "type" not in gesture:
                 raise ValueError("No gesture type found in the input file.")
-            
+
             if "args" not in gesture:
                 raise ValueError("No gesture args found in the input file.")
-            
-            if gesture['type'] not in globals():
+
+            if gesture["type"] not in globals():
                 raise ValueError(f"Gesture type {gesture['type']} not found.")
 
             gesture_type = globals()[gesture["type"]]
@@ -108,7 +108,7 @@ class InputFileParser:
         for _, gesture_args in gestures:
             if "axis" in gesture_args:
                 axis_name = gesture_args["axis"]
-                if axis_name not in Axis.__members__:
+                if not Axis.is_valid_axis_string(axis_name):
                     raise ValueError(f"Axis {axis_name} not found.")
 
                 gesture_args["axis"] = Axis(axis_name)
@@ -132,7 +132,7 @@ class InputFileParser:
                 gesture_args["bone"] = bone
 
         return gestures
-
+    
     def _parse_blender_objects(self, input_data: dict) -> dict:
         """
         Parse the blender objects data from the input file.
@@ -157,29 +157,28 @@ class InputFileParser:
         for blender_object_name, blender_object in blender_objects.items():
             if "type" not in blender_object:
                 raise ValueError("No type found in the blender object.")
-            
+
             if "args" not in blender_object:
                 raise ValueError("No args found in the blender object.")
-            
+
             if blender_object["type"] not in globals():
-                raise ValueError(f"Blender object type {blender_object['type']} not found.")
-            
+                raise ValueError(
+                    f"Blender object type {blender_object['type']} not found."
+                )
+
             # Get object information
             blender_object_type = globals()[blender_object["type"]]
             blender_object_args = blender_object["args"]
-
-            if "location" in blender_object_args:
-                blender_object_args["location"] = (
-                    InputFileParser._parse_dimension_argument(
-                        blender_object_args, "location", Vector
+            
+            mathutils_names = ["location", "relative_location", "scale", "rotation"]
+            mathutils_types = [Vector, Vector, Vector, Euler]
+            for mathutils_name, mathutils_type in zip(mathutils_names, mathutils_types):
+                if mathutils_name in blender_object_args:
+                    blender_object_args[mathutils_name] = (
+                        InputFileParser._parse_dimension_argument(
+                            blender_object_args, mathutils_name, mathutils_type
+                        )
                     )
-                )
-            if "scale" in blender_object_args:
-                blender_object_args["scale"] = (
-                    InputFileParser._parse_dimension_argument(
-                        blender_object_args, "scale", Vector
-                    )
-                )
 
             # Get parents information
             blender_object_parents = None
@@ -242,6 +241,7 @@ class InputFileParser:
             blender_objects_data = self._parse_blender_objects(input_data)
 
         return {
+            "seed": input_data.get("seed", None),
             "gestures": gestures_data,
             "blender_objects": blender_objects_data,
         }

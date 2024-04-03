@@ -22,3 +22,16 @@ class Axis(Enum):
             Axis.Y_AXIS: 1,
             Axis.Z_AXIS: 2,
         }[self]
+        
+    @staticmethod
+    def is_valid_axis_string(axis_str):
+        """
+        Check if the axis string is a valid axis.
+        
+        Args:
+            axis_str (str): The axis string to check.
+            
+        Returns:
+            bool: True if the axis string is a valid axis, False otherwise.
+        """
+        return any(axis_str == member.value for member in Axis)

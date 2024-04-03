@@ -1,10 +1,9 @@
 import bpy
-from typing import List
-from mathutils import Vector
+from mathutils import Vector, Euler
 
-from blender_objects.window import Window
 from blender_objects.blender_object import BlenderObject
-from blender_objects.wall_decorator import WallDecorator
+from blender_objects.relative_blender_object import RelativeBlenderObject
+
 
 class Wall(BlenderObject):
     """
@@ -15,137 +14,154 @@ class Wall(BlenderObject):
         self,
         name: str,
         location: Vector,
-        rotation: Vector,
+        rotation: Euler,
         scale: Vector,
-        centered: bool,
     ) -> None:
         """
         Initialize the wall.
 
         Args:
-            name (str): The fixed origin point of the wall, either one of the corners or the center depending on the centered flag.
-            location (Vector): The location of the wall as a 3D vector.
-            rotation (Vector): The rotation of the wall as a 3D vector.
+            name (str): The name of the wall.
+            location (Vector): The location of the wall in the world as a 3D vector.
+            rotation (Euler): The rotation of the wall in the world as a 3D vector.
             scale (Vector): The scale of the wall as a 2D vector.
-            centered (bool): Whether the rectangle is centered at the origin.
 
         Raises:
-            ValueError: If the location is not a 3D vector.
-            ValueError: If the rotation is not a 3D vector.
             ValueError: If the scale is not a 2D vector.
         """
-        if len(location) != 3:
-            raise ValueError("The location must be a 3D vector.")
-
-        if len(rotation) != 3:
-            raise ValueError("The rotation must be a 3D vector.")
-
         if len(scale) != 2:
             raise ValueError("The scale must be a 2D vector.")
 
-        # Change location to the center of the wall if centered
-        if not centered:
-            location -= Vector((scale.x / 2, scale.y / 2, 0))
-
-        super().__init__(
+        scale = Vector((scale.x, scale.y, 1))
+        super(Wall, self).__init__(
             name=name,
             location=location,
+            rotation=rotation,
+            scale=scale,
         )
 
-        self.rotation = rotation
-        self.scale = Vector((scale.x, scale.y, 1))
-
-        self.windows: List[Window] = []
-
-    def _window_is_in_bounds(self, window) -> bool:
+    def _relative_blender_object_is_in_bounds(
+        self, relative_blender_object: RelativeBlenderObject
+    ) -> bool:
         """
-        Check if the window is in bounds of the wall.
+        Check if the relative Blender object is in bounds of the wall.
 
         Args:
-            wall (bpy.types.Object): The wall to add the window to.
+            relative_blender_object (RelativeBlenderObject): The relative Blender object to add to the wall.
 
         Returns:
-            bool: Whether the window is in bounds of the wall.
+            bool: Whether the relative Blender object is in bounds of the wall.
         """
-        window_min_x = window.location.x - window.scale.x / 2
-        window_max_x = window.location.x + window.scale.x / 2
-        window_min_y = window.location.y - window.scale.y / 2
-        window_max_y = window.location.y + window.scale.y / 2
+        relative_blender_object_min_x = (
+            relative_blender_object.relative_location.x
+            - relative_blender_object.scale.x / 2
+        )
+        relative_blender_object_max_x = (
+            relative_blender_object.relative_location.x
+            + relative_blender_object.scale.x / 2
+        )
+        relative_blender_object_min_y = (
+            relative_blender_object.relative_location.y
+            - relative_blender_object.scale.y / 2
+        )
+        relative_blender_object_max_y = (
+            relative_blender_object.relative_location.y
+            + relative_blender_object.scale.y / 2
+        )
         wall_min_x = -self.scale.x / 2
         wall_max_x = self.scale.x / 2
         wall_min_y = -self.scale.y / 2
         wall_max_y = self.scale.y / 2
 
         return (
-            window_min_x >= wall_min_x
-            and window_max_x <= wall_max_x
-            and window_min_y >= wall_min_y
-            and window_max_y <= wall_max_y
+            relative_blender_object_min_x >= wall_min_x
+            and relative_blender_object_max_x <= wall_max_x
+            and relative_blender_object_min_y >= wall_min_y
+            and relative_blender_object_max_y <= wall_max_y
         )
-    
-    def _window_do_not_overlap(self, window) -> bool:
+
+    def _relative_blender_object_does_not_overlap(
+        self, relative_blender_object: RelativeBlenderObject
+    ) -> bool:
         """
-        Check if the window does not overlap with existing windows.
+        Check if the relative Blender object does not overlap with existing decorators.
 
         Args:
-            wall (bpy.types.Object): The wall to add the window to.
+            relative_blender_object (RelativeBlenderObject): The relative Blender object to add to the wall.
 
         Returns:
-            bool: Whether the window does not overlap with existing windows.
+            bool: Whether the decorator does not overlap with existing decorators.
         """
-        window_min_x = window.location.x - window.scale.x / 2
-        window_max_x = window.location.x + window.scale.x / 2
-        window_min_y = window.location.y - window.scale.y / 2
-        window_max_y = window.location.y + window.scale.y / 2
-        for other in self.windows:
-            other_min_x = other.location.x - other.scale.x / 2
-            other_max_x = other.location.x + other.scale.x / 2
-            other_min_y = other.location.y - other.scale.y / 2
-            other_max_y = other.location.y + other.scale.y / 2
+        relative_blender_object_min_x = (
+            relative_blender_object.relative_location.x
+            - relative_blender_object.scale.x / 2
+        )
+        relative_blender_object_max_x = (
+            relative_blender_object.relative_location.x
+            + relative_blender_object.scale.x / 2
+        )
+        relative_blender_object_min_y = (
+            relative_blender_object.relative_location.y
+            - relative_blender_object.scale.y / 2
+        )
+        relative_blender_object_max_y = (
+            relative_blender_object.relative_location.y
+            + relative_blender_object.scale.y / 2
+        )
+        for other in self.relative_blender_objects:
+            other_min_x = other.relative_location.x - other.scale.x / 2
+            other_max_x = other.relative_location.x + other.scale.x / 2
+            other_min_y = other.relative_location.y - other.scale.y / 2
+            other_max_y = other.relative_location.y + other.scale.y / 2
 
             if (
-                window_min_x <= other_max_x
-                and window_max_x >= other_min_x
-                and window_min_y <= other_max_y
-                and window_max_y >= other_min_y
+                relative_blender_object_min_x <= other_max_x
+                and relative_blender_object_max_x >= other_min_x
+                and relative_blender_object_min_y <= other_max_y
+                and relative_blender_object_max_y >= other_min_y
             ):
                 return False
-            
-        return True
 
-    def add_decorator(self, decorator: WallDecorator) -> None:
+        return True
+    
+    def add_relative_blender_object(
+        self, relative_blender_object: RelativeBlenderObject
+    ) -> None:
         """
-        Add a window to the wall.
+        Add a relative Blender object to the Blender Object.
 
         Args:
-            decorator (WallDecorator): The decorator to add to the wall.
-
-        Raises:
-            ValueError: If the decorator is a window and the window is not in bounds of the wall.
-            ValueError: If the decorator is a window and the window overlaps with existing windows.
+            relative_blender_object (RelativeBlenderObject): The relative Blender object to add to the Blender Object.
         """
-        if isinstance(decorator, Window):
-            if not self._window_is_in_bounds(decorator):
-                raise ValueError("The window is not in bounds of the wall.")
-            if not self._window_do_not_overlap(decorator):
-                raise ValueError("The window overlaps with existing windows.")
-        
-            self.windows.append(decorator)
+        if not self._relative_blender_object_is_in_bounds(relative_blender_object):
+            raise ValueError(
+                f"Relative Blender object {relative_blender_object.name} is not in bounds of the wall."
+            )
 
-    def apply_to_collection(self, collection: bpy.types.Collection) -> None:
+        if not self._relative_blender_object_does_not_overlap(relative_blender_object):
+            raise ValueError(
+                f"Relative Blender object {relative_blender_object.name} overlaps with existing decorators."
+            )
+
+        super(Wall, self).add_relative_blender_object(relative_blender_object)
+
+    def apply_to_collection(
+        self, 
+        collection: bpy.types.Collection,
+    ) -> None:
+        bpy.ops.object.mode_set(mode="OBJECT")
+
         # Add wall
         bpy.ops.mesh.primitive_plane_add(size=1)
         wall_object = bpy.context.view_layer.objects.active
         wall_object.name = self.name
         wall_object.rotation_euler = self.rotation
         wall_object.location = self.location
-        bpy.context.view_layer.update()  # Update to commit location and rotation changes
-        wall_object_matrix_world = (
-            wall_object.matrix_world.copy()
-        )  # Store the matrix_world of the wall object before scaling
-        wall_object.dimensions = self.scale
-        bpy.context.view_layer.update()  # Update to commit scaling changes
-
-        # Add windows
-        for window in self.windows:
-            window.apply_to_collection(collection, wall_object, wall_object_matrix_world)
+        bpy.context.view_layer.update()
+        
+        for relative_blender_object in self.relative_blender_objects:
+            relative_blender_object.apply_to_collection(collection, wall_object)
+            
+        wall_object.scale = self.scale
+        collection.objects.link(wall_object)
+        bpy.context.view_layer.update()
