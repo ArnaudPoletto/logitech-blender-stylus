@@ -69,6 +69,15 @@ class Wall(BlenderObject):
         wall_max_x = self.scale.x / 2
         wall_min_y = -self.scale.y / 2
         wall_max_y = self.scale.y / 2
+        
+        print(f"relative_blender_object_min_x: {relative_blender_object_min_x}")
+        print(f"relative_blender_object_max_x: {relative_blender_object_max_x}")
+        print(f"relative_blender_object_min_y: {relative_blender_object_min_y}")
+        print(f"relative_blender_object_max_y: {relative_blender_object_max_y}")
+        print(f"wall_min_x: {wall_min_x}")
+        print(f"wall_max_x: {wall_max_x}")
+        print(f"wall_min_y: {wall_min_y}")
+        print(f"wall_max_y: {wall_max_y}")
 
         return (
             relative_blender_object_min_x >= wall_min_x
@@ -77,17 +86,17 @@ class Wall(BlenderObject):
             and relative_blender_object_max_y <= wall_max_y
         )
 
-    def _relative_blender_object_does_not_overlap(
+    def _relative_blender_object_does_not_intersect(
         self, relative_blender_object: RelativeBlenderObject
     ) -> bool:
         """
-        Check if the relative Blender object does not overlap with existing decorators.
+        Check if the relative Blender object does not interset existing decorators.
 
         Args:
             relative_blender_object (RelativeBlenderObject): The relative Blender object to add to the wall.
 
         Returns:
-            bool: Whether the decorator does not overlap with existing decorators.
+            bool: Whether the decorator does not intersect existing decorators.
         """
         (min_x, max_x), (min_y, max_y), _ = relative_blender_object.get_bounds()
         relative_blender_object_min_x = (
@@ -103,7 +112,9 @@ class Wall(BlenderObject):
             relative_blender_object.relative_location.y + max_y
         )
         for other in self.relative_blender_objects:
-            (other_min_x, other_max_x), (other_min_y, other_max_y), _ = other.get_bounds()
+            (other_min_x, other_max_x), (other_min_y, other_max_y), _ = (
+                other.get_bounds()
+            )
             other_min_x = other.relative_location.x + other_min_x
             other_max_x = other.relative_location.x + other_max_x
             other_min_y = other.relative_location.y + other_min_y
@@ -133,9 +144,11 @@ class Wall(BlenderObject):
                 f"Relative Blender object {relative_blender_object.name} is not in bounds of the wall."
             )
 
-        if not self._relative_blender_object_does_not_overlap(relative_blender_object):
+        if not self._relative_blender_object_does_not_intersect(
+            relative_blender_object
+        ):
             raise ValueError(
-                f"Relative Blender object {relative_blender_object.name} overlaps with existing decorators."
+                f"Relative Blender object {relative_blender_object.name} intersects with existing decorators."
             )
 
         super(Wall, self).add_relative_blender_object(relative_blender_object)
