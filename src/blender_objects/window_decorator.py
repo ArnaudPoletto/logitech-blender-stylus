@@ -11,7 +11,6 @@ class WindowDecorator(RelativeBlenderObject):
     def __init__(
         self,
         name: str,
-        relative_location: Vector,
     ) -> None:
         """
         Initialize the window decorator.
@@ -20,5 +19,5 @@ class WindowDecorator(RelativeBlenderObject):
             name (str): The name of the window decorator.
             location (Vector): The relative location of the window decorator from the location of the window as a 2D vector.
         """
-        relative_location = Vector((relative_location.x, relative_location.y, 0))
+        relative_location = Vector((0, 0, 0)) # The location of window decorators is always relative to the window.
         super(WindowDecorator, self).__init__(name=name, relative_location=relative_location)

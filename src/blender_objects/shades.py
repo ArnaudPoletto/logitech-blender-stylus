@@ -33,47 +33,37 @@ class Shades(WindowDecorator):
         if transmission < 0 or transmission > 1:
             raise ValueError("The transmission must be between 0 and 1.")
 
-        relative_location = Vector((0, 0, 0))
-        super(Shades, self).__init__(
-            name=name,
-            relative_location=relative_location, # The location of the blinds is always relative to the window.
-        )
+        super(Shades, self).__init__(name=name)
 
         self.shade_ratio = shade_ratio
         self.transmission = transmission
 
-    def apply_to_blender_object(
+    def apply_to_collection(
         self,
         collection: bpy.types.Collection,
-        window_object: bpy.types.Object,
+        blender_object: bpy.types.Object,
     ) -> None:
-        """
-        Apply the shades to the window.
-        
-        Args:
-            collection (bpy.types.Collection): The collection to which the shades are applied.
-            window_object (bpy.types.Object): The window object to which the shades are applied.
-        """
         bpy.ops.object.mode_set(mode='OBJECT')
         
         # Add shade to the wall
         bpy.ops.mesh.primitive_plane_add(size=1)
         shape_object = bpy.context.view_layer.objects.active
-        shape_object.name = f"{window_object.name}{self.name}"
-        shape_object.rotation_euler = window_object.rotation_euler
+        shape_object.name = f"{blender_object.name}{self.name}"
+        shape_object.rotation_euler = blender_object.rotation_euler
         location_offset = 0.5 - self.shade_ratio / 2
-        shape_object.location = window_object.matrix_world @ Vector(
+        shape_object.location = blender_object.matrix_world @ Vector(
             (0, location_offset, 0)
         )
-        shape_object.scale = Vector((window_object.scale.x, window_object.scale.y * self.shade_ratio, 1))
+        shape_object.scale = Vector((blender_object.scale.x, blender_object.scale.y * self.shade_ratio, 1))
         
         # Change material of shade to make it transparent
-        if "Shade" not in bpy.data.materials:
-            bpy.data.materials.new(name="Shade")
-            material = bpy.data.materials["Shade"]
+        material_name = f"Shade{self.transmission}"
+        if material_name not in bpy.data.materials:
+            bpy.data.materials.new(name=material_name)
+            material = bpy.data.materials[material_name]
             material.use_nodes = True
             material.node_tree.nodes["Principled BSDF"].inputs["Transmission Weight"].default_value = self.transmission
-        shape_object.data.materials.append(bpy.data.materials["Shade"])
+        shape_object.data.materials.append(bpy.data.materials[material_name])
         
             
         # Add shade to collection

@@ -33,7 +33,7 @@
             "type": "Window",
             "args": {
                 "name": "Window1",
-                "location": {
+                "relative_location": {
                     "x": 0,
                     "y": 0
                 },
@@ -50,7 +50,7 @@
             "type": "Window",
             "args": {
                 "name": "Window2",
-                "location": {
+                "relative_location": {
                     "x": 6,
                     "y": 1
                 },
@@ -67,7 +67,7 @@
             "type": "Window",
             "args": {
                 "name": "Window3",
-                "location": {
+                "relative_location": {
                     "x": -6,
                     "y": 1
                 },
@@ -84,7 +84,7 @@
             "type": "Window",
             "args": {
                 "name": "Window1",
-                "location": {
+                "relative_location": {
                     "x": -31,
                     "y": 1
                 },
@@ -101,7 +101,7 @@
             "type": "Window",
             "args": {
                 "name": "Window1",
-                "location": {
+                "relative_location": {
                     "x": -31,
                     "y": 1
                 },
@@ -168,10 +168,9 @@
             "type": "ChristmasTree",
             "args": {
                 "name": "ChristmasTree",
-                "location": {
-                    "x": -30,
-                    "y": 15,
-                    "z": -12.5
+                "relative_location": {
+                    "x": -32,
+                    "y": 15
                 },
                 "height": 20,
                 "radius": 3,
@@ -179,104 +178,31 @@
                 "radius_range": [0.025, 0.05],
                 "emission_range": [10.0, 20.0],
                 "flicker_probability": 0.05
-            }
+            },
+            "parents": [
+                "room.floor"
+            ]
         },
         "table_1": {
             "type": "Table",
             "args": {
                 "name": "Table1",
-                "location": {
-                    "x": -30,
-                    "y": -10,
-                    "z": -12.5
+                "relative_location": {
+                    "x": -32,
+                    "y": -5
                 },
-                "width": 5,
-                "height": 7,
-                "depth": 10,
+                "scale": {
+                    "x": 5,
+                    "y": 10,
+                    "z": 7
+                },
                 "top_thickness": 0.5,
                 "leg_thickness": 0.5
-            }
+            },
+            "parents": [
+                "room.floor"
+            ]
         }
     },
-    "gestures": [
-        {
-            "type": "RotationWaveGesture",
-            "args": {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": 60,
-                "axis": "X",
-                "wave_frequency": 1.0,
-                "wave_amplitude": 0.7,
-                "arm_phase_shift": 0,
-                "forearm_phase_shift": 0,
-                "forearm_amplitude_factor": 0.5,
-                "hand_phase_shift": 0,
-                "hand_amplitude_factor": 0.5
-            }
-        },
-        {
-            "type": "RotationWaveGesture",
-            "args": {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": 60,
-                "axis": "X",
-                "wave_frequency": 3.5,
-                "wave_amplitude": 0.3,
-                "arm_phase_shift": 0.5,
-                "forearm_phase_shift": 0.1,
-                "forearm_amplitude_factor": 0.5,
-                "hand_phase_shift": 0.1,
-                "hand_amplitude_factor": 1.0
-            }
-        },
-        {
-            "type": "RotationWaveGesture",
-            "args": {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": 60,
-                "axis": "Y",
-                "wave_frequency": 2.2,
-                "wave_amplitude": 0.4,
-                "arm_phase_shift": 0,
-                "forearm_phase_shift": 0,
-                "forearm_amplitude_factor": 1.0,
-                "hand_phase_shift": 0,
-                "hand_amplitude_factor": 1.0
-            }
-        },{
-            "type": "RotationWaveGesture",
-            "args": {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": 60,
-                "axis": "Y",
-                "wave_frequency": 4.5,
-                "wave_amplitude": 0.15,
-                "arm_phase_shift": 3.14,
-                "forearm_phase_shift": 0,
-                "forearm_amplitude_factor": 0.5,
-                "hand_phase_shift": 1.7,
-                "hand_amplitude_factor": 0.5
-            }
-        },    
-        {
-            "type": "RotationWaveGesture",
-            "args": {
-                "start_frame": 1,
-                "end_frame": 120,
-                "frame_rate": 60,
-                "axis": "Z",
-                "wave_frequency": 3.2,
-                "wave_amplitude": 0.05,
-                "arm_phase_shift": 0,
-                "forearm_phase_shift": 0,
-                "forearm_amplitude_factor": 0.5,
-                "hand_phase_shift": 0,
-                "hand_amplitude_factor": 0.5
-            }
-        }
-    ]
+    "gestures": []
 }

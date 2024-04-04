@@ -52,21 +52,18 @@ class Wall(BlenderObject):
         Returns:
             bool: Whether the relative Blender object is in bounds of the wall.
         """
+        (min_x, max_x), (min_y, max_y), _ = relative_blender_object.get_bounds()
         relative_blender_object_min_x = (
-            relative_blender_object.relative_location.x
-            - relative_blender_object.scale.x / 2
+            relative_blender_object.relative_location.x + min_x
         )
         relative_blender_object_max_x = (
-            relative_blender_object.relative_location.x
-            + relative_blender_object.scale.x / 2
+            relative_blender_object.relative_location.x + max_x
         )
         relative_blender_object_min_y = (
-            relative_blender_object.relative_location.y
-            - relative_blender_object.scale.y / 2
+            relative_blender_object.relative_location.y + min_y
         )
         relative_blender_object_max_y = (
-            relative_blender_object.relative_location.y
-            + relative_blender_object.scale.y / 2
+            relative_blender_object.relative_location.y + max_y
         )
         wall_min_x = -self.scale.x / 2
         wall_max_x = self.scale.x / 2
@@ -92,27 +89,25 @@ class Wall(BlenderObject):
         Returns:
             bool: Whether the decorator does not overlap with existing decorators.
         """
+        (min_x, max_x), (min_y, max_y), _ = relative_blender_object.get_bounds()
         relative_blender_object_min_x = (
-            relative_blender_object.relative_location.x
-            - relative_blender_object.scale.x / 2
+            relative_blender_object.relative_location.x + min_x
         )
         relative_blender_object_max_x = (
-            relative_blender_object.relative_location.x
-            + relative_blender_object.scale.x / 2
+            relative_blender_object.relative_location.x + max_x
         )
         relative_blender_object_min_y = (
-            relative_blender_object.relative_location.y
-            - relative_blender_object.scale.y / 2
+            relative_blender_object.relative_location.y + min_y
         )
         relative_blender_object_max_y = (
-            relative_blender_object.relative_location.y
-            + relative_blender_object.scale.y / 2
+            relative_blender_object.relative_location.y + max_y
         )
         for other in self.relative_blender_objects:
-            other_min_x = other.relative_location.x - other.scale.x / 2
-            other_max_x = other.relative_location.x + other.scale.x / 2
-            other_min_y = other.relative_location.y - other.scale.y / 2
-            other_max_y = other.relative_location.y + other.scale.y / 2
+            (other_min_x, other_max_x), (other_min_y, other_max_y), _ = other.get_bounds()
+            other_min_x = other.relative_location.x + other_min_x
+            other_max_x = other.relative_location.x + other_max_x
+            other_min_y = other.relative_location.y + other_min_y
+            other_max_y = other.relative_location.y + other_max_y
 
             if (
                 relative_blender_object_min_x <= other_max_x
@@ -123,7 +118,7 @@ class Wall(BlenderObject):
                 return False
 
         return True
-    
+
     def add_relative_blender_object(
         self, relative_blender_object: RelativeBlenderObject
     ) -> None:
@@ -146,7 +141,7 @@ class Wall(BlenderObject):
         super(Wall, self).add_relative_blender_object(relative_blender_object)
 
     def apply_to_collection(
-        self, 
+        self,
         collection: bpy.types.Collection,
     ) -> None:
         bpy.ops.object.mode_set(mode="OBJECT")
@@ -157,11 +152,13 @@ class Wall(BlenderObject):
         wall_object.name = self.name
         wall_object.rotation_euler = self.rotation
         wall_object.location = self.location
+        wall_object.scale = self.scale
         bpy.context.view_layer.update()
-        
+
+        # Add relative Blender objects
         for relative_blender_object in self.relative_blender_objects:
             relative_blender_object.apply_to_collection(collection, wall_object)
-            
-        wall_object.scale = self.scale
+
+        # Link wall to collection
         collection.objects.link(wall_object)
         bpy.context.view_layer.update()
