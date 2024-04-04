@@ -1,15 +1,18 @@
-[
-    {
-        "type": "TranslationGesture",
-        "args": {
-            "start_frame": 1,
-            "end_frame": 60,
-            "vector": {
-                "x": 2,
-                "y": 2,
-                "z": 2
-            },
-            "relative": true
+{
+    "blender_objects": {},
+    "gestures": [
+        {
+            "type": "TranslationGesture",
+            "args": {
+                "start_frame": 1,
+                "end_frame": 60,
+                "vector": {
+                    "x": 2,
+                    "y": 2,
+                    "z": 2
+                },
+                "relative": true
+            }
         }
-    }
-]
+    ]
+}

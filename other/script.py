@@ -13,7 +13,7 @@ RENDER_FOLDER_PATH = os.path.join(os.getcwd(), "data", "images")
 JSON_FILE_PATH = os.path.join(os.getcwd(), "data", "data.json")
 
 
-def is_led_occluded(led, camera, stylus_outer, leds):
+def is_led_occluded(led, camera, stylus_outer, leds) -> bool:
     """
     Check if an LED is occluded by any object between the camera and the LED.
 
@@ -50,7 +50,7 @@ def is_led_occluded(led, camera, stylus_outer, leds):
     return result[0]
 
 
-def get_object_center(object):
+def get_object_center(object) -> Vector:
     """
     Get the bounding box center of an object.
 
@@ -67,7 +67,7 @@ def get_object_center(object):
     return global_bbox_center
 
 
-def render_and_get_frame_info(frame, camera, stylus_outer, leds):
+def render_and_get_frame_info(frame, camera, stylus_outer, leds) -> dict:
     """
     Render a frame and get the camera projection coordinates of LED.
 

@@ -40,11 +40,7 @@ class Muntins(WindowDecorator):
         if n_muntins_height < 1:
             raise ValueError("The number of muntins in the height must be greater than 0.")
         
-        relative_location = Vector((0, 0, 0))
-        super(Muntins, self).__init__(
-            name=name,
-            relative_location=relative_location, # The location of the blinds is always relative to the window.
-        )
+        super(Muntins, self).__init__(name=name)
 
         self.size = size
         self.n_muntins_width = n_muntins_width
@@ -53,7 +49,7 @@ class Muntins(WindowDecorator):
     def _apply_muntins(
         self,
         collection: bpy.types.Collection,
-        window_object: bpy.types.Object,
+        blender_object: bpy.types.Object,
         axis: Axis,
         n_muntins: int,
     ) -> None:
@@ -62,7 +58,7 @@ class Muntins(WindowDecorator):
 
         Args:
             collection (bpy.types.Collection): The collection to which the muntins are applied.
-            window_object (bpy.types.Object): The window object to which the muntins are applied.
+            blender_object (bpy.types.Object): The Blender object to which the muntins are applied.
             axis (Axis): The axis along which the muntins are applied.
             n_muntins (int): The number of muntins to apply.
 
@@ -70,7 +66,7 @@ class Muntins(WindowDecorator):
             ValueError: If the total width of the muntins is greater than the width of the window.
         """
         axis_name = "width" if axis == Axis.X_AXIS else "height"
-        if n_muntins * self.size > window_object.scale[axis.index()]:
+        if n_muntins * self.size > blender_object.scale[axis.index()]:
             raise ValueError(
                 f"The total {axis_name} of the muntins is greater than the {axis_name} of the window."
             )
@@ -79,20 +75,20 @@ class Muntins(WindowDecorator):
             bpy.ops.mesh.primitive_plane_add(size=1)
             muntin_object = bpy.context.view_layer.objects.active
             muntin_object.name = (
-                f"{window_object.name}{self.name}{i}{axis_name.capitalize()}"
+                f"{blender_object.name}{self.name}{i}{axis_name.capitalize()}"
             )
-            muntin_object.rotation_euler = window_object.rotation_euler
+            muntin_object.rotation_euler = blender_object.rotation_euler
             local_location = Vector((0, 0, 0))
             location_offset = (i + 1) * (
-                window_object.scale[axis.index()] - n_muntins * self.size
+                blender_object.scale[axis.index()] - n_muntins * self.size
             ) / (n_muntins + 1) + (2 * i + 1) * self.size / 2
-            location_offset /= window_object.scale[axis.index()]
+            location_offset /= blender_object.scale[axis.index()]
             location_offset -= 0.5
             local_location[axis.index()] = location_offset
-            muntin_object.location = window_object.matrix_world @ local_location
+            muntin_object.location = blender_object.matrix_world @ local_location
             muntin_object.scale = Vector((0, 0, 1))
             muntin_object.scale[axis.index()] = self.size
-            muntin_object.scale[(axis.index() + 1) % 2] = window_object.scale[
+            muntin_object.scale[(axis.index() + 1) % 2] = blender_object.scale[
                 (axis.index() + 1) % 2
             ]
             bpy.context.view_layer.update()
@@ -101,20 +97,13 @@ class Muntins(WindowDecorator):
             collection.objects.link(muntin_object)
             bpy.context.view_layer.update()
 
-    def apply_to_blender_object(
+    def apply_to_collection(
         self,
         collection: bpy.types.Collection,
-        window_object: bpy.types.Object,
+        blender_object: bpy.types.Object,
     ) -> None:
-        """
-        Apply the muntins to the window.
-        
-        Args:
-            collection (bpy.types.Collection): The collection to which the muntins are applied.
-            window_object (bpy.types.Object): The window object to which the muntins are applied.
-        """
         bpy.ops.object.mode_set(mode='OBJECT')
         
-        self._apply_muntins(collection, window_object, Axis.X_AXIS, self.n_muntins_width)
-        self._apply_muntins(collection, window_object, Axis.Y_AXIS, self.n_muntins_height)
+        self._apply_muntins(collection, blender_object, Axis.X_AXIS, self.n_muntins_width)
+        self._apply_muntins(collection, blender_object, Axis.Y_AXIS, self.n_muntins_height)
         bpy.context.view_layer.update()

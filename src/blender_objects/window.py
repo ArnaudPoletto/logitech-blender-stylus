@@ -1,7 +1,7 @@
 import bpy
-from mathutils import Vector, Matrix
+from typing import Tuple
+from mathutils import Vector
 
-from blender_objects.window_decorator import WindowDecorator
 from blender_objects.relative_blender_object import RelativeBlenderObject
 
 class Window(RelativeBlenderObject):
@@ -44,6 +44,16 @@ class Window(RelativeBlenderObject):
             relative_location=relative_location,
             scale=scale,
         )
+        
+    def get_bounds(
+        self,
+    ) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]:
+        min_x = -self.scale.x / 2
+        max_x = self.scale.x / 2
+        min_y = -self.scale.y / 2
+        max_y = self.scale.y / 2
+        
+        return (min_x, max_x), (min_y, max_y), (0, 0)
 
     def apply_to_collection(
         self,
@@ -65,8 +75,13 @@ class Window(RelativeBlenderObject):
         window_object = bpy.context.view_layer.objects.active
         window_object.name = f"{wall_object.name}{self.name}"
         window_object.rotation_euler = wall_object.rotation_euler
+        scaled_relative_location = Vector((
+            self.relative_location.x / wall_object.scale.x,
+            self.relative_location.y / wall_object.scale.y,
+            0,
+        ))
         window_object.location = (
-            wall_object.matrix_world @ self.relative_location
+            wall_object.matrix_world @ scaled_relative_location
         )  # Location relative to the wall
         window_object.scale = self.scale
         bpy.context.view_layer.update()
