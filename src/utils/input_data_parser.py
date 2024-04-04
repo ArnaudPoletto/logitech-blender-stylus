@@ -21,19 +21,19 @@ from gestures.rotation_wave_gesture import RotationWaveGesture
 from gestures.translation_sine_gesture import TranslationSineGesture
 
 
-class InputFileParser:
+class InputDataParser:
     """
-    An input file parser that reads an input JSON file and parses the data into a format that can be used by the program.
+    An input data parser that parses the input data from a JSON dictionary.
     """
 
     def __init__(
         self,
-        input_file_path: str,
+        input_data: str,
     ) -> None:
         """
-        Initialize the input file parser.
+        Initialize the input data parser.
         """
-        self.input_file_path = input_file_path
+        self.input_data = input_data
 
     @staticmethod
     def _parse_dimension_argument(args, arg_name, arg_type):
@@ -67,7 +67,7 @@ class InputFileParser:
 
     def _parse_gestures(self, input_data: dict, armature: bpy.types.Object) -> dict:
         """
-        Parse the gestures data from the input file.
+        Parse the gestures data from the input data.
 
         Args:
             input_data (dict): The input data.
@@ -77,7 +77,7 @@ class InputFileParser:
             dict: The parsed gestures data.
 
         Raises:
-            ValueError: If no gestures section are found in the input file.
+            ValueError: If no gestures section are found in the input data.
             ValueError: If the gesture type of a gesture is not specified.
             ValueError: If the gesture args of a gesture is not specified.
             ValueError: If the gesture type of a gesture is not found.
@@ -85,17 +85,17 @@ class InputFileParser:
             ValueError: If the bone of a gesture is invalid.
         """
         if "gestures" not in input_data:
-            raise ValueError("No gestures found in the input file.")
+            raise ValueError("No gestures found in the input data.")
         gestures = input_data["gestures"]
 
         # Reformat gestures
         new_gestures = []
         for gesture in gestures:
             if "type" not in gesture:
-                raise ValueError("No gesture type found in the input file.")
+                raise ValueError("No gesture type found in the input dat.")
 
             if "args" not in gesture:
-                raise ValueError("No gesture args found in the input file.")
+                raise ValueError("No gesture args found in the input data.")
 
             if gesture["type"] not in globals():
                 raise ValueError(f"Gesture type {gesture['type']} not found.")
@@ -114,12 +114,12 @@ class InputFileParser:
                 gesture_args["axis"] = Axis(axis_name)
 
             if "vector" in gesture_args:
-                gesture_args["vector"] = InputFileParser._parse_dimension_argument(
+                gesture_args["vector"] = InputDataParser._parse_dimension_argument(
                     gesture_args, "vector", Vector
                 )
 
             if "euler" in gesture_args:
-                gesture_args["euler"] = InputFileParser._parse_dimension_argument(
+                gesture_args["euler"] = InputDataParser._parse_dimension_argument(
                     gesture_args, "euler", Euler
                 )
 
@@ -135,22 +135,22 @@ class InputFileParser:
     
     def _parse_blender_objects(self, input_data: dict) -> dict:
         """
-        Parse the blender objects data from the input file.
+        Parse the blender objects data from the input data.
 
         Args:
-            input_data (dict): The input file.
+            input_data (dict): The input data.
 
         Returns:
             dict: The parsed blender objects data.
 
         Raises:
-            ValueError: If no blender_objects section is found in the input file.
+            ValueError: If no blender_objects section is found in the input daata.
             ValueError: If the blender object type is not specified.
             ValueError: If the blender object args are not specified.
             ValueError: If the blender object type is not found.
         """
         if "blender_objects" not in input_data:
-            raise ValueError("No blender_objects found in the input file.")
+            raise ValueError("No blender_objects found in the input dat.")
         blender_objects = input_data["blender_objects"]
 
         background_data = {}
@@ -175,7 +175,7 @@ class InputFileParser:
             for mathutils_name, mathutils_type in zip(mathutils_names, mathutils_types):
                 if mathutils_name in blender_object_args:
                     blender_object_args[mathutils_name] = (
-                        InputFileParser._parse_dimension_argument(
+                        InputDataParser._parse_dimension_argument(
                             blender_object_args, mathutils_name, mathutils_type
                         )
                     )
@@ -227,7 +227,7 @@ class InputFileParser:
 
     def parse(self, armature: bpy.types.Object) -> dict:
         """
-        Parse the input file.
+        Parse the input data.
 
         Args:
             armature (bpy.types.Object): The armature object.
@@ -235,13 +235,10 @@ class InputFileParser:
         Returns:
             dict: The parsed data as a dictionary of the form {"gestures": gestures_data, "blender_objects": blender_objects_data}.
         """
-        with open(self.input_file_path, "r") as input_file:
-            input_data = json.load(input_file)
-            gestures_data = self._parse_gestures(input_data, armature)
-            blender_objects_data = self._parse_blender_objects(input_data)
+        gestures_data = self._parse_gestures(self.input_data, armature)
+        blender_objects_data = self._parse_blender_objects(self.input_data)
 
         return {
-            "seed": input_data.get("seed", None),
             "gestures": gestures_data,
             "blender_objects": blender_objects_data,
         }

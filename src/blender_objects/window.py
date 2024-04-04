@@ -58,36 +58,28 @@ class Window(RelativeBlenderObject):
     def apply_to_collection(
         self,
         collection: bpy.types.Collection,
-        wall_object: bpy.types.Object,
+        blender_object: bpy.types.Object,
     ) -> None:
-        """
-        Apply the window to the wall.
-
-        Args:
-            collection (bpy.types.Collection): The collection to add the window to.
-            wall_object (bpy.types.Object): The wall object to add the window to.
-            wall_object_matrix_world (bpy.types.Matrix): The matrix_world of the wall object.
-        """
         bpy.ops.object.mode_set(mode='OBJECT')
         
         # Add cube of window shape into the wall
         bpy.ops.mesh.primitive_cube_add(size=1)
         window_object = bpy.context.view_layer.objects.active
-        window_object.name = f"{wall_object.name}{self.name}"
-        window_object.rotation_euler = wall_object.rotation_euler
+        window_object.name = f"{blender_object.name}{self.name}"
+        window_object.rotation_euler = blender_object.rotation_euler
         scaled_relative_location = Vector((
-            self.relative_location.x / wall_object.scale.x,
-            self.relative_location.y / wall_object.scale.y,
+            self.relative_location.x / blender_object.scale.x,
+            self.relative_location.y / blender_object.scale.y,
             0,
         ))
         window_object.location = (
-            wall_object.matrix_world @ scaled_relative_location
+            blender_object.matrix_world @ scaled_relative_location
         )  # Location relative to the wall
         window_object.scale = self.scale
         bpy.context.view_layer.update()
 
         # Apply boolean modifier to the wall
-        boolean_modifier = wall_object.modifiers.new(
+        boolean_modifier = blender_object.modifiers.new(
             name=f"{self.name}BoolDiff", type="BOOLEAN"
         )
         boolean_modifier.object = window_object
@@ -95,8 +87,8 @@ class Window(RelativeBlenderObject):
 
         # Apply modifiers to the wall
         bpy.ops.object.select_all(action="DESELECT")
-        wall_object.select_set(True)
-        bpy.context.view_layer.objects.active = wall_object
+        blender_object.select_set(True)
+        bpy.context.view_layer.objects.active = blender_object
         bpy.ops.object.convert(target="MESH")
 
         # Add window decorators

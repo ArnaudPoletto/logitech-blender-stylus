@@ -15,12 +15,14 @@ paths = [
     os.path.join(wrk_dir, "gestures/__init__.py"),
     os.path.join(wrk_dir, "blender_objects/__init__.py"),
     os.path.join(wrk_dir, "blender_collections/__init__.py"),
+    os.path.join(wrk_dir, "input_data_generation/__init__.py"),
 ]
 names = [
     "utils",
     "gestures",
     "blender_objects",
     "blender_collections",
+    "input_data_generation",
 ]
 
 for path, name in zip(paths, names):
@@ -31,9 +33,10 @@ for path, name in zip(paths, names):
 
 from utils.bone import Bone
 from utils import argument_parser
-from utils.input_file_parser import InputFileParser
+from utils.input_data_parser import InputDataParser
 from gestures.gesture_sequence import GestureSequence
 from blender_collections.blender_collection import BlenderCollection
+from input_data_generation.input_data_generator import InputDataGenerator
 
 INPUTS_FOLDER = os.path.join(wrk_dir, "..", "data", "inputs")
 OUTPUT_FILE = os.path.join(wrk_dir, "..", "data", "output.json")
@@ -43,6 +46,8 @@ CAMERA_NAME = "Camera"
 STYLUS_OUTER_NAME = "Outer"
 ARMATURE_NAME = "Armature"
 FRAME_RATE = 60
+
+SEED = None
 
 
 def get_bones() -> (
@@ -241,7 +246,7 @@ def get_parser() -> argument_parser.ArgumentParserForBlender:
         metavar="INPUT_FILE",
         help="The input file containing the data to apply gestures and background.",
         type=str,
-        default="input.json",
+        default=None,
     )
 
     parser.add_argument(
@@ -263,22 +268,27 @@ def main(args) -> None:
     Args:
         args (argparse.Namespace): The command line arguments.
     """
+    # Get parameters
+    input_file = args.input_file
+    
     # Get bones
     armature, arm, forearm, hand, hand_end = get_bones()
     if hand_end is not None:
         armature.data.bones.remove(hand_end)
         
-    # Get input data
-    input_file_path = os.path.join(INPUTS_FOLDER, args.input_file)
-    input_file_parser = InputFileParser(input_file_path)
-    input_data = input_file_parser.parse(armature)
+    # Get input datainput_data_generator
+    if input_file is None:
+        input_data_generator = InputDataGenerator(seed=SEED)
+        input_data = input_data_generator.generate_input_data()
+        input_file_parser = InputDataParser(input_data)
+        input_data = input_file_parser.parse(armature)
+    else:
+        input_file_path = os.path.join(INPUTS_FOLDER, input_file)
+        with open(input_file_path, "r") as f:
+            input_data = json.load(f)
+            input_file_parser = InputDataParser(input_data)
+            input_data = input_file_parser.parse(armature)
     
-    # Set random seed
-    random_seed = input_data["seed"]
-    if random_seed is not None:
-        print(f"Setting random seed to {random_seed}.")
-        random.seed(random_seed)
-
     # Apply gesture sequence
     gestures = input_data["gestures"]
     gesture_sequence = GestureSequence(

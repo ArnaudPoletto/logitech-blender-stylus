@@ -1,5 +1,4 @@
 {
-    "seed": 0,
     "blender_objects": {
         "sun": {
             "type": "Sun",
@@ -10,7 +9,7 @@
                     "y": 0.558505,
                     "z": -0.139626
                 },
-                "strength": 5.0
+                "energy": 5.0
             }
         },
         "room": {
@@ -201,6 +200,60 @@
             },
             "parents": [
                 "room.floor"
+            ]
+        },
+        "wall_lamp_1": {
+            "type": "WallLamp",
+            "args": {
+                "name": "WallLamp1",
+                "relative_location": {
+                    "x": -25,
+                    "y": 13
+                },
+                "scale": {
+                    "x": 3,
+                    "y": 7
+                },
+                "emission_strength": 1.0
+            },
+            "parents": [
+                "room.ceiling"
+            ]
+        },
+        "wall_lamp_2": {
+            "type": "WallLamp",
+            "args": {
+                "name": "WallLamp2",
+                "relative_location": {
+                    "x": -21,
+                    "y": 14
+                },
+                "scale": {
+                    "x": 3,
+                    "y": 7
+                },
+                "emission_strength": 1.0
+            },
+            "parents": [
+                "room.ceiling"
+            ]
+        },
+        "wall_lamp_3": {
+            "type": "WallLamp",
+            "args": {
+                "name": "WallLamp3",
+                "relative_location": {
+                    "x": -17,
+                    "y": 15
+                },
+                "scale": {
+                    "x": 3,
+                    "y": 7
+                },
+                "emission_strength": 1.0
+            },
+            "parents": [
+                "room.ceiling"
             ]
         }
     },
