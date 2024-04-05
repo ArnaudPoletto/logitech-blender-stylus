@@ -8,11 +8,27 @@ import numpy as np
 
 # TODO: add documentation
 class InputDataGenerator:
-    def __init__(self, seed):
+    """
+    An input data generator.
+    """
+
+    def __init__(self, seed: int) -> None:
+        """
+        Initialize the input data generator.
+
+        Args:
+            seed (int): The seed.
+        """
         self.seed = seed
 
-    def _generate_gestures_data(self):
-        # TODO: Implement this method and add documentation
+    def _generate_gestures_data(self) -> dict:
+        """
+        Generate gestures data.
+
+        Returns:
+            dict: The gestures data.
+        """
+        # TODO: Implement this method
         return {}
 
     def _get_random_sun(
@@ -51,7 +67,7 @@ class InputDataGenerator:
         id: str,
         name: str,
         scale_range: Tuple[float, float],
-        resolution: float,
+        resolution_digits: int,
     ) -> Tuple[dict, Tuple[float, float]]:
         """
         Get a random room.
@@ -66,11 +82,11 @@ class InputDataGenerator:
             dict: The random room data.
             Tuple[float, float]: The floor scale.
         """
-        # TODO: use decimals in more efficient way
-        scale_x = int(int(random.uniform(*scale_range) * resolution) / resolution)
-        scale_y = int(int(random.uniform(*scale_range) * resolution) / resolution)
-        scale_z = int(int(random.uniform(*scale_range) * resolution) / resolution)
-        
+        # TODO: add value errors
+        scale_x = int(round(random.uniform(*scale_range), resolution_digits))
+        scale_y = int(round(random.uniform(*scale_range), resolution_digits))
+        scale_z = int(round(random.uniform(*scale_range), resolution_digits))
+
         room_data = {
             id: {
                 "type": "Room",
@@ -89,43 +105,55 @@ class InputDataGenerator:
     def _get_random_tables(
         self,
         room_id: str,
-        floor_scale: Tuple[float, float],
+        floor_scale: Tuple[float, float],  # TODO: could be vector
         n_tables: int,
         xy_scale_range: Tuple[float, float],
         z_scale_range: Tuple[float, float],
         top_thickness_range: Tuple[float, float],
         leg_thickness_range: Tuple[float, float],
-        padding: float, # TODO: add padding
-        resolution: float,
+        padding: float,  # TODO: add padding
+        resolution_digits: float,
     ) -> dict:
-        # TODO: documentation
-        width, length = floor_scale
-        tables = []
+        """
+        Get random tables on the specified room floor.
 
+        Args:
+            room_id (str): The room id in the input data.
+            floor_scale (Tuple[float, float]): The floor scale.
+            n_tables (int): The maximum number of tables to place. If set to -1, place as many tables as possible.
+            xy_scale_range (Tuple[float, float]): The xy scale range of the tables.
+            z_scale_range (Tuple[float, float]): The z scale range of the tables.
+            top_thickness_range (Tuple[float, float]): The top thickness range of the tables.
+            leg_thickness_range (Tuple[float, float]): The leg thickness range of the tables.
+            padding (float): The minimum distance between tables and walls, in default units, i,e. not dependent on resolution. Should be set at least to a small value to avoid floating point imprecision when computing intersection between objects.
+            resolution (float): The number of decimal places, i.e. with resolution=100, 1.234 becomes 1.23.
+        """
+        width, length = floor_scale
+        resolution = 10**resolution_digits
+        tables = []
         tables_data = {}
         n_placed_tables = 0
         while n_tables == -1 or n_placed_tables < n_tables:
-            print("RUN")
             # Get random table dimensions
             w = int(random.uniform(*xy_scale_range) * resolution)
             l = int(random.uniform(*xy_scale_range) * resolution)
 
-            # Get the map of possible positions for the table (0: cannot place, 1: can place)
+            # Get the binary map of possible positions for the table
             position_map = np.ones((width * resolution, length * resolution))
             for table in tables:
+                padding_resolution = int(padding * resolution)
                 # Add wall bounds
-                position_map[:w, :] = 0
-                position_map[-w:, :] = 0
-                position_map[:, :l] = 0
-                position_map[:, -l:] = 0
+                position_map[: w + padding_resolution, :] = 0
+                position_map[-w - padding_resolution :, :] = 0
+                position_map[:, : l + padding_resolution] = 0
+                position_map[:, -l - padding_resolution :] = 0
 
-                # TODO: add padding
                 # Add table bounds
                 tx, ty, tw, tl = table
-                min_x = max(0, tx - tw - w)
-                max_x = min(width * resolution, tx + tw + w)
-                min_y = max(0, ty - tl - l)
-                max_y = min(length * resolution, ty + tl + l)
+                min_x = max(0, tx - tw - w - padding_resolution)
+                max_x = min(width * resolution, tx + tw + w + padding_resolution)
+                min_y = max(0, ty - tl - l - padding_resolution)
+                max_y = min(length * resolution, ty + tl + l + padding_resolution)
                 position_map[min_x:max_x, min_y:max_y] = 0
 
             # Get random position for the table
@@ -165,14 +193,17 @@ class InputDataGenerator:
 
         return tables_data
 
-    def _generate_blender_objects_data(self, resolution=100) -> dict:
+    def _generate_blender_objects_data(self, resolution_digits=1) -> dict:
         # TODO: Implement this method and add documentation
 
         data = {}
         data.update(self._get_random_sun(id="sun", name="Sun", energy_range=(0.5, 1.5)))
         room_id = "room"
         room_data, floor_scale = self._get_random_room(
-            id=room_id, name="Room", scale_range=(30, 100), resolution=resolution
+            id=room_id,
+            name="Room",
+            scale_range=(30, 100),
+            resolution_digits=resolution_digits,
         )
         data.update(room_data)
         data.update(
@@ -184,8 +215,8 @@ class InputDataGenerator:
                 z_scale_range=(1, 3),
                 top_thickness_range=(0.1, 0.2),
                 leg_thickness_range=(0.1, 0.2),
-                padding=0.0,
-                resolution=resolution,
+                padding=0.1,
+                resolution_digits=resolution_digits,
             )
         )
 

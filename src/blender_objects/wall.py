@@ -1,4 +1,5 @@
 import bpy
+import numpy as np
 from mathutils import Vector, Euler
 
 from blender_objects.blender_object import BlenderObject
@@ -70,20 +71,11 @@ class Wall(BlenderObject):
         wall_min_y = -self.scale.y / 2
         wall_max_y = self.scale.y / 2
         
-        print(f"relative_blender_object_min_x: {relative_blender_object_min_x}")
-        print(f"relative_blender_object_max_x: {relative_blender_object_max_x}")
-        print(f"relative_blender_object_min_y: {relative_blender_object_min_y}")
-        print(f"relative_blender_object_max_y: {relative_blender_object_max_y}")
-        print(f"wall_min_x: {wall_min_x}")
-        print(f"wall_max_x: {wall_max_x}")
-        print(f"wall_min_y: {wall_min_y}")
-        print(f"wall_max_y: {wall_max_y}")
-
         return (
-            relative_blender_object_min_x >= wall_min_x
-            and relative_blender_object_max_x <= wall_max_x
-            and relative_blender_object_min_y >= wall_min_y
-            and relative_blender_object_max_y <= wall_max_y
+            (relative_blender_object_min_x >= wall_min_x or np.isclose(relative_blender_object_min_x, wall_min_x))
+            and (relative_blender_object_max_x <= wall_max_x or np.isclose(relative_blender_object_max_x, wall_max_x))
+            and (relative_blender_object_min_y >= wall_min_y or np.isclose(relative_blender_object_min_y, wall_min_y))
+            and (relative_blender_object_max_y <= wall_max_y or np.isclose(relative_blender_object_max_y, wall_max_y))
         )
 
     def _relative_blender_object_does_not_intersect(
