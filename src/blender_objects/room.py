@@ -28,12 +28,12 @@ class Room(BlenderObject):
         ]
         names = ["RightWall", "LeftWall", "FrontWall", "BackWall", "Ceiling", "Floor"]
         locations = [
-            Vector((0, -scale.x / 2, 0)),
-            Vector((0, scale.x / 2, 0)),
-            Vector((scale.y / 2, 0, 0)),
-            Vector((-scale.y / 2, 0, 0)),
-            Vector((0, 0, scale.z / 2)),
-            Vector((0, 0, -scale.z / 2)),
+            Vector((0, -scale.x / 2, 0)) + self.location,
+            Vector((0, scale.x / 2, 0)) + self.location,
+            Vector((scale.y / 2, 0, 0)) + self.location,
+            Vector((-scale.y / 2, 0, 0)) + self.location,
+            Vector((0, 0, scale.z / 2)) + self.location,
+            Vector((0, 0, -scale.z / 2)) + self.location,
         ]
         rotations = [
             Euler((math.pi / 2, 0, 0)),
