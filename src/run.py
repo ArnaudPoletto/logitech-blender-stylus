@@ -2,7 +2,6 @@ import os
 import bpy
 import sys
 import json
-import random
 import importlib.util
 from tqdm import tqdm
 from typing import Tuple, List
@@ -47,7 +46,7 @@ STYLUS_OUTER_NAME = "Outer"
 ARMATURE_NAME = "Armature"
 FRAME_RATE = 60
 
-SEED = None
+SEED = 2
 
 
 def get_bones() -> (
