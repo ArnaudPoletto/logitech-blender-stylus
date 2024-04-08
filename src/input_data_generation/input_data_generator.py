@@ -2,7 +2,12 @@ import math
 import json
 import random
 import numpy as np
-from typing import Tuple
+from typing import Tuple, List
+
+from utils.config import RESOLUTION_DIGITS
+from input_data_generation.module_generator import ModuleGenerator
+from input_data_generation.module_generator_type import ModuleGeneratorType
+from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
 
 
 # TODO: add documentation
@@ -11,13 +16,14 @@ class InputDataGenerator:
     An input data generator.
     """
 
-    def __init__(self, seed: int) -> None:
+    def __init__(self, modules: List[ModuleGenerator], seed: int) -> None:
         """
         Initialize the input data generator.
 
         Args:
             seed (int): The seed.
         """
+        self.modules = modules
         self.seed = seed
 
     def _generate_gestures_data(self) -> dict:
@@ -92,7 +98,11 @@ class InputDataGenerator:
                 "type": "Room",
                 "args": {
                     "name": name,
-                    "location": {"x": 0, "y": 0, "z": scale_z / 2 - 2}, # TODO: remove hardcoding
+                    "location": {
+                        "x": 0,
+                        "y": 0,
+                        "z": scale_z / 2 - 2,
+                    },  # TODO: remove hardcoding
                     "scale": {"x": scale_x, "y": scale_y, "z": scale_z},
                 },
             }
@@ -201,7 +211,7 @@ class InputDataGenerator:
             n_placed_tables += 1
 
         return tables_data
-    
+
     def get_random_windows(
         self,
         room_id: str,
@@ -312,7 +322,9 @@ class InputDataGenerator:
 
         return windows_data
 
-    def _generate_blender_objects_data(self, resolution_digits: int = 1, padding: float = 0.1) -> dict:
+    def _generate_blender_objects_data(
+        self, resolution_digits: int = 1, padding: float = 0.1
+    ) -> dict:
         # TODO: Implement this method and add documentation
 
         data = {}
@@ -355,6 +367,53 @@ class InputDataGenerator:
 
         return data
 
+    @staticmethod
+    def update_input_data(input_data: dict, update_data: dict) -> dict:
+        if "gestures" in update_data:
+            input_data["gestures"].update(update_data["gestures"])
+        if "blender_objects" in update_data:
+            input_data["blender_objects"].update(update_data["blender_objects"])
+
+    def generate_input_data_from_modules(self):
+        input_data = {
+            "gestures": {},
+            "blender_objects": {},
+        }
+
+        # Get room module and generate the room
+        room_module = None
+        for module in self.modules:
+            if isinstance(module, RandomRoomModuleGenerator):
+                if room_module is not None:
+                    raise ValueError("Only one room module is allowed.")
+                room_module = module
+        room_input_data, scales = room_module.generate()
+        InputDataGenerator.update_input_data(input_data, room_input_data)
+        self.modules = [module for module in self.modules if module != room_module]
+
+        # Define room masks
+        room_wall_masks = {
+            k: np.ones((v1 * RESOLUTION_DIGITS, v2 * RESOLUTION_DIGITS))
+            for k, (v1, v2) in scales.items()
+        }
+
+        # TODO: priority and weight
+
+        for module in self.modules:
+            room_wall_mask = room_wall_masks.get(module.type)
+            if room_wall_mask is not None:
+                raise ValueError(
+                    f"Could not find room wall mask for module type {module.type}."
+                )
+            if module.type == ModuleGeneratorType.GLOBAL:
+                module_data = module.generate()
+            else:
+                module_data = module.generate(room_wall_mask)
+            InputDataGenerator.update_input_data(input_data, module_data)
+
+        return input_data
+
+    # TODO: remove
     def generate_input_data(self) -> dict:
         """
         Generate input data.
@@ -374,6 +433,7 @@ class InputDataGenerator:
 
         return input_data
 
+    # TODO: change using modules
     def generate_input_file(self, input_file_path: str) -> None:
         """
         Generate input data and write it to the specified file.
