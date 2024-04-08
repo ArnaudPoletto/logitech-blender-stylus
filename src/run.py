@@ -36,17 +36,17 @@ from utils.input_data_parser import InputDataParser
 from gestures.gesture_sequence import GestureSequence
 from blender_collections.blender_collection import BlenderCollection
 from input_data_generation.input_data_generator import InputDataGenerator
-
-INPUTS_FOLDER = os.path.join(wrk_dir, "..", "data", "inputs")
-OUTPUT_FILE = os.path.join(wrk_dir, "..", "data", "output.json")
-RENDER_FOLDER_PATH = os.path.join(wrk_dir, "..", "data", "images")
-
-CAMERA_NAME = "Camera"
-STYLUS_OUTER_NAME = "Outer"
-ARMATURE_NAME = "Armature"
-FRAME_RATE = 60
-
-SEED = 2
+from input_data_generation.random_sun_module_generator import RandomSunModuleGenerator
+from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
+from utils.config import (
+    INPUTS_FOLDER,
+    OUTPUT_FILE,
+    RENDER_FOLDER_PATH,
+    CAMERA_NAME,
+    STYLUS_OUTER_NAME,
+    ARMATURE_NAME,
+    SEED,
+)
 
 
 def get_bones() -> (
@@ -206,15 +206,15 @@ def render():
 def get_background(blender_objects: dict) -> BlenderCollection:
     """
     Get the blender objects to add to the background.
-    
+
     Args:
         blender_objects (dict): The blender objects.
-        
+
     Returns:
         BlenderCollection: The background collection.
     """
     background_collection = BlenderCollection("Background")
-    
+
     objects = []
     for _, blender_object_args in blender_objects.items():
         blender_object_object = blender_object_args["object"]
@@ -269,26 +269,43 @@ def main(args) -> None:
     """
     # Get parameters
     input_file = args.input_file
-    
+
     # Get bones
     armature, arm, forearm, hand, hand_end = get_bones()
     if hand_end is not None:
         armature.data.bones.remove(hand_end)
-        
-    # Get input datainput_data_generator
+
+    # Get input data
     if input_file is None:
-        input_data_generator = InputDataGenerator(seed=SEED)
-        input_data = input_data_generator.generate_input_data()
+        print("Generating input data...")
+        modules = [
+            RandomSunModuleGenerator(
+                weight=1, priority=0, name="Sun", id="sun", energy_range=(0.5, 1.5)
+            ),
+            RandomRoomModuleGenerator(
+                weight=1,
+                priority=1,
+                name="Room",
+                id="room",
+                xy_scale_range=(30, 100),
+                z_scale_range=(20, 40),
+            ),
+        ]
+        input_data_generator = InputDataGenerator(modules=modules, seed=SEED)
+        input_data = input_data_generator.generate_input_data_from_modules()
+        # input_data = input_data_generator.generate_input_data()
         input_file_parser = InputDataParser(input_data)
         input_data = input_file_parser.parse(armature)
     else:
+        print("Parsing input data...")
         input_file_path = os.path.join(INPUTS_FOLDER, input_file)
         with open(input_file_path, "r") as f:
             input_data = json.load(f)
             input_file_parser = InputDataParser(input_data)
             input_data = input_file_parser.parse(armature)
-    
+
     # Apply gesture sequence
+    print("Applying gestures...")
     gestures = input_data["gestures"]
     gesture_sequence = GestureSequence(
         gestures=gestures,
@@ -300,13 +317,17 @@ def main(args) -> None:
     gesture_sequence.apply()
 
     # Add background
+    print("Adding background...")
     blender_objects = input_data["blender_objects"]
     background = get_background(blender_objects)
     background.apply()
 
     # Render the animation if specified
     if args.render:
+        print("Rendering...")
         render()
+
+    print("Done!")
 
 
 if __name__ == "__main__":
