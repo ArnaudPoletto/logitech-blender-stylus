@@ -36,15 +36,12 @@ class Table(RelativeBlenderObject):
         """
         if len(scale) != 3:
             raise ValueError("The scale must be a 3D vector.")
-
         if any(value <= 0 for value in scale):
             raise ValueError("The scale values must be positive.")
-
         if top_thickness <= 0 or top_thickness >= scale.z:
             raise ValueError(
                 "The top thickness must be a positive number and less than the height."
             )
-
         if (
             leg_thickness <= 0
             or leg_thickness >= scale.x / 2
@@ -71,20 +68,19 @@ class Table(RelativeBlenderObject):
 
         return (min_x, max_x), (min_y, max_y), (0, 0)
 
-    # TODO: factorize code
     def apply_to_collection(
-        self, 
-        collection: bpy.types.Collection,
-        blender_object: bpy.types.Object
+        self, collection: bpy.types.Collection, blender_object: bpy.types.Object
     ) -> None:
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Add top
-        scaled_relative_location = Vector((
-            self.relative_location.x / blender_object.scale.x,
-            self.relative_location.y / blender_object.scale.y,
-            self.relative_location.z / blender_object.scale.z,
-        ))
+        scaled_relative_location = Vector(
+            (
+                self.relative_location.x / blender_object.scale.x,
+                self.relative_location.y / blender_object.scale.y,
+                self.relative_location.z / blender_object.scale.z,
+            )
+        )
         location = blender_object.matrix_world @ scaled_relative_location
         top_location = Vector(
             (
@@ -101,37 +97,39 @@ class Table(RelativeBlenderObject):
         bpy.context.view_layer.update()
 
         # Add legs
-        leg_locations = [
+        d_leg_locations = [
             Vector(
                 (
-                    location.x - self.scale.x / 2 + self.leg_thickness / 2,
-                    location.y - self.scale.y / 2 + self.leg_thickness / 2,
-                    location.z + self.scale.z / 2 - self.top_thickness / 2,
+                    -self.scale.x / 2 + self.leg_thickness / 2,
+                    -self.scale.y / 2 + self.leg_thickness / 2,
+                    +self.scale.z / 2 - self.top_thickness / 2,
                 )
             ),
             Vector(
                 (
-                    location.x - self.scale.x / 2 + self.leg_thickness / 2,
-                    location.y + self.scale.y / 2 - self.leg_thickness / 2,
-                    location.z + self.scale.z / 2 - self.top_thickness / 2,
+                    -self.scale.x / 2 + self.leg_thickness / 2,
+                    +self.scale.y / 2 - self.leg_thickness / 2,
+                    +self.scale.z / 2 - self.top_thickness / 2,
                 )
             ),
             Vector(
                 (
-                    location.x + self.scale.x / 2 - self.leg_thickness / 2,
-                    location.y - self.scale.y / 2 + self.leg_thickness / 2,
-                    location.z + self.scale.z / 2 - self.top_thickness / 2,
+                    +self.scale.x / 2 - self.leg_thickness / 2,
+                    -self.scale.y / 2 + self.leg_thickness / 2,
+                    +self.scale.z / 2 - self.top_thickness / 2,
                 )
             ),
             Vector(
                 (
-                    location.x + self.scale.x / 2 - self.leg_thickness / 2,
-                    location.y + self.scale.y / 2 - self.leg_thickness / 2,
-                    location.z + self.scale.z / 2 - self.top_thickness / 2,
+                    +self.scale.x / 2 - self.leg_thickness / 2,
+                    +self.scale.y / 2 - self.leg_thickness / 2,
+                    +self.scale.z / 2 - self.top_thickness / 2,
                 )
             ),
         ]
-        for i, leg_location in enumerate(leg_locations):
+        
+        for i, d_leg_location in enumerate(d_leg_locations):
+            leg_location = location + d_leg_location # relative to the table
             bpy.ops.mesh.primitive_cube_add(size=1, location=leg_location)
             leg_object = bpy.context.object
             leg_object.name = f"{self.name}Leg{i}"

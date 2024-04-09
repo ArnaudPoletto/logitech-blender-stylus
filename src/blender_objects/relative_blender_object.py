@@ -4,9 +4,10 @@ from mathutils import Vector, Euler
 from abc import abstractmethod
 
 
+# TODO: can be a child of BlenderObject
 class RelativeBlenderObject:
     """
-    A Blender object.
+    A relative Blender object.
     """
 
     def __init__(
@@ -17,12 +18,12 @@ class RelativeBlenderObject:
         scale: Vector = Vector((1, 1, 1)),
     ) -> None:
         """
-        Initialize the Blender object.
+        Initialize the relative Blender object.
 
         Args:
             name (str): The name of the Blender object.
-            relative_location (Vector): The relative location of the relative Blender object from the location of the Blender object as a 3D vector. Defaults to the origin.
-            relative_rotation (Vector): The relative rotation of the relative Blender object from the rotation of the Blender object as a 3D vector. Defaults to no rotation.
+            relative_location (Vector): The relative location of the relative Blender object from the location of the Blender object as a 3D vector. Defaults to no relative location.
+            relative_rotation (Vector): The relative rotation of the relative Blender object from the rotation of the Blender object as a 3D vector. Defaults to no relative rotation.
             scale (Vector): The scale of the Blender object as a 3D vector. Defaults to no scaling.
 
         Raises:
@@ -34,13 +35,10 @@ class RelativeBlenderObject:
 
         if len(relative_location) != 3:
             raise ValueError("The relative location must be a 3D vector.")
-
         if len(relative_rotation) != 3:
             raise ValueError("The relative rotation must be a 3D vector.")
-
         if len(scale) != 3:
             raise ValueError("The scale must be a 3D vector.")
-
         if any(value <= 0 for value in scale):
             raise ValueError("The scale values must be positive.")
 
@@ -69,8 +67,8 @@ class RelativeBlenderObject:
         Get the bounds of the Blender object from its relative location.
 
         Returns:
-            Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]: The bounds of the Blender object where the first tuple 
-            represents the signed distance from the relative location to the minimum and maximum x values, the second tuple is the same but 
+            Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]: The bounds of the Blender object where the first tuple
+            represents the signed distance from the relative location to the minimum and maximum x values, the second tuple is the same but
             for y values, and the third tuple is the same but for z values.
         """
         raise NotImplementedError(

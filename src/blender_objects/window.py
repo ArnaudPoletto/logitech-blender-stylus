@@ -30,10 +30,8 @@ class Window(RelativeBlenderObject):
         """
         if len(relative_location) != 2:
             raise ValueError("The location must be a 2D vector.")
-
         if len(scale) != 2:
             raise ValueError("The scale must be a 2D vector.")
-        
         if any(value <= 0 for value in scale):
             raise ValueError("The scale values must be positive.")
         

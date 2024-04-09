@@ -12,12 +12,12 @@ class BlenderObject:
     """
 
     def __init__(
-        self, 
-        name: str, 
+        self,
+        name: str,
         location: Vector = Vector((0, 0, 0)),
         rotation: Euler = Euler((0, 0, 0)),
         scale: Vector = Vector((1, 1, 1)),
-        ) -> None:
+    ) -> None:
         """
         Initialize the Blender object.
 
@@ -26,26 +26,22 @@ class BlenderObject:
             location (Vector): The location of the Blender object in the world as a 3D vector. Defaults to the origin.
             rotation (Vector): The rotation of the Blender object in the world as a 3D vector. Defaults to no rotation.
             scale (Vector): The scale of the Blender object as a 3D vector. Defaults to no scaling.
-            
+
         Raises:
             ValueError: If the location is not a 3D vector.
             ValueError: If the rotation is not a 3D vector.
             ValueError: If the scale is not a 3D vector.
             ValueError: If the scale values are not positive.
         """
-        
         if len(location) != 3:
             raise ValueError("The location must be a 3D vector.")
-        
         if len(rotation) != 3:
             raise ValueError("The rotation must be a 3D vector.")
-        
         if len(scale) != 3:
             raise ValueError("The scale must be a 3D vector.")
-        
         if any(value <= 0 for value in scale):
             raise ValueError("The scale values must be positive.")
-        
+
         self.name = name
         self.location = location
         self.rotation = rotation
@@ -71,4 +67,6 @@ class BlenderObject:
         Args:
             collection (bpy.types.Collection): The collection to add the Blender object to.
         """
-        raise NotImplementedError("The apply_to_collection method must be implemented in the subclass.")
+        raise NotImplementedError(
+            "The apply_to_collection method must be implemented in the subclass."
+        )

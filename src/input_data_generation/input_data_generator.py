@@ -1,12 +1,9 @@
-import math
-import json
 import random
 import numpy as np
-from typing import Tuple, List
+from typing import List
 
-from utils.config import RESOLUTION_DIGITS
+from input_data_generation.module_operator import ModuleOperator
 from input_data_generation.module_generator import ModuleGenerator
-from input_data_generation.module_generator_type import ModuleGeneratorType
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
 
 
@@ -17,38 +14,20 @@ class InputDataGenerator:
     """
 
     def __init__(
-        self, modules: List[ModuleGenerator | List[ModuleGenerator]], seed: int | None
+        self,
+        room_module: RandomRoomModuleGenerator, 
+        modules: List[ModuleGenerator|ModuleOperator], seed: int | None
     ) -> None:
         """
         Initialize the input data generator.
 
         Args:
-            modules (List[ModuleGenerator|List[ModuleGenerator]]): The modules, as a list of module generators or list of module generators. Lists of module generators are modules that have the same type and are randomly selected among them.
-            seed (int|None): The seed.
+            room_module (RandomRoomModuleGenerator): The room module.
+            modules (List[ModuleGenerator|ModuleOperator]): The modules, as a list of module generators or operators.
             
         Raises:
-            ValueError: If a global module is grouped in a list of modules-
-            ValueError: If a module is grouped with a module of a different type.
-            ValueError: If a non-global module is not grouped in a list of modules.
         """
-        for module in modules:
-            if isinstance(module, list):
-                module_type = None
-                for m in module:
-                    if m.type == ModuleGeneratorType.GLOBAL:
-                        raise ValueError(
-                            "Global modules cannot be grouped in a list of modules."
-                        )
-                    if module_type is not None and m.type != module_type:
-                        raise ValueError(
-                            "Modules in a list of modules must have the same type."
-                        )
-                    module_type = m.type
-            elif module.type != ModuleGeneratorType.GLOBAL:
-                raise ValueError(
-                    "Non-global modules must be grouped in a list of modules."
-                )
-                
+        self.room_module = room_module
         self.modules = modules
         self.seed = seed
 
@@ -185,16 +164,12 @@ class InputDataGenerator:
                 )
             input_data["blender_objects"].update(update_data["blender_objects"])
 
-    def generate_input_data_from_modules(self):
+    def generate_input_data(self) -> dict:
         """
         Generate input data from the modules.
 
         Returns:
             dict: The input data.
-
-        Raises:
-            ValueError: If there is more than one room module.
-            ValueError: If there is no room module.
         """
         # Set the seed
         random.seed(self.seed)
@@ -204,69 +179,15 @@ class InputDataGenerator:
             "gestures": {},
             "blender_objects": {},
         }
-        
-        modules = self.modules.copy()
 
-        # Get and generate room module
-        room_module = None
-        for module in modules:
-            if isinstance(module, RandomRoomModuleGenerator):
-                if room_module is not None:
-                    raise ValueError(
-                        "Only one room module is allowed: found more than one."
-                    )
-                room_module = module
-        if room_module is None:
-            raise ValueError(
-                "Could not find room module: at least one room module is required."
-            )
-        room_data, scales_per_wall = room_module.generate()
+        # Generate the room and define room masks
+        room_data, wall_scales_per_wall = self.room_module.generate()
         InputDataGenerator._update_input_data(input_data, room_data)
+        existing_objects_per_wall = {k: [] for k in wall_scales_per_wall.keys()}
 
-        # Filter out room module that has already been generated
-        modules = [module for module in modules if module != room_module]
-
-        # Define room masks
-        existing_objects_per_wall = {k: [] for k in scales_per_wall.keys()}
-
-        # Apply other global modules
-        for module in modules:
-            if isinstance(module, ModuleGenerator): # Is always a GLOBAL module
-                module_data = module.generate()
-                InputDataGenerator._update_input_data(input_data, module_data)
-
-        # Filter out global modules that have already been generated
-        modules = [
-            module
-            for module in modules
-            if isinstance(module, list)
-        ]
-
-        # For each module list, apply at least one module, and at most the total number of modules in the group.
-        # The applied modules are chosen randomly based on their weight, and priority is used to determine the order.
-        for module_list in modules:
-            n_modules = len(module_list)
-            n_applied_modules = random.randint(1, n_modules)
-            p = [module.weight for module in module_list]
-            p = [v / sum(p) for v in p]
-            applied_modules = np.random.choice(
-                module_list,
-                size=n_applied_modules,
-                replace=False,
-                p=p,
-            )
-            sorted_applied_modules = sorted(
-                applied_modules, key=lambda module: module.priority
-            )
-            for module in sorted_applied_modules:
-                existing_objects = existing_objects_per_wall.get(module.type) # Should always be defined
-                wall_scale = scales_per_wall.get(module.type) # Should always be defined
-                module_data, existing_objects = module.generate(
-                    wall_scale=wall_scale, existing_objects=existing_objects
-                )
-
-                # Update existing objects and input data
-                existing_objects_per_wall[module.type] = existing_objects
-                InputDataGenerator._update_input_data(input_data, module_data)
-
+        # Apply other modules
+        for module in self.modules:
+            module_data, existing_objects_per_wall = module.generate(wall_scales_per_wall, existing_objects_per_wall)
+            InputDataGenerator._update_input_data(input_data, module_data)
+            
         return input_data

@@ -13,7 +13,7 @@ class Room(BlenderObject):
 
     def _define_walls(self, scale: Vector) -> None:
         """
-        Define the room.
+        Define the walls of the room.
 
         Args:
             scale (Vector): The scale of the room as a 3D vector.
@@ -69,7 +69,7 @@ class Room(BlenderObject):
         name: str,
         location: Vector,
         scale: Vector,
-    ):
+    ) -> None:
         """
         Initialize the room.
 
