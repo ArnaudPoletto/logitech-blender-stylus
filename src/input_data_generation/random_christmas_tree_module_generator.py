@@ -1,0 +1,129 @@
+import math
+import random
+import numpy as np
+from typing import List, Tuple
+
+from utils.config import RESOLUTION_DIGITS
+from input_data_generation.module_generator import ModuleGenerator
+from input_data_generation.module_generator_type import ModuleGeneratorType
+
+class RandomChristmasTreeModuleGenerator(ModuleGenerator):
+    """
+    A random christmas tree generator, linked to an input data generator to generate christmas tree data.
+    """
+    def __init__(
+        self,
+        weight: float,
+        priority: int,
+        name: str,
+        id: str,
+        room_id: str,
+        height_range: Tuple[float, float],
+        radius_range: Tuple[float, float],
+        n_leds_range: Tuple[int, int],
+        led_radius_range: Tuple[float, float],
+        emission_range: Tuple[float, float],
+        flicker_probability_range: Tuple[float, float],
+        padding: float,
+    ) -> None:
+        # TODO: add value error checks
+        
+        super(RandomChristmasTreeModuleGenerator, self).__init__(
+            weight=weight,
+            priority=priority,
+            type=ModuleGeneratorType.ROOM_FLOOR,
+            name=name,
+            id=id,
+        )
+        
+        self.room_id = room_id
+        self.height_range = height_range
+        self.radius_range = radius_range
+        self.n_leds_range = n_leds_range
+        self.led_radius_range = led_radius_range
+        self.emission_range = emission_range
+        self.flicker_probability_range = flicker_probability_range
+        self.padding = padding
+        
+    def generate(
+        self,
+        wall_scale: Tuple[int, int],
+        existing_objects: List[Tuple[int, int, int, int]],
+    ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
+        """
+        Generate the christmas tree.
+        
+        Args:
+            wall_scale (Tuple[int, int]): The scale of the wall.
+            existing_objects (List[Tuple[int, int, int, int]]): The existing objects in the room.
+            
+        Returns:
+            dict: The christmas tree data.
+            List[Tuple[int, int, int, int]]: The updated existing objects in the room.
+        """
+        width, length = wall_scale
+        resolution = 10**RESOLUTION_DIGITS
+        padding_resolution = int(self.padding * resolution)
+        
+        radius = int(random.uniform(*self.radius_range) * resolution)
+        height = int(random.uniform(*self.height_range) * resolution)
+        n_leds = random.randint(*self.n_leds_range)
+        flicker_probability = random.uniform(*self.flicker_probability_range)
+        
+        
+        # Get the binary map of possible positions for the christmas tree
+        position_map = np.ones((width * resolution, length * resolution))
+        # Add wall bounds
+        position_map[: radius + padding_resolution, :] = 0
+        position_map[-radius - padding_resolution :, :] = 0
+        position_map[:, : radius + padding_resolution] = 0
+        position_map[:, -radius - padding_resolution :] = 0
+        # Add existing_objects bounds
+        for existing_object in existing_objects:
+            tx, ty, tw, tl = existing_object
+            min_x = max(0, tx - tw - radius - padding_resolution)
+            max_x = min(width * resolution, tx + tw + radius + padding_resolution)
+            min_y = max(0, ty - tl - radius - padding_resolution)
+            max_y = min(length * resolution, ty + tl + radius + padding_resolution)
+            position_map[min_x:max_x, min_y:max_y] = 0
+            
+        # Get random position for the christmas tree
+        if np.sum(position_map) / position_map.size < 0.1:
+            positions = np.argwhere(position_map == 1)
+            if positions.size == 0:
+                return {}, existing_objects
+            x, y = positions[random.randint(0, positions.shape[0] - 1)]
+        else: # Special case to speed up the process when a lot of space is available
+            is_valid_position = False
+            while not is_valid_position:
+                x = random.randint(0, width * resolution - 1)
+                y = random.randint(0, length * resolution - 1)
+                if position_map[x, y] == 1:
+                    is_valid_position = True
+        
+        # Add the christmas tree to the room and set the data
+        christmas_tree = (x, y, radius, radius)
+        existing_objects.append(christmas_tree)
+        christmas_tree_data = {
+            "blender_objects": {
+                self.id: {
+                    "type": "ChristmasTree",
+                    "args": {
+                        "name": self.name,
+                        "relative_location": {
+                            "x": x / resolution - width / 2,
+                            "y": y / resolution - length / 2,
+                        },
+                        "height": height / resolution,
+                        "radius": radius / resolution,
+                        "n_leds": n_leds,
+                        "led_radius_range": self.led_radius_range,
+                        "emission_range": self.emission_range,
+                        "flicker_probability": flicker_probability,
+                    },
+                    "parents": [f"{self.room_id}.floor"]
+                }
+            }
+        }
+        
+        return christmas_tree_data, existing_objects

@@ -1,6 +1,5 @@
 import math
 import random
-import numpy as np
 from typing import Tuple
 
 from input_data_generation.module_generator import ModuleGenerator
@@ -11,10 +10,10 @@ class RandomSunModuleGenerator(ModuleGenerator):
     """
     A random sun module generator, linked to an input data generator to generate sun data.
     """
+
     def __init__(
         self,
         weight: float,
-        priority: int,
         name: str,
         id: str,
         energy_range: Tuple[float, float],
@@ -24,7 +23,6 @@ class RandomSunModuleGenerator(ModuleGenerator):
 
         Args:
             weight (float): The weight of the module, used to determine the probability of the module being selected.
-            priority (int): The priority of the module, used to determine the order in which the modules are executed, lower values are executed first.
             name (str): The name of the sun.
             energy_range (Tuple[float, float]): The range of energy values for the sun.
 
@@ -41,7 +39,7 @@ class RandomSunModuleGenerator(ModuleGenerator):
 
         super(RandomSunModuleGenerator, self).__init__(
             weight=weight,
-            priority=priority,
+            priority=0,
             type=ModuleGeneratorType.GLOBAL,
             name=name,
             id=id,
@@ -51,7 +49,6 @@ class RandomSunModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        mask: np.array = None,
     ) -> dict:
         rotation_y = random.uniform(-math.pi / 2, math.pi / 2)
         rotation_z = random.uniform(0, 2 * math.pi)
