@@ -42,7 +42,54 @@ class RandomTableModuleGenerator(ModuleGenerator):
             top_thickness_range (Tuple[float, float]): The range of top thickness values for the tables.
             leg_thickness_range (Tuple[float, float]): The range of leg thickness values for the tables.
             padding (float): The padding between the tables.
+
+        Raises:
+            ValueError: If the number of tables is less than -1.
+            ValueError: If the minimum xy scale is less than 0.
+            ValueError: If the maximum xy scale is less than the minimum xy scale.
+            ValueError: If the minimum z scale is less than 0.
+            ValueError: If the maximum z scale is less than the minimum z scale.
+            ValueError: If the minimum top thickness is less than 0.
+            ValueError: If the maximum top thickness is less than the minimum top thickness.
+            ValueError: If the minimum leg thickness is less than 0.
+            ValueError: If the maximum leg thickness is less than the minimum leg thickness.
+            ValueError: If the padding is less than 0.
         """
+        if n_tables < -1:
+            raise ValueError(
+                "The number of tables must be greater than or equal to -1."
+            )
+        if xy_scale_range[0] < 0:
+            raise ValueError("The minimum xy scale must be greater than or equal to 0.")
+        if xy_scale_range[1] < xy_scale_range[0]:
+            raise ValueError(
+                "The maximum xy scale must be greater than or equal to the minimum xy scale."
+            )
+        if z_scale_range[0] < 0:
+            raise ValueError("The minimum z scale must be greater than or equal to 0.")
+        if z_scale_range[1] < z_scale_range[0]:
+            raise ValueError(
+                "The maximum z scale must be greater than or equal to the minimum z scale."
+            )
+        if top_thickness_range[0] < 0:
+            raise ValueError(
+                "The minimum top thickness must be greater than or equal to 0."
+            )
+        if top_thickness_range[1] < top_thickness_range[0]:
+            raise ValueError(
+                "The maximum top thickness must be greater than or equal to the minimum top thickness."
+            )
+        if leg_thickness_range[0] < 0:
+            raise ValueError(
+                "The minimum leg thickness must be greater than or equal to 0."
+            )
+        if leg_thickness_range[1] < leg_thickness_range[0]:
+            raise ValueError(
+                "The maximum leg thickness must be greater than or equal to the minimum leg thickness."
+            )
+        if padding < 0:
+            raise ValueError("The padding must be greater than or equal to 0.")
+
         super(RandomTableModuleGenerator, self).__init__(
             weight=weight,
             priority=priority,
@@ -66,11 +113,12 @@ class RandomTableModuleGenerator(ModuleGenerator):
     ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
         wall_scale = wall_scales_per_wall[self.type]
         existing_objects = existing_objects_per_wall[self.type]
-        
+
         width, length = wall_scale
         resolution = 10**RESOLUTION_DIGITS
         padding_resolution = int(self.padding * resolution)
 
+        # Generate tables one by one
         tables_data = {"blender_objects": {}}
         n_placed_tables = 0
         bar = tqdm(total=self.n_tables, desc=f"Generating {self.name}", leave=False)
@@ -99,9 +147,12 @@ class RandomTableModuleGenerator(ModuleGenerator):
             if np.sum(position_map) / position_map.size < 0.1:
                 positions = np.argwhere(position_map == 1)
                 if positions.size == 0:
-                    return tables_data, existing_objects
+                    return (
+                        tables_data,
+                        existing_objects,
+                    )  # If there is no more space, stop the process
                 x, y = positions[random.randint(0, positions.shape[0] - 1)]
-            else: # Special case to speed up the process when a lot of space is available
+            else:  # Special case to speed up the process when a lot of space is available
                 is_valid_position = False
                 while not is_valid_position:
                     x = random.randint(0, width * resolution - 1)
@@ -133,8 +184,8 @@ class RandomTableModuleGenerator(ModuleGenerator):
 
             n_placed_tables += 1
             bar.update(1)
-            
+
         # Update existing objects on the used wall
         existing_objects_per_wall[self.type] = existing_objects
-            
+
         return tables_data, existing_objects_per_wall

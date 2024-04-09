@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List, Tuple
 
-from input_data_generation.module_operator import ModuleOperator
+from module_operators.module_operator import ModuleOperator
 from input_data_generation.module_generator import ModuleGenerator
 
 class OneOf(ModuleOperator):
