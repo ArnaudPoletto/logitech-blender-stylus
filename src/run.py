@@ -4,7 +4,7 @@ import sys
 import json
 import importlib.util
 from tqdm import tqdm
-from typing import Tuple, List
+from typing import Tuple
 from mathutils import Vector
 from bpy_extras.object_utils import world_to_camera_view
 
@@ -32,14 +32,20 @@ for path, name in zip(paths, names):
 
 from utils.bone import Bone
 from utils import argument_parser
+from input_data_generation.all_of import AllOf
+from input_data_generation.one_of import OneOf
 from utils.input_data_parser import InputDataParser
 from gestures.gesture_sequence import GestureSequence
 from blender_collections.blender_collection import BlenderCollection
 from input_data_generation.input_data_generator import InputDataGenerator
 from input_data_generation.random_sun_module_generator import RandomSunModuleGenerator
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
-from input_data_generation.random_table_module_generator import RandomTableModuleGenerator
-from input_data_generation.random_christmas_tree_module_generator import RandomChristmasTreeModuleGenerator
+from input_data_generation.random_table_module_generator import (
+    RandomTableModuleGenerator,
+)
+from input_data_generation.random_christmas_tree_module_generator import (
+    RandomChristmasTreeModuleGenerator,
+)
 from utils.config import (
     INPUTS_FOLDER,
     OUTPUT_FILE,
@@ -281,77 +287,101 @@ def main(args) -> None:
     if input_file is None:
         print("Generating input data...")
         room_id = "room"
+        room_module = RandomRoomModuleGenerator(
+            weight=1,
+            name="Room",
+            id=room_id,
+            xy_scale_range=(30, 100),
+            z_scale_range=(20, 40),
+        )
         modules = [
             RandomSunModuleGenerator(
                 weight=1, name="Sun", id="sun", energy_range=(0.5, 1.5)
             ),
-            RandomRoomModuleGenerator(
-                weight=1,
-                name="Room",
-                id=room_id,
-                xy_scale_range=(30, 100),
-                z_scale_range=(20, 40),
-            ),
-            [
-                RandomChristmasTreeModuleGenerator(
-                    weight=1,
-                    priority=0,
-                    name="ChristmasTree",
-                    id="christmas_tree",
-                    room_id=room_id,
-                    height_range=(5, 10),
-                    radius_range=(1, 2),
-                    n_leds_range=(100, 200),
-                    led_radius_range=(0.02, 0.04),
-                    emission_range=(1, 5),
-                    flicker_probability_range=(0, 0.1),
-                    padding=0.1,
-                ),
-            ],
-            [
-                RandomTableModuleGenerator(
-                    weight=3,
-                    priority=1,
-                    name="TableUnlimited",
-                    id="table_unlimited",
-                    room_id=room_id,
-                    n_tables=-1,
-                    xy_scale_range=(2, 5),
-                    z_scale_range=(1, 3),
-                    top_thickness_range=(0.1, 0.2),
-                    leg_thickness_range=(0.1, 0.2),
-                    padding=0.1,
-                ),
-                RandomTableModuleGenerator(
-                    weight=1,
-                    priority=0,
-                    name="TableSmall",
-                    id="table_small",
-                    room_id=room_id,
-                    n_tables=5,
-                    xy_scale_range=(1, 2),
-                    z_scale_range=(1, 3),
-                    top_thickness_range=(0.1, 0.2),
-                    leg_thickness_range=(0.1, 0.2),
-                    padding=0.1,
-                ),
-                RandomTableModuleGenerator(
+            AllOf(
+                modules=[
+                    RandomChristmasTreeModuleGenerator(
+                        weight=1,
+                        priority=0,
+                        name="ChristmasTreeBig",
+                        id="christmas_tree_big",
+                        room_id=room_id,
+                        height_range=(5, 10),
+                        radius_range=(1, 2),
+                        n_leds_range=(100, 200),
+                        led_radius_range=(0.02, 0.04),
+                        emission_range=(1, 5),
+                        flicker_probability_range=(0, 0.1),
+                        padding=0.1,
+                    ),
+                    RandomChristmasTreeModuleGenerator(
+                        weight=1,
+                        priority=0,
+                        name="ChristmasTreeSmall",
+                        id="christmas_tree_small",
+                        room_id=room_id,
+                        height_range=(1, 2),
+                        radius_range=(0.4, 0.8),
+                        n_leds_range=(10, 20),
+                        led_radius_range=(0.01, 0.02),
+                        emission_range=(1, 3),
+                        flicker_probability_range=(0, 0.1),
+                        padding=0.1,
+                    ),
+                ],
                 weight=1,
                 priority=0,
-                name="TableBig",
-                id="table_big",
-                room_id=room_id,
-                n_tables=3,
-                xy_scale_range=(5, 8),
-                z_scale_range=(2, 3),
-                top_thickness_range=(0.4, 0.6),
-                leg_thickness_range=(0.4, 0.6),
-                padding=0.1,
-                ),
-            ],
+            ),
+            OneOf(
+                modules=[
+                    RandomTableModuleGenerator(
+                        weight=3,
+                        priority=1,
+                        name="TableUnlimited",
+                        id="table_unlimited",
+                        room_id=room_id,
+                        n_tables=-1,
+                        xy_scale_range=(2, 5),
+                        z_scale_range=(1, 3),
+                        top_thickness_range=(0.1, 0.2),
+                        leg_thickness_range=(0.1, 0.2),
+                        padding=0.1,
+                    ),
+                    RandomTableModuleGenerator(
+                        weight=1,
+                        priority=0,
+                        name="TableSmall",
+                        id="table_small",
+                        room_id=room_id,
+                        n_tables=5,
+                        xy_scale_range=(1, 2),
+                        z_scale_range=(1, 3),
+                        top_thickness_range=(0.1, 0.2),
+                        leg_thickness_range=(0.1, 0.2),
+                        padding=0.1,
+                    ),
+                    RandomTableModuleGenerator(
+                        weight=1,
+                        priority=0,
+                        name="TableBig",
+                        id="table_big",
+                        room_id=room_id,
+                        n_tables=3,
+                        xy_scale_range=(5, 8),
+                        z_scale_range=(2, 3),
+                        top_thickness_range=(0.4, 0.6),
+                        leg_thickness_range=(0.4, 0.6),
+                        padding=0.1,
+                    ),
+                ],
+                weight=1,
+                priority=0,
+            ),
         ]
-        input_data_generator = InputDataGenerator(modules=modules, seed=SEED)
-        input_data = input_data_generator.generate_input_data_from_modules()
+        input_data_generator = InputDataGenerator(
+            room_module=room_module, modules=modules, seed=SEED
+        )
+        input_data = input_data_generator.generate_input_data()
         # input_data = input_data_generator.generate_input_data()
         input_file_parser = InputDataParser(input_data)
         input_data = input_file_parser.parse(armature)

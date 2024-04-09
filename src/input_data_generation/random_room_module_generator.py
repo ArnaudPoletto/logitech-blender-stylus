@@ -1,5 +1,5 @@
 import random
-from typing import Tuple
+from typing import List, Tuple
 
 from utils.config import RESOLUTION_DIGITS
 from input_data_generation.module_generator import ModuleGenerator
@@ -62,13 +62,9 @@ class RandomRoomModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
+        wall_scales_per_wall: dict = None,
+        existing_objects_per_wall: dict = None,
     ) -> Tuple[dict, dict]:
-        """
-        Generate the random room.
-
-        Returns:
-            Tuple[dict, dict]: The room data and the scales of the room.
-        """
         scale_x = int(round(random.uniform(*self.xy_scale_range), RESOLUTION_DIGITS))
         scale_y = int(round(random.uniform(*self.xy_scale_range), RESOLUTION_DIGITS))
         scale_z = int(round(random.uniform(*self.z_scale_range), RESOLUTION_DIGITS))
@@ -98,7 +94,7 @@ class RandomRoomModuleGenerator(ModuleGenerator):
         left_wall_scale = (scale_y, scale_z)
         right_wall_scale = (scale_y, scale_z)
 
-        scales = {
+        wall_scales_per_wall = {
             ModuleGeneratorType.ROOM_FLOOR: floor_scale,
             ModuleGeneratorType.ROOM_CEILING: ceiling_scale,
             ModuleGeneratorType.ROOM_FRONT_WALL: front_wall_scale,
@@ -107,4 +103,4 @@ class RandomRoomModuleGenerator(ModuleGenerator):
             ModuleGeneratorType.ROOM_RIGHT_WALL: right_wall_scale,
         }
 
-        return room_data, scales
+        return room_data, wall_scales_per_wall

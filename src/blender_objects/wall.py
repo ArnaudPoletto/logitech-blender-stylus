@@ -71,24 +71,11 @@ class Wall(BlenderObject):
         wall_min_y = -self.scale.y / 2
         wall_max_y = self.scale.y / 2
 
-        if not (relative_blender_object_min_x >= wall_min_x or np.isclose(relative_blender_object_min_x, wall_min_x, atol=1e-1)):
-            print(f"relative_blender_object_min_x: {relative_blender_object_min_x}")
-            print(f"wall_min_x: {wall_min_x}")
-        if not (relative_blender_object_max_x <= wall_max_x or np.isclose(relative_blender_object_max_x, wall_max_x, atol=1e-1)):
-            print(f"relative_blender_object_max_x: {relative_blender_object_max_x}")
-            print(f"wall_max_x: {wall_max_x}")
-        if not (relative_blender_object_min_y >= wall_min_y or np.isclose(relative_blender_object_min_y, wall_min_y, atol=1e-1)):
-            print(f"relative_blender_object_min_y: {relative_blender_object_min_y}")
-            print(f"wall_min_y: {wall_min_y}")
-        if not (relative_blender_object_max_y <= wall_max_y or np.isclose(relative_blender_object_max_y, wall_max_y, atol=1e-1)):
-            print(f"relative_blender_object_max_y: {relative_blender_object_max_y}")
-            print(f"wall_max_y: {wall_max_y}")
-        
         return (
-            (relative_blender_object_min_x >= wall_min_x or np.isclose(relative_blender_object_min_x, wall_min_x, atol=1e-1))
-            and (relative_blender_object_max_x <= wall_max_x or np.isclose(relative_blender_object_max_x, wall_max_x, atol=1e-1))
-            and (relative_blender_object_min_y >= wall_min_y or np.isclose(relative_blender_object_min_y, wall_min_y, atol=1e-1))
-            and (relative_blender_object_max_y <= wall_max_y or np.isclose(relative_blender_object_max_y, wall_max_y, atol=1e-1))
+            relative_blender_object_min_x >= wall_min_x
+            and relative_blender_object_max_x <= wall_max_x
+            and relative_blender_object_min_y >= wall_min_y
+            and relative_blender_object_max_y <= wall_max_y
         )
 
     def _relative_blender_object_does_not_intersect(
@@ -138,17 +125,11 @@ class Wall(BlenderObject):
     def add_relative_blender_object(
         self, relative_blender_object: RelativeBlenderObject
     ) -> None:
-        """
-        Add a relative Blender object to the Blender Object.
-
-        Args:
-            relative_blender_object (RelativeBlenderObject): The relative Blender object to add to the Blender Object.
-        """
         if not self._relative_blender_object_is_in_bounds(relative_blender_object):
             pass
-            #raise ValueError(
+            # raise ValueError(
             #    f"Relative Blender object {relative_blender_object.name} is not in bounds of the wall."
-            #)
+            # )
 
         if not self._relative_blender_object_does_not_intersect(
             relative_blender_object

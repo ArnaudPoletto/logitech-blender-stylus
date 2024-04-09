@@ -61,20 +61,12 @@ class RandomTableModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        wall_scale: Tuple[int, int],
-        existing_objects: List[Tuple[int, int, int, int]],
+        wall_scales_per_wall: dict = None,
+        existing_objects_per_wall: dict = None,
     ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
-        """
-        Generate the random tables.
+        wall_scale = wall_scales_per_wall[self.type]
+        existing_objects = existing_objects_per_wall[self.type]
         
-        Args:
-            wall_scale (Tuple[int, int]): The scale of the wall.
-            existing_objects (List[Tuple[int, int, int, int]]): The existing objects in the room.
-
-        Returns:
-            dict: The tables data.
-            List[Tuple[int, int, int, int]]: The updated existing objects.
-        """
         width, length = wall_scale
         resolution = 10**RESOLUTION_DIGITS
         padding_resolution = int(self.padding * resolution)
@@ -142,4 +134,7 @@ class RandomTableModuleGenerator(ModuleGenerator):
             n_placed_tables += 1
             bar.update(1)
             
-        return tables_data, existing_objects
+        # Update existing objects on the used wall
+        existing_objects_per_wall[self.type] = existing_objects
+            
+        return tables_data, existing_objects_per_wall

@@ -2,7 +2,7 @@ import bpy
 import math
 import random
 from typing import Tuple
-from mathutils import Vector, Euler
+from mathutils import Vector
 
 from blender_objects.relative_blender_object import RelativeBlenderObject
 
@@ -34,6 +34,7 @@ class ChristmasTree(RelativeBlenderObject):
             n_leds (int): The number of LEDs on the Christmas tree.
             led_radius_range (Tuple[float, float]): The range of the radius of the LEDs.
             emission_range (Tuple[float, float]): The range of the emission of the LEDs.
+            flicker_probability (float): The probability of each LEDs flickering at each frame.
 
         Raises:
             ValueError: If the height of the Christmas tree is less than or equal to 0.
@@ -46,35 +47,32 @@ class ChristmasTree(RelativeBlenderObject):
         """
         if height <= 0:
             raise ValueError("The height of the Christmas tree must be greater than 0.")
-
         if radius <= 0:
             raise ValueError("The radius of the Christmas tree must be greater than 0.")
-
-        if n_leds < 1:
+        if n_leds <= 0:
             raise ValueError("The number of LEDs must be greater than 0.")
-
-        if led_radius_range[0] < 0:
+        if led_radius_range[0] <= 0:
             raise ValueError("The minimum radius of the LEDs must be greater than 0.")
-
         if led_radius_range[1] < led_radius_range[0]:
             raise ValueError(
                 "The maximum radius of the LEDs must be greater than the minimum radius."
             )
-
         if emission_range[0] < 0:
             raise ValueError("The minimum emission of the LEDs must be greater than 0.")
-
         if emission_range[1] < emission_range[0]:
             raise ValueError(
                 "The maximum emission of the LEDs must be greater than the minimum emission."
             )
-
         if flicker_probability < 0 or flicker_probability > 1:
             raise ValueError("The flicker probability must be between 0 and 1.")
 
         # Define relative location at center of the base and object relative location at the center of the object
-        self.object_relative_location = Vector((relative_location.x, relative_location.y, 0))
-        relative_location = Vector((relative_location.x, relative_location.y, height / 2))
+        self.object_relative_location = Vector(
+            (relative_location.x, relative_location.y, 0)
+        )
+        relative_location = Vector(
+            (relative_location.x, relative_location.y, height / 2)
+        )
         super(ChristmasTree, self).__init__(
             name=name, relative_location=relative_location
         )
@@ -85,7 +83,7 @@ class ChristmasTree(RelativeBlenderObject):
         self.led_radius_range = led_radius_range
         self.emission_range = emission_range
         self.flicker_probability = flicker_probability
-        
+
     def get_bounds(
         self,
     ) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]:
@@ -93,22 +91,22 @@ class ChristmasTree(RelativeBlenderObject):
         max_x = self.radius
         min_y = -self.radius
         max_y = self.radius
-        
+
         return (min_x, max_x), (min_y, max_y), (0, 0)
 
     def apply_to_collection(
-        self, 
-        collection: bpy.types.Collection,
-        blender_object: bpy.types.Object
+        self, collection: bpy.types.Collection, blender_object: bpy.types.Object
     ) -> None:
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Add Christmas tree to the collection, a cone with a cylinder as the base
-        scaled_relative_location = Vector((
-            self.relative_location.x / blender_object.scale.x,
-            self.relative_location.y / blender_object.scale.y,
-            self.relative_location.z / blender_object.scale.z,
-        ))
+        scaled_relative_location = Vector(
+            (
+                self.relative_location.x / blender_object.scale.x,
+                self.relative_location.y / blender_object.scale.y,
+                self.relative_location.z / blender_object.scale.z,
+            )
+        )
         location = blender_object.matrix_world @ scaled_relative_location
         bpy.ops.mesh.primitive_cone_add(
             vertices=128,
@@ -150,11 +148,13 @@ class ChristmasTree(RelativeBlenderObject):
                     self.object_relative_location.z + z,
                 )
             )
-            scaled_led_location = Vector((
-                led_location.x / blender_object.scale.x,
-                led_location.y / blender_object.scale.y,
-                led_location.z / blender_object.scale.z,
-            ))
+            scaled_led_location = Vector(
+                (
+                    led_location.x / blender_object.scale.x,
+                    led_location.y / blender_object.scale.y,
+                    led_location.z / blender_object.scale.z,
+                )
+            )
             led_location = blender_object.matrix_world @ scaled_led_location
             led_object.location = led_location
 

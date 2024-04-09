@@ -1,9 +1,8 @@
 import bpy
-import math
 from mathutils import Vector
 
-from utils.axis import Axis
 from blender_objects.window_decorator import WindowDecorator
+
 
 class Shades(WindowDecorator):
     """
@@ -43,8 +42,8 @@ class Shades(WindowDecorator):
         collection: bpy.types.Collection,
         blender_object: bpy.types.Object,
     ) -> None:
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
+        bpy.ops.object.mode_set(mode="OBJECT")
+
         # Add shade to the wall
         bpy.ops.mesh.primitive_plane_add(size=1)
         shape_object = bpy.context.view_layer.objects.active
@@ -54,18 +53,21 @@ class Shades(WindowDecorator):
         shape_object.location = blender_object.matrix_world @ Vector(
             (0, location_offset, 0)
         )
-        shape_object.scale = Vector((blender_object.scale.x, blender_object.scale.y * self.shade_ratio, 1))
-        
+        shape_object.scale = Vector(
+            (blender_object.scale.x, blender_object.scale.y * self.shade_ratio, 1)
+        )
+
         # Change material of shade to make it transparent
         material_name = f"Shade{self.transmission}"
         if material_name not in bpy.data.materials:
             bpy.data.materials.new(name=material_name)
             material = bpy.data.materials[material_name]
             material.use_nodes = True
-            material.node_tree.nodes["Principled BSDF"].inputs["Transmission Weight"].default_value = self.transmission
+            material.node_tree.nodes["Principled BSDF"].inputs[
+                "Transmission Weight"
+            ].default_value = self.transmission
         shape_object.data.materials.append(bpy.data.materials[material_name])
-        
-            
+
         # Add shade to collection
         collection.objects.link(shape_object)
         bpy.context.view_layer.update()

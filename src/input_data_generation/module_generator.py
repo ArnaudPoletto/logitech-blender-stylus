@@ -1,3 +1,4 @@
+from typing import Tuple
 from abc import abstractmethod
 
 from input_data_generation.module_generator_type import ModuleGeneratorType
@@ -35,14 +36,18 @@ class ModuleGenerator:
     @abstractmethod
     def generate(
         self,
-    ) -> dict:
+        wall_scales_per_wall: dict = None,
+        existing_objects_per_wall: dict = None,
+    ) -> Tuple[dict, dict]:
         """
         Generate the module.
 
         Args:
-            mask (np.array): The mask of the module. Defaults to None.
+            wall_scales_per_wall (dict): The scale of each wall.
+            existing_objects_per_wall (dict): The existing objects for each wall.
 
         Returns:
             dict: The module data.
+            dict: Updated data of existing objects or scales for the room.
         """
         raise NotImplementedError("The generate method must be implemented.")

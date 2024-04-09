@@ -1,9 +1,9 @@
 import bpy
-import math
 from mathutils import Vector
 
 from utils.axis import Axis
 from blender_objects.window_decorator import WindowDecorator
+
 
 class Muntins(WindowDecorator):
     """
@@ -33,13 +33,15 @@ class Muntins(WindowDecorator):
         """
         if size <= 0:
             raise ValueError("The size of the muntins must be greater than 0.")
-        
         if n_muntins_width < 1:
-            raise ValueError("The number of muntins in the width must be greater than 0.")
-        
+            raise ValueError(
+                "The number of muntins in the width must be greater than 0."
+            )
         if n_muntins_height < 1:
-            raise ValueError("The number of muntins in the height must be greater than 0.")
-        
+            raise ValueError(
+                "The number of muntins in the height must be greater than 0."
+            )
+
         super(Muntins, self).__init__(name=name)
 
         self.size = size
@@ -102,8 +104,12 @@ class Muntins(WindowDecorator):
         collection: bpy.types.Collection,
         blender_object: bpy.types.Object,
     ) -> None:
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
-        self._apply_muntins(collection, blender_object, Axis.X_AXIS, self.n_muntins_width)
-        self._apply_muntins(collection, blender_object, Axis.Y_AXIS, self.n_muntins_height)
+        bpy.ops.object.mode_set(mode="OBJECT")
+
+        self._apply_muntins(
+            collection, blender_object, Axis.X_AXIS, self.n_muntins_width
+        )
+        self._apply_muntins(
+            collection, blender_object, Axis.Y_AXIS, self.n_muntins_height
+        )
         bpy.context.view_layer.update()

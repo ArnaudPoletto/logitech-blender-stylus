@@ -26,6 +26,7 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
         flicker_probability_range: Tuple[float, float],
         padding: float,
     ) -> None:
+        # TODO: documentation
         # TODO: add value error checks
         
         super(RandomChristmasTreeModuleGenerator, self).__init__(
@@ -47,20 +48,12 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
         
     def generate(
         self,
-        wall_scale: Tuple[int, int],
-        existing_objects: List[Tuple[int, int, int, int]],
+        wall_scales_per_wall: dict = None,
+        existing_objects_per_wall: dict = None,
     ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
-        """
-        Generate the christmas tree.
+        wall_scale = wall_scales_per_wall[self.type]
+        existing_objects = existing_objects_per_wall[self.type]
         
-        Args:
-            wall_scale (Tuple[int, int]): The scale of the wall.
-            existing_objects (List[Tuple[int, int, int, int]]): The existing objects in the room.
-            
-        Returns:
-            dict: The christmas tree data.
-            List[Tuple[int, int, int, int]]: The updated existing objects in the room.
-        """
         width, length = wall_scale
         resolution = 10**RESOLUTION_DIGITS
         padding_resolution = int(self.padding * resolution)
@@ -126,4 +119,7 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
             }
         }
         
-        return christmas_tree_data, existing_objects
+        # Update existing objects on the used wall
+        existing_objects_per_wall[self.type] = existing_objects
+        
+        return christmas_tree_data, existing_objects_per_wall
