@@ -65,10 +65,12 @@ class RandomRoomModuleGenerator(ModuleGenerator):
         wall_scales_per_wall: dict = None,
         existing_objects_per_wall: dict = None,
     ) -> Tuple[dict, dict]:
+        # Get random room parameters
         scale_x = int(round(random.uniform(*self.xy_scale_range), RESOLUTION_DIGITS))
         scale_y = int(round(random.uniform(*self.xy_scale_range), RESOLUTION_DIGITS))
         scale_z = int(round(random.uniform(*self.z_scale_range), RESOLUTION_DIGITS))
 
+        # Define data
         room_data = {
             "blender_objects": {
                 self.id: {
@@ -93,7 +95,6 @@ class RandomRoomModuleGenerator(ModuleGenerator):
         back_wall_scale = (scale_x, scale_z)
         left_wall_scale = (scale_y, scale_z)
         right_wall_scale = (scale_y, scale_z)
-
         wall_scales_per_wall = {
             ModuleGeneratorType.ROOM_FLOOR: floor_scale,
             ModuleGeneratorType.ROOM_CEILING: ceiling_scale,

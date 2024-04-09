@@ -2,7 +2,7 @@ import random
 import numpy as np
 from typing import List
 
-from input_data_generation.module_operator import ModuleOperator
+from module_operators.module_operator import ModuleOperator
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
 

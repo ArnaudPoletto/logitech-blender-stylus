@@ -3,7 +3,7 @@ from enum import Enum
 
 class ModuleGeneratorType(Enum):
     """
-    Represents the type of module generator.
+    A type of module generator.
     """
 
     GLOBAL = "global"

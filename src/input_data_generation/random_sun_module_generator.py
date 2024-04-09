@@ -52,10 +52,12 @@ class RandomSunModuleGenerator(ModuleGenerator):
         wall_scales_per_wall: dict = None,
         existing_objects_per_wall: dict = None,
     ) -> dict:
+        # Get random sun parameters
         rotation_y = random.uniform(-math.pi / 2, math.pi / 2)
         rotation_z = random.uniform(0, 2 * math.pi)
         energy = random.uniform(*self.energy_range)
 
+        # Define sun data
         sun_data = {
             "blender_objects": {
                 self.id: {

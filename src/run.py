@@ -32,8 +32,8 @@ for path, name in zip(paths, names):
 
 from utils.bone import Bone
 from utils import argument_parser
-from input_data_generation.all_of import AllOf
-from input_data_generation.one_of import OneOf
+from module_operators.all_of import AllOf
+from module_operators.one_of import OneOf
 from utils.input_data_parser import InputDataParser
 from gestures.gesture_sequence import GestureSequence
 from blender_collections.blender_collection import BlenderCollection
