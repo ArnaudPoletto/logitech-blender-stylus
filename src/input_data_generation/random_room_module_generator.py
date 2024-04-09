@@ -1,5 +1,4 @@
 import random
-import numpy as np
 from typing import Tuple
 
 from utils.config import RESOLUTION_DIGITS
@@ -11,10 +10,10 @@ class RandomRoomModuleGenerator(ModuleGenerator):
     """
     A random room module generator, linked to an input data generator to generate room data.
     """
+
     def __init__(
         self,
         weight: float,
-        priority: int,
         name: str,
         id: str,
         xy_scale_range: Tuple[float, float],
@@ -25,7 +24,6 @@ class RandomRoomModuleGenerator(ModuleGenerator):
 
         Args:
             weight (float): The weight of the module, used to determine the probability of the module being selected.
-            priority (int): The priority of the module, used to determine the order in which the modules are executed, lower values are executed first.
             name (str): The name of the room.
             id (str): The id of the room.
             xy_scale_range (Tuple[float, float]): The range of xy scale values for the room.
@@ -53,7 +51,7 @@ class RandomRoomModuleGenerator(ModuleGenerator):
 
         super(RandomRoomModuleGenerator, self).__init__(
             weight=weight,
-            priority=priority,
+            priority=0,
             type=ModuleGeneratorType.GLOBAL,
             name=name,
             id=id,
@@ -64,8 +62,7 @@ class RandomRoomModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        mask: np.array = None,
-        ) -> Tuple[dict, dict]:
+    ) -> Tuple[dict, dict]:
         """
         Generate the random room.
 
@@ -92,7 +89,7 @@ class RandomRoomModuleGenerator(ModuleGenerator):
                 }
             }
         }
-        
+
         # Get wall scales
         floor_scale = (scale_y, scale_x)
         ceiling_scale = (scale_y, scale_x)

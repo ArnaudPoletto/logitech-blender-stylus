@@ -19,7 +19,7 @@ class ChristmasTree(RelativeBlenderObject):
         height: float,
         radius: float,
         n_leds: int,
-        radius_range: Tuple[float, float],
+        led_radius_range: Tuple[float, float],
         emission_range: Tuple[float, float],
         flicker_probability: float,
     ) -> None:
@@ -32,7 +32,7 @@ class ChristmasTree(RelativeBlenderObject):
             height (float): The height of the Christmas tree.
             radius (float): The radius of the Christmas tree.
             n_leds (int): The number of LEDs on the Christmas tree.
-            radius_range (Tuple[float, float]): The range of the radius of the LEDs.
+            led_radius_range (Tuple[float, float]): The range of the radius of the LEDs.
             emission_range (Tuple[float, float]): The range of the emission of the LEDs.
 
         Raises:
@@ -53,10 +53,10 @@ class ChristmasTree(RelativeBlenderObject):
         if n_leds < 1:
             raise ValueError("The number of LEDs must be greater than 0.")
 
-        if radius_range[0] < 0:
+        if led_radius_range[0] < 0:
             raise ValueError("The minimum radius of the LEDs must be greater than 0.")
 
-        if radius_range[1] < radius_range[0]:
+        if led_radius_range[1] < led_radius_range[0]:
             raise ValueError(
                 "The maximum radius of the LEDs must be greater than the minimum radius."
             )
@@ -82,7 +82,7 @@ class ChristmasTree(RelativeBlenderObject):
         self.height = height
         self.radius = radius
         self.n_leds = n_leds
-        self.radius_range = radius_range
+        self.led_radius_range = led_radius_range
         self.emission_range = emission_range
         self.flicker_probability = flicker_probability
         
@@ -137,7 +137,7 @@ class ChristmasTree(RelativeBlenderObject):
 
             # Add object
             bpy.ops.mesh.primitive_uv_sphere_add(
-                radius=random.uniform(*self.radius_range),
+                radius=random.uniform(*self.led_radius_range),
             )
             led_object = bpy.context.object
             led_object.name = f"{self.name}LED{i}"
