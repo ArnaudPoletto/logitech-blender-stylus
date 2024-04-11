@@ -2,6 +2,7 @@ import os
 import bpy
 import sys
 import json
+import math
 import importlib.util
 from tqdm import tqdm
 from typing import Tuple
@@ -15,6 +16,7 @@ paths = [
     os.path.join(wrk_dir, "blender_objects/__init__.py"),
     os.path.join(wrk_dir, "blender_collections/__init__.py"),
     os.path.join(wrk_dir, "input_data_generation/__init__.py"),
+    os.path.join(wrk_dir, "module_operators/__init__.py"),
 ]
 names = [
     "utils",
@@ -22,6 +24,7 @@ names = [
     "blender_objects",
     "blender_collections",
     "input_data_generation",
+    "module_operators",
 ]
 
 for path, name in zip(paths, names):
@@ -31,20 +34,38 @@ for path, name in zip(paths, names):
     spec.loader.exec_module(module)
 
 from utils.bone import Bone
+from utils.seed import set_seed
 from utils import argument_parser
 from module_operators.all_of import AllOf
 from module_operators.one_of import OneOf
+from module_operators.some_of import SomeOf
 from utils.input_data_parser import InputDataParser
 from gestures.gesture_sequence import GestureSequence
 from blender_collections.blender_collection import BlenderCollection
 from input_data_generation.input_data_generator import InputDataGenerator
+from input_data_generation.module_generator_type import ModuleGeneratorType
 from input_data_generation.random_sun_module_generator import RandomSunModuleGenerator
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
 from input_data_generation.random_table_module_generator import (
     RandomTableModuleGenerator,
 )
+from input_data_generation.random_window_module_generator import (
+    RandomWindowModuleGenerator,
+)
+from input_data_generation.random_wall_lamp_module_generator import (
+    RandomWallLampModuleGenerator,
+)
 from input_data_generation.random_christmas_tree_module_generator import (
     RandomChristmasTreeModuleGenerator,
+)
+from input_data_generation.perlin_rotation_sine_gesture_module_generator import (
+    PerlinRotationSineGestureModuleGenerator,
+)
+from input_data_generation.perlin_rotation_wave_gesture_module_generator import (
+    PerlinRotationWaveGestureModuleGenerator,
+)
+from input_data_generation.random_camera_module_generator import (
+    RandomCameraModuleGenerator,
 )
 from utils.config import (
     INPUTS_FOLDER,
@@ -53,7 +74,6 @@ from utils.config import (
     CAMERA_NAME,
     STYLUS_OUTER_NAME,
     ARMATURE_NAME,
-    SEED,
 )
 
 
@@ -291,48 +311,134 @@ def main(args) -> None:
             weight=1,
             name="Room",
             id=room_id,
-            xy_scale_range=(30, 100),
-            z_scale_range=(20, 40),
+            xy_scale_range=(20, 100),
+            z_scale_range=(10, 25),
         )
         modules = [
+            RandomCameraModuleGenerator(
+                name="Camera",
+                id="camera",
+                xy_distance_range=(3, 9),
+                z_distance_range=(0, 1),
+                fixation_point_range=0,
+            ),
             RandomSunModuleGenerator(
                 weight=1, name="Sun", id="sun", energy_range=(0.5, 1.5)
             ),
-            AllOf(
-                modules=[
-                    RandomChristmasTreeModuleGenerator(
-                        weight=1,
-                        priority=0,
-                        name="ChristmasTreeBig",
-                        id="christmas_tree_big",
-                        room_id=room_id,
-                        height_range=(5, 10),
-                        radius_range=(1, 2),
-                        n_leds_range=(100, 200),
-                        led_radius_range=(0.02, 0.04),
-                        emission_range=(1, 5),
-                        flicker_probability_range=(0, 0.1),
-                        padding=0.1,
-                    ),
-                    RandomChristmasTreeModuleGenerator(
-                        weight=1,
-                        priority=0,
-                        name="ChristmasTreeSmall",
-                        id="christmas_tree_small",
-                        room_id=room_id,
-                        height_range=(1, 2),
-                        radius_range=(0.4, 0.8),
-                        n_leds_range=(10, 20),
-                        led_radius_range=(0.01, 0.02),
-                        emission_range=(1, 3),
-                        flicker_probability_range=(0, 0.1),
-                        padding=0.1,
-                    ),
-                ],
+            RandomChristmasTreeModuleGenerator(
                 weight=1,
                 priority=0,
+                name="ChristmasTree",
+                id="christmas_tree",
+                room_id=room_id,
+                height_range=(5, 10),
+                radius_range=(1, 2),
+                n_leds_range=(50, 200),
+                led_radius_range=(0.03, 0.06),
+                emission_range=(1, 5),
+                flicker_probability_range=(0, 0.1),
+                padding=0.1,
             ),
-            OneOf(
+            RandomWallLampModuleGenerator(
+                weight=1,
+                priority=0,
+                name="WallLamp",
+                id="wall_lamp",
+                room_id=room_id,
+                n_wall_lamps=10,
+                xy_scale_range=(1, 2),
+                emission_strength_range=(1, 5),
+                padding=0.1,
+            ),
+            RandomWindowModuleGenerator(
+                weight=1,
+                priority=0,
+                wall_type=ModuleGeneratorType.FRONT_WALL,
+                name="WindowFront",
+                id="window_front",
+                room_id=room_id,
+                n_windows=10,
+                xy_scale_range=(1, 4),
+                shades_probability=0.5,
+                shade_ratio_range=(0.1, 0.9),
+                shade_transmission_range=(0.1, 0.9),
+                blinds_probability=0.3,
+                n_blinds_range=(5, 20),
+                blind_angle_range=(0, math.pi),
+                blind_vertical=True,
+                muntins_probability=0.3,
+                muntin_size_range=(0.1, 0.2),
+                n_muntins_width_range=(1, 4),
+                n_muntins_height_range=(1, 4),
+                padding=0.1,
+            ),
+            RandomWindowModuleGenerator(
+                weight=1,
+                priority=0,
+                wall_type=ModuleGeneratorType.BACK_WALL,
+                name="WindowBack",
+                id="window_back",
+                room_id=room_id,
+                n_windows=10,
+                xy_scale_range=(1, 4),
+                shades_probability=0.5,
+                shade_ratio_range=(0.1, 0.9),
+                shade_transmission_range=(0.1, 0.9),
+                blinds_probability=0.3,
+                n_blinds_range=(5, 20),
+                blind_angle_range=(0, math.pi),
+                blind_vertical=True,
+                muntins_probability=0.3,
+                muntin_size_range=(0.1, 0.2),
+                n_muntins_width_range=(1, 4),
+                n_muntins_height_range=(1, 4),
+                padding=0.1,
+            ),
+            RandomWindowModuleGenerator(
+                weight=1,
+                priority=0,
+                wall_type=ModuleGeneratorType.LEFT_WALL,
+                name="WindowLeft",
+                id="window_left",
+                room_id=room_id,
+                n_windows=10,
+                xy_scale_range=(1, 4),
+                shades_probability=0.5,
+                shade_ratio_range=(0.1, 0.9),
+                shade_transmission_range=(0.1, 0.9),
+                blinds_probability=0.3,
+                n_blinds_range=(5, 20),
+                blind_angle_range=(0, math.pi),
+                blind_vertical=True,
+                muntins_probability=0.3,
+                muntin_size_range=(0.1, 0.2),
+                n_muntins_width_range=(1, 4),
+                n_muntins_height_range=(1, 4),
+                padding=0.1,
+            ),
+            RandomWindowModuleGenerator(
+                weight=1,
+                priority=0,
+                wall_type=ModuleGeneratorType.RIGHT_WALL,
+                name="WindowRight",
+                id="window_right",
+                room_id=room_id,
+                n_windows=10,
+                xy_scale_range=(1, 4),
+                shades_probability=0.5,
+                shade_ratio_range=(0.1, 0.9),
+                shade_transmission_range=(0.1, 0.9),
+                blinds_probability=0.3,
+                n_blinds_range=(5, 20),
+                blind_angle_range=(0, math.pi),
+                blind_vertical=True,
+                muntins_probability=0.3,
+                muntin_size_range=(0.1, 0.2),
+                n_muntins_width_range=(1, 4),
+                n_muntins_height_range=(1, 4),
+                padding=0.1,
+            ),
+            SomeOf(
                 modules=[
                     RandomTableModuleGenerator(
                         weight=3,
@@ -375,11 +481,29 @@ def main(args) -> None:
                     ),
                 ],
                 weight=1,
-                priority=0,
+                priority=1,
+            ),
+            PerlinRotationSineGestureModuleGenerator(
+                id="perlin_rotation",
+                start_frame=1,
+                end_frame=250,
+                period_range=(1, 4),
+                amplitude_range=(0.5, 2),
+                persistance=0.3,
+                n_octaves=5,
+            ),
+            PerlinRotationWaveGestureModuleGenerator(
+                id="perlin_rotation",
+                start_frame=250,
+                end_frame=500,
+                period_range=(1, 4),
+                amplitude_range=(0.5, 2),
+                persistance=0.3,
+                n_octaves=5,
             ),
         ]
         input_data_generator = InputDataGenerator(
-            room_module=room_module, modules=modules, seed=SEED
+            room_module=room_module, modules=modules
         )
         input_data = input_data_generator.generate_input_data()
         # input_data = input_data_generator.generate_input_data()
@@ -421,6 +545,8 @@ def main(args) -> None:
 
 if __name__ == "__main__":
     # blender --python run.py -- -gef "gestures.json" -r false
+    set_seed()
+
     parser = get_parser()
     args = parser.parse_args()
 

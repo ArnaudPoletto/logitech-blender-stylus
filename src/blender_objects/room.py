@@ -87,12 +87,6 @@ class Room(BlenderObject):
         self._define_walls(scale)
         
     def apply_to_collection(self, collection: bpy.types.Collection) -> None:
-        """
-        Apply the Blender object to the collection.
-
-        Args:
-            collection (bpy.types.Collection): The collection to add the Blender object to.
-        """
         # Walls are not relative blender objects as they are the main tangible objects in the room.
         for wall in [
             self.right_wall,

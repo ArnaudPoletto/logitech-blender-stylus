@@ -18,7 +18,7 @@ class OneOf(ModuleOperator):
         Initialize the one of operator.
         
         Args:
-            modules (List[ModuleGenerator|OneOf|AllOf]): The modules to select from.
+            modules (List[ModuleGenerator|ModuleOperator]): The modules to select from.
             weight (float): The weight of the operator, used to determine the probability of the operator being selected.
             priority (int): The priority of the operator, used to determine the order of the operator being selected.
         """

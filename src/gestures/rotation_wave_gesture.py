@@ -21,7 +21,7 @@ class RotationWaveGesture(Gesture):
         hand: bpy.types.Bone,
         frame_rate: int,
         axis: Axis,
-        wave_frequency: float = 4.0,
+        wave_period: float = 4.0,
         wave_amplitude: float = 0.1,
         arm_phase_shift: float = 0.0,
         forearm_phase_shift: float = math.pi / 4,
@@ -41,7 +41,7 @@ class RotationWaveGesture(Gesture):
             hand (bpy.types.Bone): The hand bone.
             frame_rate (int): The frame rate.
             axis (str): The axis to rotate.
-            wave_frequency (float): The frequency of the wave. Defaults to 4.0.
+            wave_period (float): The period of the wave. Defaults to 4.0.
             wave_amplitude (float): The amplitude of the wave. Defaults to 0.1.
             arm_phase_shift (float): The phase shift of the arm wave. Defaults to 0.0.
             forearm_phase_shift (float): The phase shift of the forearm wave. Defaults to pi/4.
@@ -51,7 +51,7 @@ class RotationWaveGesture(Gesture):
 
         Raises:
             ValueError: If the axis is not an instance of Axis.
-            ValueError: If the wave frequency is less than or equal to 0.
+            ValueError: If the wave period is less than or equal to 0.
         """
         super(RotationWaveGesture, self).__init__(
             start_frame=start_frame,
@@ -65,12 +65,12 @@ class RotationWaveGesture(Gesture):
         if not isinstance(axis, Axis):
             raise ValueError("The axis must be an instance of Axis.")
 
-        if wave_frequency <= 0:
-            raise ValueError("The wave frequency must be greater than 0.")
+        if wave_period <= 0:
+            raise ValueError("The wave period must be greater than 0.")
 
         self.frame_rate = frame_rate
         self.axis = axis
-        self.wave_frequency = wave_frequency
+        self.wave_period = wave_period
         self.wave_amplitude = wave_amplitude
         self.arm_phase_shift = arm_phase_shift
         self.forearm_phase_shift = forearm_phase_shift
@@ -85,7 +85,7 @@ class RotationWaveGesture(Gesture):
         Returns:
             float: The rotation of the arm at the specified frame.
         """
-        wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_frequency
+        wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_period
         phase_shift = self.arm_phase_shift
         wave_amplitude = self.wave_amplitude
 
@@ -98,7 +98,7 @@ class RotationWaveGesture(Gesture):
         Returns:
             float: The rotation of the forearm at the specified frame.
         """
-        wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_frequency
+        wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_period
         phase_shift = self.arm_phase_shift + self.forearm_phase_shift
         wave_amplitude = self.wave_amplitude * self.forearm_amplitude_factor
 
@@ -111,7 +111,7 @@ class RotationWaveGesture(Gesture):
         Returns:
             float: The rotation of the hand at the specified frame.
         """
-        wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_frequency
+        wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_period
         phase_shift = (
             self.arm_phase_shift + self.forearm_phase_shift + self.hand_phase_shift
         )

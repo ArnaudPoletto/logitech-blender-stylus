@@ -144,8 +144,6 @@ class Wall(BlenderObject):
         self,
         collection: bpy.types.Collection,
     ) -> None:
-        bpy.ops.object.mode_set(mode="OBJECT")
-
         # Add wall
         bpy.ops.mesh.primitive_plane_add(size=1)
         wall_object = bpy.context.view_layer.objects.active

@@ -10,6 +10,7 @@ from blender_objects.room import Room
 from blender_objects.table import Table
 from blender_objects.blinds import Blinds
 from blender_objects.shades import Shades
+from blender_objects.camera import Camera
 from blender_objects.window import Window
 from blender_objects.muntins import Muntins
 from blender_objects.wall_lamp import WallLamp
@@ -90,18 +91,18 @@ class InputDataParser:
 
         # Reformat gestures
         new_gestures = []
-        for gesture in gestures:
-            if "type" not in gesture:
-                raise ValueError("No gesture type found in the input dat.")
+        for _, gesture_object in gestures.items():
+            if "type" not in gesture_object:
+                raise ValueError("No gesture type found in the input data.")
 
-            if "args" not in gesture:
+            if "args" not in gesture_object:
                 raise ValueError("No gesture args found in the input data.")
 
-            if gesture["type"] not in globals():
-                raise ValueError(f"Gesture type {gesture['type']} not found.")
+            if gesture_object["type"] not in globals():
+                raise ValueError(f"Gesture type {gesture_object['type']} not found.")
 
-            gesture_type = globals()[gesture["type"]]
-            gesture_args = gesture["args"]
+            gesture_type = globals()[gesture_object["type"]]
+            gesture_args = gesture_object["args"]
             new_gestures.append((gesture_type, gesture_args))
         gestures = new_gestures
 
