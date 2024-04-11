@@ -17,6 +17,7 @@ paths = [
     os.path.join(wrk_dir, "blender_collections/__init__.py"),
     os.path.join(wrk_dir, "input_data_generation/__init__.py"),
     os.path.join(wrk_dir, "module_operators/__init__.py"),
+    os.path.join(wrk_dir, "background_image/__init__.py"),
 ]
 names = [
     "utils",
@@ -25,6 +26,7 @@ names = [
     "blender_collections",
     "input_data_generation",
     "module_operators",
+    "background_image",
 ]
 
 for path, name in zip(paths, names):
@@ -44,6 +46,7 @@ from gestures.gesture_sequence import GestureSequence
 from blender_collections.blender_collection import BlenderCollection
 from input_data_generation.input_data_generator import InputDataGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
+from background_image.background_image_generator import BackgroundImageGenerator
 from input_data_generation.random_sun_module_generator import RandomSunModuleGenerator
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
 from input_data_generation.random_table_module_generator import (
@@ -506,7 +509,6 @@ def main(args) -> None:
             room_module=room_module, modules=modules
         )
         input_data = input_data_generator.generate_input_data()
-        # input_data = input_data_generator.generate_input_data()
         input_file_parser = InputDataParser(input_data)
         input_data = input_file_parser.parse(armature)
     else:
@@ -534,6 +536,13 @@ def main(args) -> None:
     blender_objects = input_data["blender_objects"]
     background = get_background(blender_objects)
     background.apply()
+
+    # Add background image
+    print("Adding background image...")
+    background_image_generator = BackgroundImageGenerator(
+        width=1920, height=1080 # TODO: remove hardcode
+    )
+    background_image_generator.apply_to_scene()
 
     # Render the animation if specified
     if args.render:
