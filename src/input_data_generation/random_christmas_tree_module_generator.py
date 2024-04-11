@@ -2,6 +2,7 @@ import random
 import numpy as np
 from typing import List, Tuple
 
+from utils.seed import set_seed
 from utils.config import RESOLUTION_DIGITS
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
@@ -120,7 +121,7 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
         super(RandomChristmasTreeModuleGenerator, self).__init__(
             weight=weight,
             priority=priority,
-            type=ModuleGeneratorType.ROOM_FLOOR,
+            type=ModuleGeneratorType.FLOOR,
             name=name,
             id=id,
         )
@@ -139,6 +140,8 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
         wall_scales_per_wall: dict = None,
         existing_objects_per_wall: dict = None,
     ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
+        set_seed()
+        
         wall_scale = wall_scales_per_wall[self.type]
         existing_objects = existing_objects_per_wall[self.type]
 

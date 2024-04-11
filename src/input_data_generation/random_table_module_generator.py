@@ -3,6 +3,7 @@ import numpy as np
 from typing import List, Tuple
 from tqdm import tqdm
 
+from utils.seed import set_seed
 from utils.config import RESOLUTION_DIGITS
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
@@ -36,7 +37,7 @@ class RandomTableModuleGenerator(ModuleGenerator):
             name (str): The prefix of the tables name.
             id (str): The prefix of the tables id.
             room_id (str): The id of the room.
-            n_tables (int): The number of tables to generate.
+            n_tables (int): The number of tables to generate, -1 for unlimited.
             xy_scale_range (Tuple[float, float]): The range of xy scale values for the tables.
             z_scale_range (Tuple[float, float]): The range of z scale values for the tables.
             top_thickness_range (Tuple[float, float]): The range of top thickness values for the tables.
@@ -93,7 +94,7 @@ class RandomTableModuleGenerator(ModuleGenerator):
         super(RandomTableModuleGenerator, self).__init__(
             weight=weight,
             priority=priority,
-            type=ModuleGeneratorType.ROOM_FLOOR,
+            type=ModuleGeneratorType.FLOOR,
             name=name,
             id=id,
         )
@@ -111,6 +112,8 @@ class RandomTableModuleGenerator(ModuleGenerator):
         wall_scales_per_wall: dict = None,
         existing_objects_per_wall: dict = None,
     ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
+        set_seed()
+        
         wall_scale = wall_scales_per_wall[self.type]
         existing_objects = existing_objects_per_wall[self.type]
 

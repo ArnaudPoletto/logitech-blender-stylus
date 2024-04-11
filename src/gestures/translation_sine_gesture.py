@@ -21,7 +21,7 @@ class TranslationSineGesture(Gesture):
         frame_rate: int,
         axis: Axis,
         phase_shift: float = 0.0,
-        wave_frequency: float = 4.0,
+        wave_period: float = 4.0,
         wave_amplitude: float = 0.1,
     ) -> None:
         """
@@ -37,12 +37,12 @@ class TranslationSineGesture(Gesture):
             frame_rate (int): The frame rate.
             axis (str): The axis to translate.
             phase_shift (float): The phase shift of the wave. Defaults to 0.0.
-            wave_frequency (float): The frequency of the wave. Defaults to 4.0.
+            wave_period (float): The period of the wave. Defaults to 4.0.
             wave_amplitude (float): The amplitude of the wave. Defaults to 0.1.
 
         Raises:
             ValueError: If the axis is not an instance of Axis.
-            ValueError: If the wave frequency is less than or equal to 0.
+            ValueError: If the wave period is less than or equal to 0.
             ValueError: If the wave amplitude is less than 0.
         """
         super(TranslationSineGesture, self).__init__(
@@ -57,8 +57,8 @@ class TranslationSineGesture(Gesture):
         if not isinstance(axis, Axis):
             raise ValueError("The axis must be an instance of Axis.")
 
-        if wave_frequency <= 0:
-            raise ValueError("The wave frequency must be greater than 0.")
+        if wave_period <= 0:
+            raise ValueError("The wave period must be greater than 0.")
 
         if wave_amplitude < 0:
             raise ValueError("The wave amplitude must be greater than or equal to 0.")
@@ -79,7 +79,7 @@ class TranslationSineGesture(Gesture):
         Returns:
             float: The location of the arm.
         """
-        wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_frequency
+        wave_offset = (frame - 1) / self.frame_rate * 2 * math.pi * self.wave_period
         return math.sin(wave_offset + self.phase_shift) * self.wave_amplitude
 
     def apply(self, displacement_data: dict, current_frame: int) -> dict:

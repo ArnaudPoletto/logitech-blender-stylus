@@ -1,6 +1,7 @@
 import random
-from typing import List, Tuple
+from typing import Tuple
 
+from utils.seed import set_seed
 from utils.config import RESOLUTION_DIGITS
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
@@ -65,6 +66,8 @@ class RandomRoomModuleGenerator(ModuleGenerator):
         wall_scales_per_wall: dict = None,
         existing_objects_per_wall: dict = None,
     ) -> Tuple[dict, dict]:
+        set_seed()
+        
         # Get random room parameters
         scale_x = int(round(random.uniform(*self.xy_scale_range), RESOLUTION_DIGITS))
         scale_y = int(round(random.uniform(*self.xy_scale_range), RESOLUTION_DIGITS))
@@ -80,7 +83,7 @@ class RandomRoomModuleGenerator(ModuleGenerator):
                         "location": {
                             "x": 0,
                             "y": 0,
-                            "z": scale_z / 2 - 2,
+                            "z": 0,
                         },  # TODO: remove hardcoding
                         "scale": {"x": scale_x, "y": scale_y, "z": scale_z},
                     },
@@ -96,12 +99,12 @@ class RandomRoomModuleGenerator(ModuleGenerator):
         left_wall_scale = (scale_y, scale_z)
         right_wall_scale = (scale_y, scale_z)
         wall_scales_per_wall = {
-            ModuleGeneratorType.ROOM_FLOOR: floor_scale,
-            ModuleGeneratorType.ROOM_CEILING: ceiling_scale,
-            ModuleGeneratorType.ROOM_FRONT_WALL: front_wall_scale,
-            ModuleGeneratorType.ROOM_BACK_WALL: back_wall_scale,
-            ModuleGeneratorType.ROOM_LEFT_WALL: left_wall_scale,
-            ModuleGeneratorType.ROOM_RIGHT_WALL: right_wall_scale,
+            ModuleGeneratorType.FLOOR: floor_scale,
+            ModuleGeneratorType.CEILING: ceiling_scale,
+            ModuleGeneratorType.FRONT_WALL: front_wall_scale,
+            ModuleGeneratorType.BACK_WALL: back_wall_scale,
+            ModuleGeneratorType.LEFT_WALL: left_wall_scale,
+            ModuleGeneratorType.RIGHT_WALL: right_wall_scale,
         }
 
         return room_data, wall_scales_per_wall

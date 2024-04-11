@@ -4,6 +4,7 @@ from abc import abstractmethod
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
 
+# TODO: separate BlenderObjectModuleGenerator and GestureModuleGenerator
 class ModuleGenerator:
     """
     A module generator, linked to an input data generator to generate data.

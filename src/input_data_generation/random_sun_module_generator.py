@@ -1,7 +1,8 @@
 import math
 import random
-from typing import List, Tuple
+from typing import Tuple
 
+from utils.seed import set_seed
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
@@ -52,6 +53,8 @@ class RandomSunModuleGenerator(ModuleGenerator):
         wall_scales_per_wall: dict = None,
         existing_objects_per_wall: dict = None,
     ) -> dict:
+        set_seed()
+
         # Get random sun parameters
         rotation_y = random.uniform(-math.pi / 2, math.pi / 2)
         rotation_z = random.uniform(0, 2 * math.pi)
