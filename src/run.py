@@ -540,7 +540,15 @@ def main(args) -> None:
     # Add background image
     print("Adding background image...")
     background_image_generator = BackgroundImageGenerator(
-        width=1920, height=1080 # TODO: remove hardcode
+        width=1920, # TODO: remove hardcode
+        height=1080, # TODO: remove hardcode
+        n_patches_range=(10, 50),
+        n_patch_corners_range=(3, 10),
+        patch_size_range=(50, 1000),
+        n_lines_range=(10, 50),
+        line_size_range=(50, 150),
+        n_line_points_range=(10, 50),
+        line_thickness_range=(1, 5),
     )
     background_image_generator.apply_to_scene()
 
