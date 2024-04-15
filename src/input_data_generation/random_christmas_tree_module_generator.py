@@ -3,7 +3,7 @@ import numpy as np
 from typing import List, Tuple
 
 from utils.seed import set_seed
-from utils.config import RESOLUTION_DIGITS
+from utils.config import RESOLUTION_DIGITS, MIN_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
@@ -15,8 +15,6 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
 
     def __init__(
         self,
-        weight: float,
-        priority: int,
         name: str,
         id: str,
         room_id: str,
@@ -27,13 +25,13 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
         emission_range: Tuple[float, float],
         flicker_probability_range: Tuple[float, float],
         padding: float,
+        weight: float = 1.0,
+        priority: int = MIN_PRIORITY,
     ) -> None:
         """
         Initialize the random christmas tree generator.
 
         Args:
-            weight (float): The weight of the module, used to determine the probability of the module being selected.
-            priority (int): The priority of the module, used to determine the order of the module being selected.
             name (str): The name of the module.
             id (str): The id of the module.
             room_id (str): The id of the room.
@@ -44,6 +42,8 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
             emission_range (Tuple[float, float]): The range of the emission of the leds of the christmas tree.
             flicker_probability_range (Tuple[float, float]): The range of the flicker probability of the leds of the christmas tree.
             padding (float): The padding around the christmas tree.
+            weight (float): The weight of the module, used to determine the probability of the module being selected. Defaults to 1.0.
+            priority (int): The priority of the module, used to determine the order of the module being selected. Defaults to the minimum priority.
 
         Raises:
             ValueError: If the height is less than or equal to 0.
@@ -119,11 +119,11 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
             )
 
         super(RandomChristmasTreeModuleGenerator, self).__init__(
-            weight=weight,
-            priority=priority,
             type=ModuleGeneratorType.FLOOR,
             name=name,
             id=id,
+            weight=weight,
+            priority=priority,
         )
 
         self.room_id = room_id

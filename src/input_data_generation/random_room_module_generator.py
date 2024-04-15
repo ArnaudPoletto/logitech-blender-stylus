@@ -2,7 +2,7 @@ import random
 from typing import Tuple
 
 from utils.seed import set_seed
-from utils.config import RESOLUTION_DIGITS
+from utils.config import RESOLUTION_DIGITS, MAX_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
@@ -14,7 +14,6 @@ class RandomRoomModuleGenerator(ModuleGenerator):
 
     def __init__(
         self,
-        weight: float,
         name: str,
         id: str,
         xy_scale_range: Tuple[float, float],
@@ -51,11 +50,10 @@ class RandomRoomModuleGenerator(ModuleGenerator):
             )
 
         super(RandomRoomModuleGenerator, self).__init__(
-            weight=weight,
-            priority=0,
             type=ModuleGeneratorType.GLOBAL,
             name=name,
             id=id,
+            priority=MAX_PRIORITY,
         )
 
         self.xy_scale_range = xy_scale_range

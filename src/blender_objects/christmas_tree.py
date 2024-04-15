@@ -102,9 +102,9 @@ class ChristmasTree(RelativeBlenderObject):
         # Add Christmas tree to the collection, a cone with a cylinder as the base
         scaled_relative_location = Vector(
             (
-                self.relative_location.x / blender_object.scale.x,
-                self.relative_location.y / blender_object.scale.y,
-                self.relative_location.z / blender_object.scale.z,
+                self.location.x / blender_object.scale.x,
+                self.location.y / blender_object.scale.y,
+                self.location.z / blender_object.scale.z,
             )
         )
         location = blender_object.matrix_world @ scaled_relative_location

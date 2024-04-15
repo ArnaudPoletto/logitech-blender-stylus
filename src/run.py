@@ -77,6 +77,7 @@ from utils.config import (
     CAMERA_NAME,
     STYLUS_OUTER_NAME,
     ARMATURE_NAME,
+    RENDER_RESOLUTION,
 )
 
 
@@ -212,6 +213,7 @@ def render():
     Raises:
         ValueError: If the camera or stylus outer is not found.
     """
+    # Get useful objects for rendering
     camera = bpy.data.objects.get(CAMERA_NAME)
     if camera is None:
         raise ValueError("Camera not found.")
@@ -311,26 +313,23 @@ def main(args) -> None:
         print("Generating input data...")
         room_id = "room"
         room_module = RandomRoomModuleGenerator(
-            weight=1,
             name="Room",
             id=room_id,
             xy_scale_range=(20, 100),
             z_scale_range=(10, 25),
         )
+        camera_module = RandomCameraModuleGenerator(
+            name=CAMERA_NAME,
+            id="camera",
+            xy_distance_range=(3, 9),
+            z_distance_range=(0, 1),
+            fixation_point_range=0,
+        )
         modules = [
-            RandomCameraModuleGenerator(
-                name="Camera",
-                id="camera",
-                xy_distance_range=(3, 9),
-                z_distance_range=(0, 1),
-                fixation_point_range=0,
-            ),
             RandomSunModuleGenerator(
-                weight=1, name="Sun", id="sun", energy_range=(0.5, 1.5)
+                name="Sun", id="sun", energy_range=(0.5, 1.5)
             ),
             RandomChristmasTreeModuleGenerator(
-                weight=1,
-                priority=0,
                 name="ChristmasTree",
                 id="christmas_tree",
                 room_id=room_id,
@@ -343,19 +342,15 @@ def main(args) -> None:
                 padding=0.1,
             ),
             RandomWallLampModuleGenerator(
-                weight=1,
-                priority=0,
                 name="WallLamp",
                 id="wall_lamp",
                 room_id=room_id,
                 n_wall_lamps=10,
                 xy_scale_range=(1, 2),
-                emission_strength_range=(1, 5),
+                emission_strength_range=(0.1, 1),
                 padding=0.1,
             ),
             RandomWindowModuleGenerator(
-                weight=1,
-                priority=0,
                 wall_type=ModuleGeneratorType.FRONT_WALL,
                 name="WindowFront",
                 id="window_front",
@@ -376,8 +371,6 @@ def main(args) -> None:
                 padding=0.1,
             ),
             RandomWindowModuleGenerator(
-                weight=1,
-                priority=0,
                 wall_type=ModuleGeneratorType.BACK_WALL,
                 name="WindowBack",
                 id="window_back",
@@ -398,8 +391,6 @@ def main(args) -> None:
                 padding=0.1,
             ),
             RandomWindowModuleGenerator(
-                weight=1,
-                priority=0,
                 wall_type=ModuleGeneratorType.LEFT_WALL,
                 name="WindowLeft",
                 id="window_left",
@@ -420,8 +411,6 @@ def main(args) -> None:
                 padding=0.1,
             ),
             RandomWindowModuleGenerator(
-                weight=1,
-                priority=0,
                 wall_type=ModuleGeneratorType.RIGHT_WALL,
                 name="WindowRight",
                 id="window_right",
@@ -483,8 +472,6 @@ def main(args) -> None:
                         padding=0.1,
                     ),
                 ],
-                weight=1,
-                priority=1,
             ),
             PerlinRotationSineGestureModuleGenerator(
                 id="perlin_rotation",
@@ -506,7 +493,9 @@ def main(args) -> None:
             ),
         ]
         input_data_generator = InputDataGenerator(
-            room_module=room_module, modules=modules
+            room_module=room_module,
+            camera_module=camera_module,
+            modules=modules
         )
         input_data = input_data_generator.generate_input_data()
         input_file_parser = InputDataParser(input_data)
@@ -540,18 +529,26 @@ def main(args) -> None:
     # Add background image
     print("Adding background image...")
     background_image_generator = BackgroundImageGenerator(
-        width=1920, # TODO: remove hardcode
-        height=1080, # TODO: remove hardcode
+        width=RENDER_RESOLUTION[0],
+        height=RENDER_RESOLUTION[1],
         n_patches_range=(10, 50),
         n_patch_corners_range=(3, 10),
-        patch_size_range=(50, 1000),
+        patch_size_range=(100, 2000),
         n_lines_range=(10, 50),
-        line_size_range=(50, 150),
+        line_size_range=(100, 300),
         n_line_points_range=(10, 50),
-        line_thickness_range=(1, 5),
+        line_thickness_range=(1, 10),
+        smooth_gaussian_kernel_size=501,
+        n_blur_steps=10,
+        max_blur=10,
     )
     background_image_generator.apply_to_scene()
 
+    # TODO: change position of this code
+    # Set output resolution
+    bpy.context.scene.render.resolution_x = RENDER_RESOLUTION[0]
+    bpy.context.scene.render.resolution_y = RENDER_RESOLUTION[1]
+    
     # Render the animation if specified
     if args.render:
         print("Rendering...")

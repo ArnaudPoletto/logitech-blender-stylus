@@ -29,15 +29,9 @@ class Table(RelativeBlenderObject):
             leg_thickness (float): The thickness of the table legs.
 
         Raises:
-            ValueError: If the scale is not a 3D vector.
-            ValueError: If the scale values are not positive.
             ValueError: If the top thickness is not a positive number or is greater than the height.
             ValueError: If the leg thickness is not a positive number or is greater than half the width or depth.
         """
-        if len(scale) != 3:
-            raise ValueError("The scale must be a 3D vector.")
-        if any(value <= 0 for value in scale):
-            raise ValueError("The scale values must be positive.")
         if top_thickness <= 0 or top_thickness >= scale.z:
             raise ValueError(
                 "The top thickness must be a positive number and less than the height."
@@ -52,9 +46,12 @@ class Table(RelativeBlenderObject):
             )
 
         relative_location = Vector((relative_location.x, relative_location.y, 0))
-        super(Table, self).__init__(name=name, relative_location=relative_location)
+        super(Table, self).__init__(
+            name=name, 
+            relative_location=relative_location,
+            scale=scale,
+        )
 
-        self.scale = scale
         self.top_thickness = top_thickness
         self.leg_thickness = leg_thickness
 
@@ -76,9 +73,9 @@ class Table(RelativeBlenderObject):
         # Add top
         scaled_relative_location = Vector(
             (
-                self.relative_location.x / blender_object.scale.x,
-                self.relative_location.y / blender_object.scale.y,
-                self.relative_location.z / blender_object.scale.z,
+                self.location.x / blender_object.scale.x,
+                self.location.y / blender_object.scale.y,
+                self.location.z / blender_object.scale.z,
             )
         )
         location = blender_object.matrix_world @ scaled_relative_location

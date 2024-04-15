@@ -45,6 +45,15 @@ class TranslationSineGesture(Gesture):
             ValueError: If the wave period is less than or equal to 0.
             ValueError: If the wave amplitude is less than 0.
         """
+        if not isinstance(axis, Axis):
+            raise ValueError("The axis must be an instance of Axis.")
+
+        if wave_period <= 0:
+            raise ValueError("The wave period must be greater than 0.")
+
+        if wave_amplitude < 0:
+            raise ValueError("The wave amplitude must be greater than or equal to 0.")
+        
         super(TranslationSineGesture, self).__init__(
             start_frame=start_frame,
             end_frame=end_frame,
@@ -54,19 +63,11 @@ class TranslationSineGesture(Gesture):
             hand=hand,
         )
 
-        if not isinstance(axis, Axis):
-            raise ValueError("The axis must be an instance of Axis.")
-
-        if wave_period <= 0:
-            raise ValueError("The wave period must be greater than 0.")
-
-        if wave_amplitude < 0:
-            raise ValueError("The wave amplitude must be greater than or equal to 0.")
 
         self.frame_rate = frame_rate
         self.axis = axis
         self.phase_shift = phase_shift
-        self.wave_frequency = wave_frequency
+        self.wave_period = wave_period
         self.wave_amplitude = wave_amplitude
 
     def _get_arm_location_at_frame(self, frame: int) -> float:

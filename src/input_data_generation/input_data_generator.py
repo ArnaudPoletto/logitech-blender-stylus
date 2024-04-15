@@ -1,14 +1,12 @@
-import random
-import numpy as np
 from typing import List
 from utils.seed import set_seed
 
 from module_operators.module_operator import ModuleOperator
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
+from input_data_generation.random_camera_module_generator import RandomCameraModuleGenerator
 
 
-# TODO: add documentation
 class InputDataGenerator:
     """
     An input data generator.
@@ -16,23 +14,34 @@ class InputDataGenerator:
 
     def __init__(
         self,
-        room_module: RandomRoomModuleGenerator, 
-        modules: List[ModuleGenerator|ModuleOperator],
+        room_module: RandomRoomModuleGenerator,
+        camera_module: RandomCameraModuleGenerator,
+        modules: List[ModuleGenerator | ModuleOperator],
     ) -> None:
         """
         Initialize the input data generator.
 
         Args:
             room_module (RandomRoomModuleGenerator): The room module.
+            camera_module (RandomCameraModuleGenerator): The camera module.
             modules (List[ModuleGenerator|ModuleOperator]): The modules, as a list of module generators or operators.
-            
-        Raises:
         """
         self.room_module = room_module
+        self.camera_module = camera_module
         self.modules = modules
 
     @staticmethod
     def _update_input_data(input_data: dict, update_data: dict) -> dict:
+        """
+        Update the input data with the update data.
+
+        Args:
+            input_data (dict): The input data.
+            update_data (dict): The update data.
+
+        Returns:
+            dict: The updated input data.
+        """
         if "gestures" in update_data:
             if update_data["gestures"].keys() & input_data["gestures"].keys():
                 raise ValueError(
@@ -68,10 +77,16 @@ class InputDataGenerator:
         room_data, wall_scales_per_wall = self.room_module.generate()
         InputDataGenerator._update_input_data(input_data, room_data)
         existing_objects_per_wall = {k: [] for k in wall_scales_per_wall.keys()}
-
-        # Apply other modules
+        
+        # Generate the camera
+        camera_data, _ = self.camera_module.generate()
+        InputDataGenerator._update_input_data(input_data, camera_data)
+        
+        # Generate data from other modules
         for module in self.modules:
-            module_data, existing_objects_per_wall = module.generate(wall_scales_per_wall, existing_objects_per_wall)
+            module_data, existing_objects_per_wall = module.generate(
+                wall_scales_per_wall, existing_objects_per_wall
+            )
             InputDataGenerator._update_input_data(input_data, module_data)
-            
+
         return input_data

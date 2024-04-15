@@ -3,6 +3,7 @@ import random
 from typing import Tuple
 
 from utils.seed import set_seed
+from utils.config import MAX_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
@@ -14,18 +15,18 @@ class RandomSunModuleGenerator(ModuleGenerator):
 
     def __init__(
         self,
-        weight: float,
         name: str,
         id: str,
         energy_range: Tuple[float, float],
+        weight: float = 1.0,
     ) -> None:
         """
         Initialize the random sun module generator.
 
         Args:
-            weight (float): The weight of the module, used to determine the probability of the module being selected.
             name (str): The name of the sun.
             energy_range (Tuple[float, float]): The range of energy values for the sun.
+            weight (float): The weight of the module, used to determine the probability of the module being selected. Defaults to 1.0.
 
         Raises:
             ValueError: If the minimum energy is less than 0 or the maximum energy is less than the minimum energy.
@@ -39,11 +40,11 @@ class RandomSunModuleGenerator(ModuleGenerator):
             )
 
         super(RandomSunModuleGenerator, self).__init__(
-            weight=weight,
-            priority=0,
             type=ModuleGeneratorType.GLOBAL,
             name=name,
             id=id,
+            weight=weight,
+            priority=MAX_PRIORITY,
         )
 
         self.energy_range = energy_range

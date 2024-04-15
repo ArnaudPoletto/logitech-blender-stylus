@@ -27,7 +27,6 @@ class Camera(BlenderObject):
             name=name,
             location=location,
             rotation=rotation,
-            scale=Vector((1, 1, 1)),
         )
         
     def apply_to_collection(self, collection: bpy.types.Collection) -> None:

@@ -1,6 +1,5 @@
 import bpy
 import math
-from mathutils import Vector
 
 from utils.axis import Axis
 from gestures.gesture import Gesture
@@ -53,6 +52,11 @@ class RotationWaveGesture(Gesture):
             ValueError: If the axis is not an instance of Axis.
             ValueError: If the wave period is less than or equal to 0.
         """
+        if not isinstance(axis, Axis):
+            raise ValueError("The axis must be an instance of Axis.")
+        if wave_period <= 0:
+            raise ValueError("The wave period must be greater than 0.")
+        
         super(RotationWaveGesture, self).__init__(
             start_frame=start_frame,
             end_frame=end_frame,
@@ -61,12 +65,6 @@ class RotationWaveGesture(Gesture):
             forearm=forearm,
             hand=hand,
         )
-
-        if not isinstance(axis, Axis):
-            raise ValueError("The axis must be an instance of Axis.")
-
-        if wave_period <= 0:
-            raise ValueError("The wave period must be greater than 0.")
 
         self.frame_rate = frame_rate
         self.axis = axis
