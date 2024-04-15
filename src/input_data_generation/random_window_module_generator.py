@@ -4,9 +4,7 @@ from typing import List, Tuple
 from tqdm import tqdm
 
 from utils.seed import set_seed
-from blender_objects.shades import Shades
-from utils.config import RESOLUTION_DIGITS
-from blender_objects.window_decorator import WindowDecorator
+from utils.config import RESOLUTION_DIGITS, MIN_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
@@ -20,8 +18,6 @@ class RandomWindowModuleGenerator(ModuleGenerator):
     # TODO: refactor checks to a separate method for bounds checking
     def __init__(
         self,
-        weight: float,
-        priority: int,
         wall_type: ModuleGeneratorType,
         name: str,
         id: str,
@@ -40,13 +36,13 @@ class RandomWindowModuleGenerator(ModuleGenerator):
         n_muntins_width_range: Tuple[float, float],
         n_muntins_height_range: Tuple[float, float],
         padding: float,
+        weight: float = 1.0,
+        priority: int = MIN_PRIORITY,
     ) -> None:
         """
         Initialize the random window generator.
 
         Args:
-            weight (float): The weight of the module, used to determine the probability of the module being selected.
-            priority (int): The priority of the module, used to determine the order of the module being selected.
             wall_type (ModuleGeneratorType): The type of the wall.
             name (str): The prefix of the windows name.
             id (str): The prefix of the windows id.
@@ -66,7 +62,9 @@ class RandomWindowModuleGenerator(ModuleGenerator):
             n_muntins_width_range (Tuple[float, float]): The range of number of muntins width values for the muntins.
             n_muntins_height_range (Tuple[float, float]): The range of number of muntins height values for the muntins.
             padding (float): The padding between the windows.
-
+            weight (float): The weight of the module, used to determine the probability of the module being selected. Defaults to 1.0.
+            priority (int): The priority of the module, used to determine the order of the module being selected. Defaults to the minimum priority.
+ 
         Raises:
             ValueError: If the wall type is not a vertical wall type.
             ValueError: If the number of windows is less than -1.
@@ -182,11 +180,11 @@ class RandomWindowModuleGenerator(ModuleGenerator):
             raise ValueError("The padding must be greater than or equal to 0.")
 
         super(RandomWindowModuleGenerator, self).__init__(
-            weight=weight,
-            priority=priority,
             type=wall_type,
             name=name,
             id=id,
+            weight=weight,
+            priority=priority,
         )
 
         self.room_id = room_id

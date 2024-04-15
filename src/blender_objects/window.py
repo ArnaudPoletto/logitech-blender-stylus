@@ -26,14 +26,11 @@ class Window(RelativeBlenderObject):
         Raises:
             ValueError: If the location is not a 2D vector.
             ValueError: If the scale is not a 2D vector.
-            ValueError: If the scale values are not positive.
         """
         if len(relative_location) != 2:
             raise ValueError("The location must be a 2D vector.")
         if len(scale) != 2:
             raise ValueError("The scale must be a 2D vector.")
-        if any(value <= 0 for value in scale):
-            raise ValueError("The scale values must be positive.")
         
         relative_location = Vector((relative_location.x, relative_location.y, 0))
         scale = Vector((scale.x, scale.y, 1))
@@ -66,8 +63,8 @@ class Window(RelativeBlenderObject):
         window_object.name = f"{blender_object.name}{self.name}"
         window_object.rotation_euler = blender_object.rotation_euler
         scaled_relative_location = Vector((
-            self.relative_location.x / blender_object.scale.x,
-            self.relative_location.y / blender_object.scale.y,
+            self.location.x / blender_object.scale.x,
+            self.location.y / blender_object.scale.y,
             0,
         ))
         window_object.location = (

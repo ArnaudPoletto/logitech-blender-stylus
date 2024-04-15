@@ -4,7 +4,7 @@ from typing import List, Tuple
 from tqdm import tqdm
 
 from utils.seed import set_seed
-from utils.config import RESOLUTION_DIGITS
+from utils.config import RESOLUTION_DIGITS, MIN_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
@@ -16,8 +16,6 @@ class RandomTableModuleGenerator(ModuleGenerator):
 
     def __init__(
         self,
-        weight: float,
-        priority: int,
         name: str,
         id: str,
         room_id: str,
@@ -27,13 +25,13 @@ class RandomTableModuleGenerator(ModuleGenerator):
         top_thickness_range: Tuple[float, float],
         leg_thickness_range: Tuple[float, float],
         padding: float,
+        weight: float = 1.0,
+        priority: int = MIN_PRIORITY,
     ) -> None:
         """
         Initialize the random table generator.
 
         Args:
-            weight (float): The weight of the module, used to determine the probability of the module being selected.
-            priority (int): The priority of the module, used to determine the order of the module being selected.
             name (str): The prefix of the tables name.
             id (str): The prefix of the tables id.
             room_id (str): The id of the room.
@@ -43,6 +41,8 @@ class RandomTableModuleGenerator(ModuleGenerator):
             top_thickness_range (Tuple[float, float]): The range of top thickness values for the tables.
             leg_thickness_range (Tuple[float, float]): The range of leg thickness values for the tables.
             padding (float): The padding between the tables.
+            weight (float): The weight of the module, used to determine the probability of the module being selected. Defaults to 1.0.
+            priority (int): The priority of the module, used to determine the order of the module being selected. Defaults to the minimum priority.
 
         Raises:
             ValueError: If the number of tables is less than -1.
@@ -92,11 +92,11 @@ class RandomTableModuleGenerator(ModuleGenerator):
             raise ValueError("The padding must be greater than or equal to 0.")
 
         super(RandomTableModuleGenerator, self).__init__(
-            weight=weight,
-            priority=priority,
             type=ModuleGeneratorType.FLOOR,
             name=name,
             id=id,
+            weight=weight,
+            priority=priority,
         )
 
         self.room_id = room_id

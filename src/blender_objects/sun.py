@@ -29,10 +29,8 @@ class Sun(BlenderObject):
         if energy <= 0:
             raise ValueError("The energy of the sun must be greater than 0.")
 
-        location = Vector((0, 0, 0))
         super(Sun, self).__init__(
             name=name,
-            location=location,
             rotation=rotation,
         )
 

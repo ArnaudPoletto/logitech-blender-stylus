@@ -1,6 +1,7 @@
 import random
 from typing import List, Tuple
 
+from utils.config import MIN_PRIORITY
 from module_operators.module_operator import ModuleOperator
 from input_data_generation.module_generator import ModuleGenerator
 
@@ -13,16 +14,16 @@ class SomeOf(ModuleOperator):
     def __init__(
         self,
         modules: List[ModuleGenerator | ModuleOperator],
-        weight: float,
-        priority: int,
+        weight: float = 1.0,
+        priority: int = MIN_PRIORITY,
     ) -> None:
         """
         Initialize the some of operator.
 
         Args:
             modules (List[ModuleGenerator|ModuleOperator]): The modules to select from.
-            weight (float): The weight of the operator, used to determine the probability of the operator being selected.
-            priority (int): The priority of the operator, used to determine the order of the operator being selected.
+            weight (float): The weight of the operator, used to determine the probability of the operator being selected. Defaults to 1.0.
+            priority (int): The priority of the operator, used to determine the order of the operator being selected. Defaults to the minimum priority.
         """
         super().__init__(modules=modules, weight=weight, priority=priority)
 

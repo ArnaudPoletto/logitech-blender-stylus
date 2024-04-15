@@ -3,7 +3,6 @@ import bpy
 import random
 import numpy as np
 from typing import Tuple
-from scipy.interpolate import interp1d
 
 # TODO: add documentation 
 class BackgroundImageGenerator:
@@ -18,6 +17,9 @@ class BackgroundImageGenerator:
             line_size_range: Tuple[int, int],
             n_line_points_range: Tuple[int, int],
             line_thickness_range: Tuple[int, int],
+            smooth_gaussian_kernel_size: int,
+            n_blur_steps: int,
+            max_blur: int
     ) -> None:
         if width <= 0:
             raise ValueError("Width must be greater than 0")
@@ -53,6 +55,14 @@ class BackgroundImageGenerator:
             raise ValueError("Minimum line thickness must be greater than 0")
         if line_thickness_range[1] < line_thickness_range[0]:
             raise ValueError("Upper bound of minimum line thickness must be greater than lower bound")
+        if smooth_gaussian_kernel_size <= 0:
+            raise ValueError("Smooth Gaussian kernel size must be greater than 0")
+        if smooth_gaussian_kernel_size % 2 == 0:
+            raise ValueError("Smooth Gaussian kernel size must be odd")
+        if n_blur_steps <= 0:
+            raise ValueError("Number of blur steps must be greater than 0")
+        if max_blur <= 0:
+            raise ValueError("Maximum blur must be greater than 0")
         
         self.width = width
         self.height = height
@@ -63,6 +73,9 @@ class BackgroundImageGenerator:
         self.line_size_range = line_size_range
         self.n_line_points_range = n_line_points_range
         self.line_thickness_range = line_thickness_range
+        self.smooth_gaussian_kernel_size = smooth_gaussian_kernel_size
+        self.n_blur_steps = n_blur_steps
+        self.max_blur = max_blur
 
     def _get_background_image(self) -> np.array:
         background_image = np.ones((self.height, self.width, 4), dtype=np.float32)
@@ -102,6 +115,17 @@ class BackgroundImageGenerator:
             points = np.column_stack((xs, ys)).astype(int)
             color = random.random()
             cv2.polylines(background_image, [points], isClosed=False, color=(color, color, color, 1.0), thickness=line_thickness)
+            
+        # Blur image randomly
+        kernel = (self.smooth_gaussian_kernel_size, self.smooth_gaussian_kernel_size)
+        smooth_map = cv2.GaussianBlur(np.random.rand(self.height, self.width), kernel, 0)
+        smooth_map = (smooth_map - np.min(smooth_map)) / (np.max(smooth_map) - np.min(smooth_map))
+        for i in range(self.n_blur_steps):
+            blur_step = i + 1
+            blur_strength = int((self.n_blur_steps - blur_step + 1) / self.n_blur_steps * self.max_blur)
+            mask = (smooth_map < (blur_step / self.n_blur_steps))
+            blurred_image = cv2.blur(background_image, (blur_strength, blur_strength))
+            background_image = np.where(mask[..., np.newaxis], blurred_image, background_image)
             
         return background_image
     

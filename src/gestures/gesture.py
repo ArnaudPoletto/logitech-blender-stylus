@@ -38,13 +38,10 @@ class Gesture:
             raise ValueError(
                 "The start frame and end frame must be greater than or equal to 0."
             )
-
         if start_frame >= end_frame:
             raise ValueError("The start frame must be less than the end frame.")
-
         if scene is None:
             raise ValueError("The scene must not be None.")
-
         if arm is None or forearm is None or hand is None:
             raise ValueError("The arm, forearm, and hand bones must not be None.")
 

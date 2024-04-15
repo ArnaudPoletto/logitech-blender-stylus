@@ -3,9 +3,10 @@ from typing import List, Tuple
 from mathutils import Vector, Euler
 from abc import abstractmethod
 
+from blender_objects.blender_object import BlenderObject
 
-# TODO: can be a child of BlenderObject
-class RelativeBlenderObject:
+
+class RelativeBlenderObject(BlenderObject):
     """
     A relative Blender object.
     """
@@ -25,39 +26,17 @@ class RelativeBlenderObject:
             relative_location (Vector): The relative location of the relative Blender object from the location of the Blender object as a 3D vector. Defaults to no relative location.
             relative_rotation (Vector): The relative rotation of the relative Blender object from the rotation of the Blender object as a 3D vector. Defaults to no relative rotation.
             scale (Vector): The scale of the Blender object as a 3D vector. Defaults to no scaling.
-
-        Raises:
-            ValueError: If the relative location is not a 3D vector.
-            ValueError: If the relative rotation is not a 3D vector.
-            ValueError: If the scale is not a 3D vector.
-            ValueError: If the scale values are not positive.
         """
-
-        if len(relative_location) != 3:
-            raise ValueError("The relative location must be a 3D vector.")
-        if len(relative_rotation) != 3:
-            raise ValueError("The relative rotation must be a 3D vector.")
-        if len(scale) != 3:
-            raise ValueError("The scale must be a 3D vector.")
-        if any(value <= 0 for value in scale):
-            raise ValueError("The scale values must be positive.")
-
+        super().__init__(
+            name=name,
+            location=relative_location,
+            rotation=relative_rotation,
+            scale=scale,
+        )
+        
         self.name = name
-        self.relative_location = relative_location
-        self.relative_rotation = relative_rotation
         self.scale = scale
         self.relative_blender_objects: List[RelativeBlenderObject] = []
-
-    def add_relative_blender_object(
-        self, relative_blender_object: "RelativeBlenderObject"
-    ) -> None:
-        """
-        Add a relative Blender object to the Blender Object.
-
-        Args:
-            relative_blender_object (RelativeBlenderObject): The relative Blender object to add to the Blender Object.
-        """
-        self.relative_blender_objects.append(relative_blender_object)
 
     @abstractmethod
     def get_bounds(
@@ -73,19 +52,4 @@ class RelativeBlenderObject:
         """
         raise NotImplementedError(
             "The get_object_bounds method must be implemented in the subclass."
-        )
-
-    @abstractmethod
-    def apply_to_collection(
-        self, collection: bpy.types.Collection, blender_object: bpy.types.Object
-    ) -> None:
-        """
-        Apply the Blender object to the collection.
-
-        Args:
-            collection (bpy.types.Collection): The collection to add the Blender object to.
-            blender_object (bpy.types.Object): The Blender object to add the relative Blender object to.
-        """
-        raise NotImplementedError(
-            "The apply_to_collection method must be implemented in the subclass."
         )

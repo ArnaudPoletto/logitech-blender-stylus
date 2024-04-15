@@ -4,6 +4,7 @@ from typing import Tuple
 from mathutils import Vector
 
 from utils.seed import set_seed
+from utils.config import MAX_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
@@ -46,11 +47,10 @@ class RandomCameraModuleGenerator(ModuleGenerator):
             raise ValueError("The maximum z distance must be greater than or equal to the minimum z distance.")
         
         super(RandomCameraModuleGenerator, self).__init__(
-            weight=1,
-            priority=0,
             type=ModuleGeneratorType.GLOBAL,
             name=name,
             id=id,
+            priority=MAX_PRIORITY,
         )
         
         self.xy_distance_range = xy_distance_range

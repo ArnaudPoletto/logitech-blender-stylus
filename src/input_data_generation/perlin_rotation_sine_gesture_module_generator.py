@@ -60,8 +60,6 @@ class PerlinRotationSineGestureModuleGenerator(ModuleGenerator):
             raise ValueError("The number of octaves must be greater than or equal to 1.")
         
         super(PerlinRotationSineGestureModuleGenerator, self).__init__(
-            weight=1,
-            priority=0,
             type=ModuleGeneratorType.GESTURE,
             name=None,
             id=id,

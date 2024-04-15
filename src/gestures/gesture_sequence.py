@@ -64,10 +64,8 @@ class GestureSequence:
         """
         if translation_acceleration_limit < 0:
             raise ValueError("Translation acceleration limit must be positive.")
-
         if rotation_acceleration_limit < 0:
             raise ValueError("Rotation acceleration limit must be positive.")
-
         if momentum_weight < 0 or momentum_weight > 1:
             raise ValueError("Momentum weight must be between 0 and 1.")
 

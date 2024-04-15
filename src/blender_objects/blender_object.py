@@ -3,7 +3,6 @@ from typing import List
 from abc import abstractmethod
 from mathutils import Vector, Euler
 
-from blender_objects.relative_blender_object import RelativeBlenderObject
 
 
 class BlenderObject:
@@ -46,16 +45,16 @@ class BlenderObject:
         self.location = location
         self.rotation = rotation
         self.scale = scale
-        self.relative_blender_objects: List[RelativeBlenderObject] = []
+        self.relative_blender_objects: List[BlenderObject] = []
 
     def add_relative_blender_object(
-        self, relative_blender_object: RelativeBlenderObject
+        self, relative_blender_object: "BlenderObject"
     ) -> None:
         """
         Add a relative Blender object to the Blender Object.
 
         Args:
-            relative_blender_object (RelativeBlenderObject): The relative Blender object to add to the Blender Object.
+            relative_blender_object (BlenderObject): The relative Blender object to add to the Blender Object.
         """
         self.relative_blender_objects.append(relative_blender_object)
 

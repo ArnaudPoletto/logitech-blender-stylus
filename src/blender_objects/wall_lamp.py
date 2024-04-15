@@ -73,9 +73,9 @@ class WallLamp(RelativeBlenderObject):
         wall_lamp_object.rotation_euler = blender_object.rotation_euler
         scaled_relative_location = Vector(
             (
-                self.relative_location.x / blender_object.scale.x,
-                self.relative_location.y / blender_object.scale.y,
-                self.relative_location.z / blender_object.scale.z,
+                self.location.x / blender_object.scale.x,
+                self.location.y / blender_object.scale.y,
+                self.location.z / blender_object.scale.z,
             )
         )
         wall_lamp_object.location = (

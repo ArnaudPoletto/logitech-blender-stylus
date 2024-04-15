@@ -55,16 +55,16 @@ class Wall(BlenderObject):
         """
         (min_x, max_x), (min_y, max_y), _ = relative_blender_object.get_bounds()
         relative_blender_object_min_x = (
-            relative_blender_object.relative_location.x + min_x
+            relative_blender_object.location.x + min_x
         )
         relative_blender_object_max_x = (
-            relative_blender_object.relative_location.x + max_x
+            relative_blender_object.location.x + max_x
         )
         relative_blender_object_min_y = (
-            relative_blender_object.relative_location.y + min_y
+            relative_blender_object.location.y + min_y
         )
         relative_blender_object_max_y = (
-            relative_blender_object.relative_location.y + max_y
+            relative_blender_object.location.y + max_y
         )
         wall_min_x = -self.scale.x / 2
         wall_max_x = self.scale.x / 2
@@ -92,25 +92,25 @@ class Wall(BlenderObject):
         """
         (min_x, max_x), (min_y, max_y), _ = relative_blender_object.get_bounds()
         relative_blender_object_min_x = (
-            relative_blender_object.relative_location.x + min_x
+            relative_blender_object.location.x + min_x
         )
         relative_blender_object_max_x = (
-            relative_blender_object.relative_location.x + max_x
+            relative_blender_object.location.x + max_x
         )
         relative_blender_object_min_y = (
-            relative_blender_object.relative_location.y + min_y
+            relative_blender_object.location.y + min_y
         )
         relative_blender_object_max_y = (
-            relative_blender_object.relative_location.y + max_y
+            relative_blender_object.location.y + max_y
         )
         for other in self.relative_blender_objects:
             (other_min_x, other_max_x), (other_min_y, other_max_y), _ = (
                 other.get_bounds()
             )
-            other_min_x = other.relative_location.x + other_min_x
-            other_max_x = other.relative_location.x + other_max_x
-            other_min_y = other.relative_location.y + other_min_y
-            other_max_y = other.relative_location.y + other_max_y
+            other_min_x = other.location.x + other_min_x
+            other_max_x = other.location.x + other_max_x
+            other_min_y = other.location.y + other_min_y
+            other_max_y = other.location.y + other_max_y
 
             if (
                 relative_blender_object_min_x <= other_max_x

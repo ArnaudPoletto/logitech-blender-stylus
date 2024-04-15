@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from typing import Tuple
 
+from utils.config import MIN_PRIORITY
 from utils.seed import set_seed
 from utils.config import RESOLUTION_DIGITS
 from input_data_generation.module_generator import ModuleGenerator
@@ -15,8 +16,6 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
     
     def __init__(
         self,
-        weight: float,
-        priority: int,
         name: str,
         id: str,
         room_id: str,
@@ -24,13 +23,13 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
         xy_scale_range: Tuple[float, float],
         emission_strength_range: Tuple[float, float],
         padding: float,
+        weight: float = 1.0,
+        priority: int = MIN_PRIORITY,
         ) -> None:
         """
         Initialize the random wall lamp generator.
         
         Args:
-            weight (float): The weight of the module, used to determine the probability of the module being selected.
-            priority (int): The priority of the module, used to determine the order of the module being selected.
             name (str): The prefix of the wall lamps name.
             id (str): The prefix of the wall lamps id.
             room_id (str): The id of the room.
@@ -38,6 +37,8 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
             xy_scale_range (Tuple[float, float]): The range of xy scale values for the wall lamps.
             emission_strength_range (Tuple[float, float]): The range of emission strength values for the wall lamps.
             padding (float): The padding between the wall lamps.
+            weight (float): The weight of the module, used to determine the probability of the module being selected. Defaults to 1.0.
+            priority (int): The priority of the module, used to determine the order of the module being selected. Defaults to the minimum priority.
             
         Raises:
             ValueError: If the number of wall lamps is less than -1.
@@ -69,11 +70,11 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
             raise ValueError("The padding must be greater than or equal to 0.")
             
         super(RandomWallLampModuleGenerator, self).__init__(
-            weight=weight,
-            priority=priority,
             type=ModuleGeneratorType.CEILING,
             name=name,
             id=id,
+            weight=weight,
+            priority=priority,
         )
         
         self.room_id = room_id
