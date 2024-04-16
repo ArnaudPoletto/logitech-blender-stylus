@@ -138,7 +138,7 @@ class ChristmasTree(RelativeBlenderObject):
                 radius=random.uniform(*self.led_radius_range),
             )
             led_object = bpy.context.object
-            led_object.name = f"{self.name}LED{i}"
+            led_object.name = f"{self.name}Light{i}"
 
             # Set location
             led_location = Vector(
@@ -159,7 +159,7 @@ class ChristmasTree(RelativeBlenderObject):
             led_object.location = led_location
 
             # Set LED material and emission
-            led_material = bpy.data.materials.new(name=f"{self.name}LED{i}Material")
+            led_material = bpy.data.materials.new(name=f"{self.name}Light{i}Material")
             led_material.use_nodes = True
             led_material.node_tree.nodes.clear()
             led_material_output = led_material.node_tree.nodes.new(
