@@ -9,15 +9,16 @@ class Camera(BlenderObject):
     """
     A camera.
     """
+
     def __init__(
         self,
         name: str,
         location: Vector,
         rotation: Euler,
-        ) -> None:
+    ) -> None:
         """
         Initialize the camera.
-        
+
         Args:
             name (str): The name of the Camera.
             location (Vector): The location of the Camera in the world as a 3D vector. Defaults to the origin.
@@ -28,19 +29,22 @@ class Camera(BlenderObject):
             location=location,
             rotation=rotation,
         )
-        
+
     def apply_to_collection(self, collection: bpy.types.Collection) -> None:
         bpy.ops.object.mode_set(mode="OBJECT")
-        
+
         # Define the camera
         camera = bpy.data.cameras.new(self.name)
         camera_object = bpy.data.objects.new(self.name, camera)
-        collection.objects.link(camera_object)
-        camera_object.data.type = 'PANO'
-        camera_object.data.panorama_type = 'FISHEYE_EQUISOLID'
+        # replace collection by scene
+        bpy.context.scene.collection.objects.link(
+            camera_object
+        )  # Add the camera to the scene, not the given collection
+        camera_object.data.type = "PANO"
+        camera_object.data.panorama_type = "FISHEYE_EQUISOLID"
         camera_object.location = self.location
         camera_object.rotation_euler = self.rotation
-        camera_object.data.fisheye_lens = 15.0 # TODO: remove hardcoding
-        camera_object.data.fisheye_fov = math.pi # TODO: remove hardcoding
-        
+        camera_object.data.fisheye_lens = 15.0  # TODO: remove hardcoding
+        camera_object.data.fisheye_fov = math.pi  # TODO: remove hardcoding
+
         bpy.context.view_layer.update()
