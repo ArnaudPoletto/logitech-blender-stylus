@@ -27,7 +27,7 @@ names = [
     "input_data_generation",
     "module_operators",
     "background_image",
-    "render"
+    "render",
 ]
 
 for path, name in zip(paths, names):
@@ -48,7 +48,9 @@ from gestures.gesture_sequence import GestureSequence
 from blender_collections.blender_collection import BlenderCollection
 from input_data_generation.input_data_generator import InputDataGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
-from background_image.random_background_image_generator import RandomBackgroundImageGenerator
+from background_image.random_background_image_generator import (
+    RandomBackgroundImageGenerator,
+)
 from input_data_generation.random_sun_module_generator import RandomSunModuleGenerator
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
 from input_data_generation.random_table_module_generator import (
@@ -77,14 +79,22 @@ from utils.config import (
     CAMERA_NAME,
     RENDER_RESOLUTION,
     BACKGROUND_COLLECTION_NAME,
+    HIDE_ARMATURE_PROBABILITY,
 )
 
+
 # TODO: documentation
-def setup_scene_and_get_objects() -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, str]:
+def setup_scene_and_get_objects(
+    hide_armature_probability: float,
+) -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, str]:
     set_seed()
 
     # Get possible armatures
-    armature_names = [armature for armature in bpy.data.objects.keys() if armature.startswith("Armature")]
+    armature_names = [
+        armature
+        for armature in bpy.data.objects.keys()
+        if armature.startswith("Armature")
+    ]
 
     # Choose one randomly and delete the rest
     armature_name = np.random.choice(armature_names)
@@ -95,6 +105,14 @@ def setup_scene_and_get_objects() -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.t
     armature = bpy.data.objects[armature_name]
     armature.location = Vector((0, 0, 0))
 
+    # Randomly choose not to render the armature
+    p = np.random.rand()
+    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
+    if armature_arm is None:
+        raise ValueError("Arm model not found.") 
+    armature_arm.hide_render = p < hide_armature_probability
+    print("ARM MODEL P", p)
+
     # Get bones
     pose = armature.pose
     arm = pose.bones.get(Bone.Arm.value)
@@ -104,7 +122,7 @@ def setup_scene_and_get_objects() -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.t
 
     if arm is None or forearm is None or hand is None:
         raise ValueError("Bones not found.")
-    
+
     return armature, arm, forearm, hand, hand_end, armature_suffix
 
 
@@ -176,7 +194,11 @@ def main(args) -> None:
     input_file = args.input_file
 
     # Get bones
-    armature, arm, forearm, hand, hand_end, armature_suffix = setup_scene_and_get_objects()
+    armature, arm, forearm, hand, hand_end, armature_suffix = (
+        setup_scene_and_get_objects(
+            hide_armature_probability=HIDE_ARMATURE_PROBABILITY,
+        )
+    )
     if hand_end is not None:
         armature.data.bones.remove(hand_end)
 
@@ -195,12 +217,10 @@ def main(args) -> None:
             id="camera",
             xy_distance_range=(3, 9),
             z_distance_range=(0, 1),
-            fixation_point_range=0,
+            fixation_point_range=3,
         )
         modules = [
-            RandomSunModuleGenerator(
-                name="Sun", id="sun", energy_range=(0.5, 1.5)
-            ),
+            RandomSunModuleGenerator(name="Sun", id="sun", energy_range=(0.5, 1.5)),
             RandomChristmasTreeModuleGenerator(
                 name="ChristmasTree",
                 id="christmas_tree",
@@ -210,7 +230,7 @@ def main(args) -> None:
                 n_leds_range=(50, 200),
                 led_radius_range=(0.03, 0.06),
                 emission_range=(1, 5),
-                flicker_probability_range=(0.5, 0.5), # TODO: change
+                flicker_probability_range=(0.5, 0.5),  # TODO: change
                 padding=0.1,
             ),
             RandomWallLampModuleGenerator(
@@ -354,20 +374,18 @@ def main(args) -> None:
                 persistance=0.3,
                 n_octaves=5,
             ),
-            PerlinRotationWaveGestureModuleGenerator(
-                id="perlin_rotation",
-                start_frame=2,
-                end_frame=3,
-                period_range=(1, 4),
-                amplitude_range=(0.5, 2),
-                persistance=0.3,
-                n_octaves=5,
-            ),
+            # PerlinRotationWaveGestureModuleGenerator(
+            #     id="perlin_rotation",
+            #     start_frame=2,
+            #     end_frame=3,
+            #     period_range=(1, 4),
+            #     amplitude_range=(0.5, 2),
+            #     persistance=0.3,
+            #     n_octaves=5,
+            # ),
         ]
         input_data_generator = InputDataGenerator(
-            room_module=room_module,
-            camera_module=camera_module,
-            modules=modules
+            room_module=room_module, camera_module=camera_module, modules=modules
         )
         input_data = input_data_generator.generate_input_data()
         input_file_parser = InputDataParser(input_data)
@@ -420,7 +438,7 @@ def main(args) -> None:
     # Set output resolution
     bpy.context.scene.render.resolution_x = RENDER_RESOLUTION[0]
     bpy.context.scene.render.resolution_y = RENDER_RESOLUTION[1]
-    
+
     # Render the animation if specified
     if args.render:
         print("Rendering...")

@@ -39,7 +39,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
         if patch_size_range[0] <= 0:
             raise ValueError("Minimum patch size must be greater than 0")
         if patch_size_range[1] > min(width, height):
-            raise ValueError("Minimum patch size must be less than width and height")
+            raise ValueError("Maximum patch size must be less than width and height")
         if patch_size_range[1] < patch_size_range[0]:
             raise ValueError(
                 "Upper bound of minimum patch size must be greater than lower bound"
