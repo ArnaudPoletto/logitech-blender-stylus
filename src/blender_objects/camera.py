@@ -45,6 +45,6 @@ class Camera(BlenderObject):
         camera_object.location = self.location
         camera_object.rotation_euler = self.rotation
         camera_object.data.fisheye_lens = 15.0  # TODO: remove hardcoding
-        camera_object.data.fisheye_fov = math.pi  # TODO: remove hardcoding
+        camera_object.data.fisheye_fov = math.pi  # TODO: remove hardcoding | math.pi
 
         bpy.context.view_layer.update()

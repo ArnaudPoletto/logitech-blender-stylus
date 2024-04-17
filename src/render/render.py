@@ -130,6 +130,7 @@ def render_and_get_frame_info(frame, camera, leds, armature_suffix) -> dict:
             raise ValueError("Armature arm not found.")
     if not GROUND_TRUTH_WITH_ARM_MODEL:
         # Hide arm model
+        old_armature_arm_hide_render = armature_arm.hide_render
         armature_arm.hide_render = True
     else:
         # Set model as black material
@@ -166,7 +167,7 @@ def render_and_get_frame_info(frame, camera, leds, armature_suffix) -> dict:
         background_object.hide_render = old_hide_render_state
         background_object.keyframe_insert(data_path="hide_render", frame=frame)
     if not GROUND_TRUTH_WITH_ARM_MODEL:
-        armature_arm.hide_render = False
+        armature_arm.hide_render = old_armature_arm_hide_render
     else:
         # Remove black material
         armature_arm.data.materials.clear()
