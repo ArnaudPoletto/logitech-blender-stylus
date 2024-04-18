@@ -1,3 +1,4 @@
+import bpy
 import math
 import random
 from typing import Tuple
@@ -74,5 +75,8 @@ class RandomSunModuleGenerator(ModuleGenerator):
                 }
             }
         }
+
+        # Also set the background emission to that value
+        bpy.context.scene.world.node_tree.nodes["Emission"].inputs["Strength"].default_value = energy
 
         return sun_data, existing_objects_per_wall

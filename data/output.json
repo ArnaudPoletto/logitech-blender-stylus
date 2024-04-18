@@ -1,402 +1,734 @@
 {
     "0": {
         "LED0Fist": {
-            "u": 1.0254610776901245,
-            "v": 1.2082897424697876,
+            "u": 0.6124874949455261,
+            "v": 2.0622472763061523,
             "x": 0.337310791015625,
             "y": 0.2731723189353943,
             "z": 4.016164779663086,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.541639979929663,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED10Fist": {
-            "u": 0.9458131790161133,
-            "v": 1.27705717086792,
+            "u": 0.519381582736969,
+            "v": 1.8703616857528687,
             "x": -0.400490403175354,
             "y": 0.24141401052474976,
             "z": 3.941577196121216,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 7.04562204391186,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED11Fist": {
-            "u": 1.0268797874450684,
-            "v": 1.224120855331421,
+            "u": 0.6093757748603821,
+            "v": 2.082735061645508,
             "x": 0.3353238105773926,
             "y": 0.25994279980659485,
             "z": 4.0591044425964355,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.560046727432746,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED12Fist": {
-            "u": 1.0034141540527344,
-            "v": 1.245976448059082,
+            "u": 0.5817452669143677,
+            "v": 2.0257413387298584,
             "x": 0.12084686011075974,
             "y": 0.2579353153705597,
             "z": 4.048562049865723,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.71041004741555,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED13Fist": {
-            "u": 0.9418095350265503,
-            "v": 1.303355097770691,
+            "u": 0.521228015422821,
+            "v": 1.900913119316101,
             "x": -0.4050012230873108,
             "y": 0.25301292538642883,
             "z": 4.022716045379639,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 7.093103186069376,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED14Fist": {
-            "u": 1.0090521574020386,
-            "v": 1.2567198276519775,
+            "u": 0.5747170448303223,
+            "v": 2.037257671356201,
             "x": 0.12028422951698303,
             "y": 0.2250346541404724,
             "z": 4.066258907318115,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.706021481164146,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED15Fist": {
-            "u": 1.0653834342956543,
-            "v": 1.208543300628662,
+            "u": 0.616121768951416,
+            "v": 2.1388978958129883,
             "x": 0.5347962379455566,
             "y": 0.16876132786273956,
             "z": 4.040372371673584,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.3666471474366615,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED16Fist": {
-            "u": 1.0138981342315674,
-            "v": 1.257631778717041,
+            "u": 0.5539641380310059,
+            "v": 2.0079331398010254,
             "x": 0.05592223256826401,
             "y": 0.1636410504579544,
             "z": 4.0169219970703125,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.7025404455152,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED17Fist": {
-            "u": 0.9884793758392334,
-            "v": 1.2819503545761108,
+            "u": 0.5281299948692322,
+            "v": 1.9536329507827759,
             "x": -0.16613498330116272,
             "y": 0.1610480099916458,
             "z": 4.006076812744141,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.864012764434239,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED18Fist": {
-            "u": 0.9736107587814331,
-            "v": 1.2903220653533936,
+            "u": 0.5382063388824463,
+            "v": 1.9609187841415405,
             "x": -0.18896493315696716,
             "y": 0.22209399938583374,
             "z": 4.0514116287231445,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.92909790420898,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED19Fist": {
-            "u": 1.0141122341156006,
-            "v": 1.2234036922454834,
+            "u": 0.5723861455917358,
+            "v": 1.993768334388733,
             "x": 0.12564687430858612,
             "y": 0.21102795004844666,
             "z": 3.9598309993743896,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.641011592607299,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED1Fist": {
-            "u": 1.0424271821975708,
-            "v": 1.1927298307418823,
+            "u": 0.6344696283340454,
+            "v": 2.106877326965332,
             "x": 0.49750763177871704,
             "y": 0.2746707797050476,
             "z": 4.024039268493652,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.431393958909663,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED20Fist": {
-            "u": 0.9781398773193359,
-            "v": 1.2565348148345947,
+            "u": 0.5354502201080322,
+            "v": 1.9181735515594482,
             "x": -0.18785764276981354,
             "y": 0.20809371769428253,
             "z": 3.9444220066070557,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.869183004127605,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED21Fist": {
-            "u": 1.0441519021987915,
-            "v": 1.2286889553070068,
+            "u": 0.588772177696228,
+            "v": 2.0810980796813965,
             "x": 0.3327157199382782,
             "y": 0.16686995327472687,
             "z": 4.0304412841796875,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.506293587808879,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED2Fist": {
-            "u": 1.0043919086456299,
-            "v": 1.2276132106781006,
+            "u": 0.5874958038330078,
+            "v": 2.011507987976074,
             "x": 0.14454947412014008,
             "y": 0.27136749029159546,
             "z": 4.00669002532959,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.676991272131492,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED3Fist": {
-            "u": 1.001986026763916,
-            "v": 1.229819655418396,
+            "u": 0.5847901701927185,
+            "v": 2.006014585494995,
             "x": 0.12295912951231003,
             "y": 0.27116578817367554,
             "z": 4.00562858581543,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.692327521705425,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED4Fist": {
-            "u": 0.9996300935745239,
-            "v": 1.231980323791504,
+            "u": 0.5821686387062073,
+            "v": 2.000692367553711,
             "x": 0.10190074890851974,
             "y": 0.27096909284591675,
             "z": 4.004593849182129,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.707319747772022,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED5Fist": {
-            "u": 0.966205894947052,
-            "v": 1.2626354694366455,
+            "u": 0.5476986765861511,
+            "v": 1.9307098388671875,
             "x": -0.18841536343097687,
             "y": 0.26825040578842163,
             "z": 3.990324020385742,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.917238702061069,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED6Fist": {
-            "u": 0.9404115080833435,
-            "v": 1.286292552947998,
+            "u": 0.5241624712944031,
+            "v": 1.882925033569336,
             "x": -0.4021605849266052,
             "y": 0.2662498354911804,
             "z": 3.9798176288604736,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 7.07544507625058,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED7Fist": {
-            "u": 0.9227002263069153,
-            "v": 1.3025357723236084,
+            "u": 0.5093243718147278,
+            "v": 1.8527991771697998,
             "x": -0.5440344214439392,
             "y": 0.264922559261322,
             "z": 3.972843647003174,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 7.182051874316016,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED8Fist": {
-            "u": 1.0074450969696045,
-            "v": 1.220738410949707,
+            "u": 0.5798322558403015,
+            "v": 1.99285888671875,
             "x": 0.12529408931732178,
             "y": 0.2463344931602478,
             "z": 3.9674220085144043,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.660279321512272,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED9Fist": {
-            "u": 1.0308066606521606,
-            "v": 1.1993902921676636,
+            "u": 0.6073024272918701,
+            "v": 2.0485236644744873,
             "x": 0.33873558044433594,
             "y": 0.2483329176902771,
             "z": 3.9779131412506104,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.509492911352747,
+            "stylus_relative_orientation": -0.8859861250093672
         }
     },
     "1": {
         "LED0Fist": {
-            "u": 1.0254610776901245,
-            "v": 1.2082897424697876,
+            "u": 0.6124874949455261,
+            "v": 2.0622472763061523,
             "x": 0.337310791015625,
             "y": 0.2731723189353943,
             "z": 4.016164779663086,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.541639979929663,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED10Fist": {
-            "u": 0.9458131790161133,
-            "v": 1.27705717086792,
+            "u": 0.519381582736969,
+            "v": 1.8703616857528687,
             "x": -0.400490403175354,
             "y": 0.24141401052474976,
             "z": 3.941577196121216,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 7.04562204391186,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED11Fist": {
-            "u": 1.0268797874450684,
-            "v": 1.224120855331421,
+            "u": 0.6093757748603821,
+            "v": 2.082735061645508,
             "x": 0.3353238105773926,
             "y": 0.25994279980659485,
             "z": 4.0591044425964355,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.560046727432746,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED12Fist": {
-            "u": 1.0034141540527344,
-            "v": 1.245976448059082,
+            "u": 0.5817452669143677,
+            "v": 2.0257413387298584,
             "x": 0.12084686011075974,
             "y": 0.2579353153705597,
             "z": 4.048562049865723,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.71041004741555,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED13Fist": {
-            "u": 0.9418095350265503,
-            "v": 1.303355097770691,
+            "u": 0.521228015422821,
+            "v": 1.900913119316101,
             "x": -0.4050012230873108,
             "y": 0.25301292538642883,
             "z": 4.022716045379639,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 7.093103186069376,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED14Fist": {
-            "u": 1.0090521574020386,
-            "v": 1.2567198276519775,
+            "u": 0.5747170448303223,
+            "v": 2.037257671356201,
             "x": 0.12028422951698303,
             "y": 0.2250346541404724,
             "z": 4.066258907318115,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.706021481164146,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED15Fist": {
-            "u": 1.0653834342956543,
-            "v": 1.208543300628662,
+            "u": 0.616121768951416,
+            "v": 2.1388978958129883,
             "x": 0.5347962379455566,
             "y": 0.16876132786273956,
             "z": 4.040372371673584,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.3666471474366615,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED16Fist": {
-            "u": 1.0138981342315674,
-            "v": 1.257631778717041,
+            "u": 0.5539641380310059,
+            "v": 2.0079331398010254,
             "x": 0.05592223256826401,
             "y": 0.1636410504579544,
             "z": 4.0169219970703125,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.7025404455152,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED17Fist": {
-            "u": 0.9884793758392334,
-            "v": 1.2819503545761108,
+            "u": 0.5281299948692322,
+            "v": 1.9536329507827759,
             "x": -0.16613498330116272,
             "y": 0.1610480099916458,
             "z": 4.006076812744141,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.864012764434239,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED18Fist": {
-            "u": 0.9736107587814331,
-            "v": 1.2903220653533936,
+            "u": 0.5382063388824463,
+            "v": 1.9609187841415405,
             "x": -0.18896493315696716,
             "y": 0.22209399938583374,
             "z": 4.0514116287231445,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.92909790420898,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED19Fist": {
-            "u": 1.0141122341156006,
-            "v": 1.2234036922454834,
+            "u": 0.5723861455917358,
+            "v": 1.993768334388733,
             "x": 0.12564687430858612,
             "y": 0.21102795004844666,
             "z": 3.9598309993743896,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.641011592607299,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED1Fist": {
-            "u": 1.0424271821975708,
-            "v": 1.1927298307418823,
+            "u": 0.6344696283340454,
+            "v": 2.106877326965332,
             "x": 0.49750763177871704,
             "y": 0.2746707797050476,
             "z": 4.024039268493652,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.431393958909663,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED20Fist": {
-            "u": 0.9781398773193359,
-            "v": 1.2565348148345947,
+            "u": 0.5354502201080322,
+            "v": 1.9181735515594482,
             "x": -0.18785764276981354,
             "y": 0.20809371769428253,
             "z": 3.9444220066070557,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.869183004127605,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED21Fist": {
-            "u": 1.0441519021987915,
-            "v": 1.2286889553070068,
+            "u": 0.588772177696228,
+            "v": 2.0810980796813965,
             "x": 0.3327157199382782,
             "y": 0.16686995327472687,
             "z": 4.0304412841796875,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.506293587808879,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED2Fist": {
-            "u": 1.0043919086456299,
-            "v": 1.2276132106781006,
+            "u": 0.5874958038330078,
+            "v": 2.011507987976074,
             "x": 0.14454947412014008,
             "y": 0.27136749029159546,
             "z": 4.00669002532959,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.676991272131492,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED3Fist": {
-            "u": 1.001986026763916,
-            "v": 1.229819655418396,
+            "u": 0.5847901701927185,
+            "v": 2.006014585494995,
             "x": 0.12295912951231003,
             "y": 0.27116578817367554,
             "z": 4.00562858581543,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.692327521705425,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED4Fist": {
-            "u": 0.9996300935745239,
-            "v": 1.231980323791504,
+            "u": 0.5821686387062073,
+            "v": 2.000692367553711,
             "x": 0.10190074890851974,
             "y": 0.27096909284591675,
             "z": 4.004593849182129,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.707319747772022,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED5Fist": {
-            "u": 0.966205894947052,
-            "v": 1.2626354694366455,
+            "u": 0.5476986765861511,
+            "v": 1.9307098388671875,
             "x": -0.18841536343097687,
             "y": 0.26825040578842163,
             "z": 3.990324020385742,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.917238702061069,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED6Fist": {
-            "u": 0.9404115080833435,
-            "v": 1.286292552947998,
+            "u": 0.5241624712944031,
+            "v": 1.882925033569336,
             "x": -0.4021605849266052,
             "y": 0.2662498354911804,
             "z": 3.9798176288604736,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 7.07544507625058,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED7Fist": {
-            "u": 0.9227002263069153,
-            "v": 1.3025357723236084,
+            "u": 0.5093243718147278,
+            "v": 1.8527991771697998,
             "x": -0.5440344214439392,
             "y": 0.264922559261322,
             "z": 3.972843647003174,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 7.182051874316016,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED8Fist": {
-            "u": 1.0074450969696045,
-            "v": 1.220738410949707,
+            "u": 0.5798322558403015,
+            "v": 1.99285888671875,
             "x": 0.12529408931732178,
             "y": 0.2463344931602478,
             "z": 3.9674220085144043,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.660279321512272,
+            "stylus_relative_orientation": -0.8859861250093672
         },
         "LED9Fist": {
-            "u": 1.0308066606521606,
-            "v": 1.1993902921676636,
+            "u": 0.6073024272918701,
+            "v": 2.0485236644744873,
             "x": 0.33873558044433594,
             "y": 0.2483329176902771,
             "z": 3.9779131412506104,
             "is_occluded": true,
-            "is_in_frame": false
+            "is_in_frame": false,
+            "distance_from_camera": 6.509492911352747,
+            "stylus_relative_orientation": -0.8859861250093672
+        }
+    },
+    "2": {
+        "LED0Fist": {
+            "u": 0.5913342237472534,
+            "v": 2.058847665786743,
+            "x": 0.2650286853313446,
+            "y": 0.21849048137664795,
+            "z": 4.033455848693848,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.579525687448112,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED10Fist": {
+            "u": 0.497365266084671,
+            "v": 1.862280249595642,
+            "x": -0.46900638937950134,
+            "y": 0.1665544956922531,
+            "z": 3.936410903930664,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 7.066728288303867,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED11Fist": {
+            "u": 0.5878340601921082,
+            "v": 2.0789389610290527,
+            "x": 0.2622412443161011,
+            "y": 0.20390956103801727,
+            "z": 4.075911045074463,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.597818394097621,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED12Fist": {
+            "u": 0.559863805770874,
+            "v": 2.0206007957458496,
+            "x": 0.048317261040210724,
+            "y": 0.19569174945354462,
+            "z": 4.0590434074401855,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.7433626249277125,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED13Fist": {
+            "u": 0.4984442889690399,
+            "v": 1.892496943473816,
+            "x": -0.4761752486228943,
+            "y": 0.17554347217082977,
+            "z": 4.0176897048950195,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 7.1150481005696085,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED14Fist": {
+            "u": 0.5527763366699219,
+            "v": 2.0317845344543457,
+            "x": 0.04828408360481262,
+            "y": 0.16226769983768463,
+            "z": 4.07573938369751,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.738199409319573,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED15Fist": {
+            "u": 0.5955831408500671,
+            "v": 2.1359479427337646,
+            "x": 0.4649219810962677,
+            "y": 0.11945617198944092,
+            "z": 4.06034517288208,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.406323167336551,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED16Fist": {
+            "u": 0.5325656533241272,
+            "v": 2.001927375793457,
+            "x": -0.012699990533292294,
+            "y": 0.10046756267547607,
+            "z": 4.022753715515137,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.731329209225592,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED17Fist": {
+            "u": 0.5063075423240662,
+            "v": 1.9462140798568726,
+            "x": -0.23417046666145325,
+            "y": 0.09144294261932373,
+            "z": 4.005344390869141,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.88808184898961,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED18Fist": {
+            "u": 0.5157309770584106,
+            "v": 1.9535235166549683,
+            "x": -0.26017633080482483,
+            "y": 0.1503615528345108,
+            "z": 4.051770210266113,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.954686673125109,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED19Fist": {
+            "u": 0.5515509247779846,
+            "v": 1.9888869524002075,
+            "x": 0.05709598585963249,
+            "y": 0.15166665613651276,
+            "z": 3.9691481590270996,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.672159229093783,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED1Fist": {
+            "u": 0.6135622262954712,
+            "v": 2.104501485824585,
+            "x": 0.4248127043247223,
+            "y": 0.22462761402130127,
+            "z": 4.046054363250732,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.473021271933367,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED20Fist": {
+            "u": 0.5140128135681152,
+            "v": 1.9112504720687866,
+            "x": -0.2556001543998718,
+            "y": 0.13965487480163574,
+            "z": 3.944493055343628,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.89361414010301,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED21Fist": {
+            "u": 0.5678820610046387,
+            "v": 2.076862335205078,
+            "x": 0.2633623778820038,
+            "y": 0.11171329021453857,
+            "z": 4.044454574584961,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.541259943311042,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED2Fist": {
+            "u": 0.5660285353660583,
+            "v": 2.0068728923797607,
+            "x": 0.07276444137096405,
+            "y": 0.21110403537750244,
+            "z": 4.018296241760254,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.710521041151559,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED3Fist": {
+            "u": 0.5632867217063904,
+            "v": 2.001241445541382,
+            "x": 0.05122969672083855,
+            "y": 0.21027743816375732,
+            "z": 4.016598701477051,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.7253799728200185,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED4Fist": {
+            "u": 0.560629665851593,
+            "v": 1.9957841634750366,
+            "x": 0.03022567741572857,
+            "y": 0.20947062969207764,
+            "z": 4.014942646026611,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.739907101180545,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED5Fist": {
+            "u": 0.5256553292274475,
+            "v": 1.9239519834518433,
+            "x": -0.2593420445919037,
+            "y": 0.19834578037261963,
+            "z": 3.9921107292175293,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.943614224291883,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED6Fist": {
+            "u": 0.5017343759536743,
+            "v": 1.8748211860656738,
+            "x": -0.4725361764431,
+            "y": 0.19015610218048096,
+            "z": 3.9753007888793945,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 7.097466793271511,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED7Fist": {
+            "u": 0.48663678765296936,
+            "v": 1.843812346458435,
+            "x": -0.6140443086624146,
+            "y": 0.18472063541412354,
+            "z": 3.9641430377960205,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 7.201284243703061,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED8Fist": {
+            "u": 0.5587968826293945,
+            "v": 1.9881675243377686,
+            "x": 0.0554228201508522,
+            "y": 0.18669943511486053,
+            "z": 3.9777612686157227,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.692436677834809,
+            "stylus_relative_orientation": -0.8707202821387909
+        },
+        "LED9Fist": {
+            "u": 0.5866414904594421,
+            "v": 2.045226812362671,
+            "x": 0.2683139145374298,
+            "y": 0.19487814605236053,
+            "z": 3.9945473670959473,
+            "is_occluded": true,
+            "is_in_frame": false,
+            "distance_from_camera": 6.5464709391667455,
+            "stylus_relative_orientation": -0.8707202821387909
         }
     }
 }

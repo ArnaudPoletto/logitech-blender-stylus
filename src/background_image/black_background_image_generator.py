@@ -7,13 +7,22 @@ from typing import Tuple
 from background_image.background_image_generator import BackgroundImageGenerator
 
 
-# TODO: add documentation
 class BlackBackgroundImageGenerator(BackgroundImageGenerator):
+    """
+    A black background image generator.
+    """
     def __init__(
         self,
         width: int,
         height: int,
     ) -> None:
+        """
+        Initialize the black background image generator.
+        
+        Args:
+            width (int): The width of the background image.
+            height (int): The height of the background image.
+        """
         super(BlackBackgroundImageGenerator, self).__init__(width=width, height=height)
 
         self.width = width

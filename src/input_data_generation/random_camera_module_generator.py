@@ -20,6 +20,8 @@ class RandomCameraModuleGenerator(ModuleGenerator):
         xy_distance_range: Tuple[float, float],
         z_distance_range: Tuple[float, float],
         fixation_point_range: float,
+        focal_length: float,
+        fov: float,
         ) -> None:
         """
         Initialize the random camera module generator.
@@ -30,6 +32,8 @@ class RandomCameraModuleGenerator(ModuleGenerator):
             xy_distance_range (Tuple[float, float]): The range of the xy distance of the camera from the origin.
             z_distance_range (Tuple[float, float]): The range of the z distance of the camera from the origin.
             fixation_point_range (float): The range of the distance of the fixation point from the origin for each axis.
+            focal_length (float): The focal length of the camera.
+            fov (float): The field of view of the camera.
             
         Raises:
             ValueError: If the minimum xy distance is less than 0.
@@ -46,6 +50,7 @@ class RandomCameraModuleGenerator(ModuleGenerator):
         if z_distance_range[1] < z_distance_range[0]:
             raise ValueError("The maximum z distance must be greater than or equal to the minimum z distance.")
         
+        
         super(RandomCameraModuleGenerator, self).__init__(
             type=ModuleGeneratorType.GLOBAL,
             name=name,
@@ -56,6 +61,8 @@ class RandomCameraModuleGenerator(ModuleGenerator):
         self.xy_distance_range = xy_distance_range
         self.z_distance_range = z_distance_range
         self.fixation_point_range = fixation_point_range
+        self.focal_length = focal_length
+        self.fov = fov
         
     def generate(
         self,
@@ -100,7 +107,9 @@ class RandomCameraModuleGenerator(ModuleGenerator):
                             "x": rotation.x,
                             "y": rotation.y,
                             "z": rotation.z,
-                        }
+                        },
+                        "focal_length": self.focal_length,
+                        "fov": self.fov,
                     }
                 }
             }

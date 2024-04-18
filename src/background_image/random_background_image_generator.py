@@ -9,6 +9,9 @@ from background_image.background_image_generator import BackgroundImageGenerator
 
 # TODO: add documentation
 class RandomBackgroundImageGenerator(BackgroundImageGenerator):
+    """
+    A random background image generator.
+    """
     def __init__(
         self,
         width: int,
@@ -24,6 +27,44 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
         n_blur_steps: int,
         max_blur: int,
     ) -> None:
+        """
+        Initialize the random background image generator.
+        
+        Args:
+            width (int): The width of the background image.
+            height (int): The height of the background image.
+            n_patches_range (Tuple[int, int]): The range of the number of patches.
+            n_patch_corners_range (Tuple[int, int]): The range of the number of patch corners.
+            patch_size_range (Tuple[int, int]): The range of the patch size.
+            n_lines_range (Tuple[int, int]): The range of the number of lines.
+            line_size_range (Tuple[int, int]): The range of the line size.
+            n_line_points_range (Tuple[int, int]): The range of the number of line points.
+            line_thickness_range (Tuple[int, int]): The range of the line thickness.
+            smooth_gaussian_kernel_size (int): The size of the smooth Gaussian kernel.
+            n_blur_steps (int): The number of blur steps.
+            max_blur (int): The maximum blur.
+        
+        Raises:
+            ValueError: If the number of patches is less than or equal to 0.
+            ValueError: If the upper bound of the number of patches is less than the lower bound.
+            ValueError: If the number of patch corners is less than or equal to 0.
+            ValueError: If the upper bound of the number of patch corners is less than the lower bound.
+            ValueError: If the minimum patch size is less than or equal to 0.
+            ValueError: If the maximum patch size is greater than the width and height.
+            ValueError: If the upper bound of the minimum patch size is less than the lower bound.
+            ValueError: If the number of lines is less than or equal to 0.
+            ValueError: If the upper bound of the number of lines is less than the lower bound.
+            ValueError: If the minimum line size is less than or equal to 0.
+            ValueError: If the minimum line size is greater than the width and height.
+            ValueError: If the number of line points is less than or equal to 0.
+            ValueError: If the upper bound of the number of line points is less than the lower bound.
+            ValueError: If the minimum line thickness is less than or equal to 0.
+            ValueError: If the upper bound of the minimum line thickness is less than the lower bound.
+            ValueError: If the smooth Gaussian kernel size is less than or equal to 0.
+            ValueError: If the smooth Gaussian kernel size is even.
+            ValueError: If the number of blur steps is less than or equal to 0.
+            ValueError: If the maximum blur is less than or equal to 0.
+        """
         if n_patches_range[0] <= 0:
             raise ValueError("Number of patches must be greater than 0")
         if n_patches_range[1] < n_patches_range[0]:
