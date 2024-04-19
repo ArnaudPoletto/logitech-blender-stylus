@@ -115,6 +115,8 @@ class RandomTableModuleGenerator(ModuleGenerator):
         set_seed()
         
         wall_scale = wall_scales_per_wall[self.type]
+        print(existing_objects_per_wall) # TODO: Test because it sometimes fails here with keys being not modulegeneratortype
+        print(existing_objects_per_wall.keys())
         existing_objects = existing_objects_per_wall[self.type]
 
         width, length = wall_scale

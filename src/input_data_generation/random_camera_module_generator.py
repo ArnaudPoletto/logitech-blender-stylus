@@ -20,6 +20,7 @@ class RandomCameraModuleGenerator(ModuleGenerator):
         xy_distance_range: Tuple[float, float],
         z_distance_range: Tuple[float, float],
         fixation_point_range: float,
+        type: str,
         focal_length: float,
         fov: float,
         ) -> None:
@@ -32,6 +33,7 @@ class RandomCameraModuleGenerator(ModuleGenerator):
             xy_distance_range (Tuple[float, float]): The range of the xy distance of the camera from the origin.
             z_distance_range (Tuple[float, float]): The range of the z distance of the camera from the origin.
             fixation_point_range (float): The range of the distance of the fixation point from the origin for each axis.
+            type (str): The type of the camera.
             focal_length (float): The focal length of the camera.
             fov (float): The field of view of the camera.
             
@@ -61,6 +63,7 @@ class RandomCameraModuleGenerator(ModuleGenerator):
         self.xy_distance_range = xy_distance_range
         self.z_distance_range = z_distance_range
         self.fixation_point_range = fixation_point_range
+        self.type = type
         self.focal_length = focal_length
         self.fov = fov
         
@@ -108,6 +111,7 @@ class RandomCameraModuleGenerator(ModuleGenerator):
                             "y": rotation.y,
                             "z": rotation.z,
                         },
+                        "type": self.type,
                         "focal_length": self.focal_length,
                         "fov": self.fov,
                     }
