@@ -374,5 +374,5 @@ class GestureSequence:
             previous_displacement_data = displacement_data
 
         # Set general start and end frame
-        bpy.context.scene.frame_start = 0
+        bpy.context.scene.frame_start = 1
         bpy.context.scene.frame_end = end_frame - 1

@@ -6,7 +6,7 @@ import math
 import numpy as np
 import importlib.util
 from typing import Tuple
-from mathutils import Vector
+from mathutils import Vector, Euler
 
 wrk_dir = os.getcwd()
 paths = [
@@ -75,8 +75,10 @@ from input_data_generation.random_camera_module_generator import (
     RandomCameraModuleGenerator,
 )
 from utils.config import (
-    INPUTS_FOLDER,
     CAMERA_NAME,
+    CAMERA_TYPE,
+    CAMERA_FOCAL_LENGTH,
+    CAMERA_FOV_DEGREES,
     RENDER_RESOLUTION,
     BACKGROUND_COLLECTION_NAME,
     HIDE_ARMATURE_PROBABILITY,
@@ -125,6 +127,18 @@ def setup_scene_and_get_objects(
     arm = pose.bones.get(Bone.Arm.value)
     forearm = pose.bones.get(Bone.Forearm.value)
     hand = pose.bones.get(Bone.Hand.value)
+    
+    # TODO: not here
+    # Set random rotations
+    def _get_random_rotation(min, max):
+        x_rotation = np.random.uniform(min, max)
+        y_rotation = np.random.uniform(min, max)
+        z_rotation = np.random.uniform(min, max)
+        return Euler((x_rotation, y_rotation, z_rotation), "XYZ")
+    
+    arm.rotation_euler = _get_random_rotation(-np.pi, np.pi)
+    forearm.rotation_euler = _get_random_rotation(-np.pi / 2, np.pi / 2)
+    hand.rotation_euler = _get_random_rotation(-np.pi / 2, np.pi / 2)
 
     if arm is None or forearm is None or hand is None:
         raise ValueError("Bones not found.")
@@ -185,6 +199,15 @@ def get_parser() -> argument_parser.ArgumentParserForBlender:
         type=bool,
         default=False,
     )
+    
+    parser.add_argument(
+        "-q",
+        "--quit",
+        metavar="QUIT",
+        help="Whether to quit Blender after rendering the animation.",
+        type=bool,
+        default=False,
+    )
 
     return parser
 
@@ -198,226 +221,217 @@ def main(args) -> None:
     """
     set_seed()
 
-    # Get parameters
-    input_file = args.input_file
-
     # Get bones
     armature, arm, forearm, hand, armature_suffix = setup_scene_and_get_objects(
         hide_armature_probability=HIDE_ARMATURE_PROBABILITY,
     )
 
     # Get input data
-    if input_file is None:
-        print("Generating input data...")
-        room_id = "room"
-        room_module = RandomRoomModuleGenerator(
-            name="Room",
-            id=room_id,
-            xy_scale_range=(20, 100),
-            z_scale_range=(10, 25),
-        )
-        camera_module = RandomCameraModuleGenerator(
-            name=CAMERA_NAME,
-            id="camera",
-            xy_distance_range=(6, 10),
-            z_distance_range=(0, 1),
-            fixation_point_range=1,
-            focal_length=28,
-            fov=math.radians(110),
-        )
-        #TODO: fine tune the rules
-        modules = [
-            RandomSunModuleGenerator(name="Sun", id="sun", energy_range=(0.0, 1.0)),
-            SomeOf([
-                RandomChristmasTreeModuleGenerator(
-                    name="ChristmasTreeTall",
-                    id="christmas_tree_tall",
+    print("Generating input data...")
+    room_id = "room"
+    room_module = RandomRoomModuleGenerator(
+        name="Room",
+        id=room_id,
+        xy_scale_range=(20, 100),
+        z_scale_range=(10, 25),
+    )
+    camera_module = RandomCameraModuleGenerator(
+        name=CAMERA_NAME,
+        id="camera",
+        xy_distance_range=(3, 6),
+        z_distance_range=(0, 1),
+        fixation_point_range=1,
+        type=CAMERA_TYPE,
+        focal_length=CAMERA_FOCAL_LENGTH,
+        fov=math.radians(CAMERA_FOV_DEGREES),
+    )
+    #TODO: fine tune the rules
+    modules = [
+        RandomSunModuleGenerator(name="Sun", id="sun", energy_range=(0.0, 1.0)),
+        SomeOf([
+            RandomChristmasTreeModuleGenerator(
+                name="ChristmasTreeTall",
+                id="christmas_tree_tall",
+                room_id=room_id,
+                height_range=(5, 10),
+                radius_range=(1, 2),
+                n_leds_range=(25, 200),
+                led_radius_range=(0.03, 0.06),
+                emission_range=(1, 5),
+                flicker_probability_range=(0.00, 0.01),
+                padding=0.1,
+            ),
+            RandomChristmasTreeModuleGenerator(
+                name="ChristmasTreeSmall",
+                id="christmas_tree_small",
+                room_id=room_id,
+                height_range=(5, 7),
+                radius_range=(0.5, 1),
+                n_leds_range=(10, 25),
+                led_radius_range=(0.03, 0.06),
+                emission_range=(1, 5),
+                flicker_probability_range=(0.00, 0.01),
+                padding=0.1,
+            ),
+        ]),
+        RandomWallLampModuleGenerator(
+            name="WallLamp",
+            id="wall_lamp",
+            room_id=room_id,
+            n_wall_lamps=10,
+            xy_scale_range=(1, 5),
+            emission_strength_range=(0.1, 1),
+            padding=0.1,
+        ),
+        RandomWindowModuleGenerator(
+            wall_type=ModuleGeneratorType.FRONT_WALL,
+            name="WindowFront",
+            id="window_front",
+            room_id=room_id,
+            n_windows=10,
+            xy_scale_range=(1, 4),
+            shades_probability=0.5,
+            shade_ratio_range=(0.1, 0.9),
+            shade_transmission_range=(0.1, 0.9),
+            blinds_probability=0.3,
+            n_blinds_range=(5, 20),
+            blind_angle_range=(0, math.pi),
+            blind_vertical=True,
+            muntins_probability=0.3,
+            muntin_size_range=(0.1, 0.2),
+            n_muntins_width_range=(1, 4),
+            n_muntins_height_range=(1, 4),
+            padding=0.1,
+        ),
+        RandomWindowModuleGenerator(
+            wall_type=ModuleGeneratorType.BACK_WALL,
+            name="WindowBack",
+            id="window_back",
+            room_id=room_id,
+            n_windows=10,
+            xy_scale_range=(1, 4),
+            shades_probability=0.5,
+            shade_ratio_range=(0.1, 0.9),
+            shade_transmission_range=(0.1, 0.9),
+            blinds_probability=0.3,
+            n_blinds_range=(5, 20),
+            blind_angle_range=(0, math.pi),
+            blind_vertical=True,
+            muntins_probability=0.3,
+            muntin_size_range=(0.1, 0.2),
+            n_muntins_width_range=(1, 4),
+            n_muntins_height_range=(1, 4),
+            padding=0.1,
+        ),
+        RandomWindowModuleGenerator(
+            wall_type=ModuleGeneratorType.LEFT_WALL,
+            name="WindowLeft",
+            id="window_left",
+            room_id=room_id,
+            n_windows=10,
+            xy_scale_range=(1, 4),
+            shades_probability=0.5,
+            shade_ratio_range=(0.1, 0.9),
+            shade_transmission_range=(0.1, 0.9),
+            blinds_probability=0.3,
+            n_blinds_range=(5, 20),
+            blind_angle_range=(0, math.pi),
+            blind_vertical=True,
+            muntins_probability=0.3,
+            muntin_size_range=(0.1, 0.2),
+            n_muntins_width_range=(1, 4),
+            n_muntins_height_range=(1, 4),
+            padding=0.1,
+        ),
+        RandomWindowModuleGenerator(
+            wall_type=ModuleGeneratorType.RIGHT_WALL,
+            name="WindowRight",
+            id="window_right",
+            room_id=room_id,
+            n_windows=10,
+            xy_scale_range=(1, 4),
+            shades_probability=0.5,
+            shade_ratio_range=(0.1, 0.9),
+            shade_transmission_range=(0.1, 0.9),
+            blinds_probability=0.3,
+            n_blinds_range=(5, 20),
+            blind_angle_range=(0, math.pi),
+            blind_vertical=True,
+            muntins_probability=0.3,
+            muntin_size_range=(0.1, 0.2),
+            n_muntins_width_range=(1, 4),
+            n_muntins_height_range=(1, 4),
+            padding=0.1,
+        ),
+        SomeOf(
+            modules=[
+                RandomTableModuleGenerator(
+                    weight=3,
+                    priority=1,
+                    name="TableUnlimited",
+                    id="table_unlimited",
                     room_id=room_id,
-                    height_range=(5, 10),
-                    radius_range=(1, 2),
-                    n_leds_range=(25, 200),
-                    led_radius_range=(0.03, 0.06),
-                    emission_range=(1, 5),
-                    flicker_probability_range=(0.00, 0.01),
+                    n_tables=-1,
+                    xy_scale_range=(2, 5),
+                    z_scale_range=(1, 3),
+                    top_thickness_range=(0.1, 0.2),
+                    leg_thickness_range=(0.1, 0.2),
                     padding=0.1,
                 ),
-                RandomChristmasTreeModuleGenerator(
-                    name="ChristmasTreeSmall",
-                    id="christmas_tree_small",
+                RandomTableModuleGenerator(
+                    weight=1,
+                    priority=0,
+                    name="TableSmall",
+                    id="table_small",
                     room_id=room_id,
-                    height_range=(5, 7),
-                    radius_range=(0.5, 1),
-                    n_leds_range=(10, 25),
-                    led_radius_range=(0.03, 0.06),
-                    emission_range=(1, 5),
-                    flicker_probability_range=(0.00, 0.01),
+                    n_tables=5,
+                    xy_scale_range=(1, 2),
+                    z_scale_range=(1, 3),
+                    top_thickness_range=(0.1, 0.2),
+                    leg_thickness_range=(0.1, 0.2),
                     padding=0.1,
                 ),
-            ]),
-            RandomWallLampModuleGenerator(
-                name="WallLamp",
-                id="wall_lamp",
-                room_id=room_id,
-                n_wall_lamps=10,
-                xy_scale_range=(1, 5),
-                emission_strength_range=(0.1, 1),
-                padding=0.1,
-            ),
-            RandomWindowModuleGenerator(
-                wall_type=ModuleGeneratorType.FRONT_WALL,
-                name="WindowFront",
-                id="window_front",
-                room_id=room_id,
-                n_windows=10,
-                xy_scale_range=(1, 4),
-                shades_probability=0.5,
-                shade_ratio_range=(0.1, 0.9),
-                shade_transmission_range=(0.1, 0.9),
-                blinds_probability=0.3,
-                n_blinds_range=(5, 20),
-                blind_angle_range=(0, math.pi),
-                blind_vertical=True,
-                muntins_probability=0.3,
-                muntin_size_range=(0.1, 0.2),
-                n_muntins_width_range=(1, 4),
-                n_muntins_height_range=(1, 4),
-                padding=0.1,
-            ),
-            RandomWindowModuleGenerator(
-                wall_type=ModuleGeneratorType.BACK_WALL,
-                name="WindowBack",
-                id="window_back",
-                room_id=room_id,
-                n_windows=10,
-                xy_scale_range=(1, 4),
-                shades_probability=0.5,
-                shade_ratio_range=(0.1, 0.9),
-                shade_transmission_range=(0.1, 0.9),
-                blinds_probability=0.3,
-                n_blinds_range=(5, 20),
-                blind_angle_range=(0, math.pi),
-                blind_vertical=True,
-                muntins_probability=0.3,
-                muntin_size_range=(0.1, 0.2),
-                n_muntins_width_range=(1, 4),
-                n_muntins_height_range=(1, 4),
-                padding=0.1,
-            ),
-            RandomWindowModuleGenerator(
-                wall_type=ModuleGeneratorType.LEFT_WALL,
-                name="WindowLeft",
-                id="window_left",
-                room_id=room_id,
-                n_windows=10,
-                xy_scale_range=(1, 4),
-                shades_probability=0.5,
-                shade_ratio_range=(0.1, 0.9),
-                shade_transmission_range=(0.1, 0.9),
-                blinds_probability=0.3,
-                n_blinds_range=(5, 20),
-                blind_angle_range=(0, math.pi),
-                blind_vertical=True,
-                muntins_probability=0.3,
-                muntin_size_range=(0.1, 0.2),
-                n_muntins_width_range=(1, 4),
-                n_muntins_height_range=(1, 4),
-                padding=0.1,
-            ),
-            RandomWindowModuleGenerator(
-                wall_type=ModuleGeneratorType.RIGHT_WALL,
-                name="WindowRight",
-                id="window_right",
-                room_id=room_id,
-                n_windows=10,
-                xy_scale_range=(1, 4),
-                shades_probability=0.5,
-                shade_ratio_range=(0.1, 0.9),
-                shade_transmission_range=(0.1, 0.9),
-                blinds_probability=0.3,
-                n_blinds_range=(5, 20),
-                blind_angle_range=(0, math.pi),
-                blind_vertical=True,
-                muntins_probability=0.3,
-                muntin_size_range=(0.1, 0.2),
-                n_muntins_width_range=(1, 4),
-                n_muntins_height_range=(1, 4),
-                padding=0.1,
-            ),
-            SomeOf(
-                modules=[
-                    RandomTableModuleGenerator(
-                        weight=3,
-                        priority=1,
-                        name="TableUnlimited",
-                        id="table_unlimited",
-                        room_id=room_id,
-                        n_tables=-1,
-                        xy_scale_range=(2, 5),
-                        z_scale_range=(1, 3),
-                        top_thickness_range=(0.1, 0.2),
-                        leg_thickness_range=(0.1, 0.2),
-                        padding=0.1,
-                    ),
-                    RandomTableModuleGenerator(
-                        weight=1,
-                        priority=0,
-                        name="TableSmall",
-                        id="table_small",
-                        room_id=room_id,
-                        n_tables=5,
-                        xy_scale_range=(1, 2),
-                        z_scale_range=(1, 3),
-                        top_thickness_range=(0.1, 0.2),
-                        leg_thickness_range=(0.1, 0.2),
-                        padding=0.1,
-                    ),
-                    RandomTableModuleGenerator(
-                        weight=1,
-                        priority=0,
-                        name="TableBig",
-                        id="table_big",
-                        room_id=room_id,
-                        n_tables=3,
-                        xy_scale_range=(5, 8),
-                        z_scale_range=(2, 3),
-                        top_thickness_range=(0.4, 0.6),
-                        leg_thickness_range=(0.4, 0.6),
-                        padding=0.1,
-                    ),
-                ],
-            ),
-            PerlinRotationSineGestureModuleGenerator(
-                id="perlin_rotation_sine",
-                start_frame=1,
-                end_frame=25,
-                period_range=(1, 4),
-                amplitude_range=(0.5, 2),
-                persistance=0.3,
-                n_octaves=5,
-            ),
-            PerlinRotationWaveGestureModuleGenerator(
-                id="perlin_rotation_wave",
-                start_frame=25,
-                end_frame=50,
-                period_range=(1, 3),
-                amplitude_range=(1, 2),
-                persistance=0.3,
-                n_octaves=2,
-            ),
-        ]
-        input_data_generator = InputDataGenerator(
-            room_module=room_module, camera_module=camera_module, modules=modules
-        )
-        input_data = input_data_generator.generate_input_data()
-        input_file_parser = InputDataParser(input_data)
-        input_data = input_file_parser.parse(armature)
-    else:
-        print("Parsing input data...")
-        input_file_path = os.path.join(INPUTS_FOLDER, input_file)
-        with open(input_file_path, "r") as f:
-            input_data = json.load(f)
-            input_file_parser = InputDataParser(input_data)
-            input_data = input_file_parser.parse(armature)
+                RandomTableModuleGenerator(
+                    weight=1,
+                    priority=0,
+                    name="TableBig",
+                    id="table_big",
+                    room_id=room_id,
+                    n_tables=3,
+                    xy_scale_range=(5, 8),
+                    z_scale_range=(2, 3),
+                    top_thickness_range=(0.4, 0.6),
+                    leg_thickness_range=(0.4, 0.6),
+                    padding=0.1,
+                ),
+            ],
+        ),
+        PerlinRotationSineGestureModuleGenerator(
+            id="perlin_rotation_sine",
+            start_frame=1,
+            end_frame=2,
+            period_range=(1, 4),
+            amplitude_range=(0.5, 2),
+            persistance=0.3,
+            n_octaves=5,
+        ),
+        # TODO: uncomment
+        # PerlinRotationWaveGestureModuleGenerator(
+        #     id="perlin_rotation_wave",
+        #     start_frame=2,
+        #     end_frame=3,
+        #     period_range=(1, 3),
+        #     amplitude_range=(1, 2),
+        #     persistance=0.3,
+        #     n_octaves=2,
+        # ),
+    ]
+    input_data_generator = InputDataGenerator(
+        room_module=room_module, camera_module=camera_module, modules=modules
+    )
+    input_data = input_data_generator.generate_input_data()
+    input_file_parser = InputDataParser(input_data)
+    input_data = input_file_parser.parse(armature)
 
     # Apply gesture sequence
     print("Applying gestures...")
@@ -467,7 +481,9 @@ def main(args) -> None:
     print("Done!")
 
     # Close Blender
-    bpy.ops.wm.quit_blender()
+    
+    if args.quit:
+        bpy.ops.wm.quit_blender()
 
 
 if __name__ == "__main__":

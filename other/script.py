@@ -4,7 +4,6 @@ import json
 from mathutils import Vector
 from bpy_extras.object_utils import world_to_camera_view
 
-STYLUS_OUTER_NAME = "Outer"
 CAMERA_NAME = "Camera"
 FRAME_STEP = 1
 RENDER = False
