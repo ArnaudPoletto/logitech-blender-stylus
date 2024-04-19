@@ -5,7 +5,7 @@ import json
 import math
 import numpy as np
 import importlib.util
-from typing import Tuple
+from typing import Tuple, List
 from mathutils import Vector, Euler
 
 wrk_dir = os.getcwd()
@@ -45,6 +45,7 @@ from module_operators.one_of import OneOf
 from module_operators.some_of import SomeOf
 from utils.input_data_parser import InputDataParser
 from gestures.gesture_sequence import GestureSequence
+from input_data_generation.module_generator import ModuleGenerator
 from blender_collections.blender_collection import BlenderCollection
 from input_data_generation.input_data_generator import InputDataGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
@@ -85,20 +86,14 @@ from utils.config import (
 )
 
 
-def setup_scene_and_get_objects(
-    hide_armature_probability: float,
-) -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, str]:
+def _setup_armature() -> Tuple[bpy.types.Object, str]:
     """
-    Setup the scene and get the objects.
-
-    Args:
-        hide_armature_probability (float): The probability of hiding the armature.
+    Choose a random armature among the existing ones and delete the rest.
 
     Returns:
-        Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, str]: The armature, arm, forearm, hand, and armature suffix.
+        bpy.types.Object: The armature object.
+        str: The armature suffix.
     """
-    set_seed()
-
     # Get possible armatures
     armature_names = [
         armature
@@ -115,33 +110,69 @@ def setup_scene_and_get_objects(
     armature = bpy.data.objects[armature_name]
     armature.location = Vector((0, 0, 0))
 
-    # Randomly choose not to render the armature
-    p = np.random.rand()
-    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
-    if armature_arm is None:
-        raise ValueError(f"Arm model {armature_arm} not found.")
-    armature_arm.hide_render = p < hide_armature_probability
+    return armature, armature_suffix
+
+
+def _set_random_bones_rotation(
+    arm: bpy.types.Bone, forearm: bpy.types.Bone, hand: bpy.types.Bone
+) -> None:
+    """
+    Set random rotation to the bones.
+
+    Args:
+        arm (bpy.types.Bone): The arm bone.
+        forearm (bpy.types.Bone): The forearm bone.
+        hand (bpy.types.Bone): The hand bone.
+    """
+
+    def _get_random_rotation(min: float, max: float) -> Euler:
+        """
+        Get a random rotation.
+
+        Args:
+            min (float): The minimum value.
+            max (float): The maximum value.
+
+        Returns:
+            Euler: The random rotation.
+        """
+        x_rotation = np.random.uniform(min, max)
+        y_rotation = np.random.uniform(min, max)
+        z_rotation = np.random.uniform(min, max)
+
+        return Euler((x_rotation, y_rotation, z_rotation), "XYZ")
+
+    arm.rotation_euler = _get_random_rotation(-np.pi, np.pi)
+    forearm.rotation_euler = _get_random_rotation(-np.pi / 2, np.pi / 2)
+    hand.rotation_euler = _get_random_rotation(-np.pi / 2, np.pi / 2)
+
+
+def setup_scene_and_get_objects(
+    hide_armature_probability: float,
+) -> Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, str]:
+    """
+    Setup the scene and get the objects.
+
+    Args:
+        hide_armature_probability (float): The probability of hiding the armature.
+
+    Returns:
+        Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, str]: The armature, arm, forearm, hand, and armature suffix.
+    """
+    set_seed()
+
+    armature, armature_suffix = _setup_armature()
 
     # Get bones
     pose = armature.pose
     arm = pose.bones.get(Bone.Arm.value)
     forearm = pose.bones.get(Bone.Forearm.value)
     hand = pose.bones.get(Bone.Hand.value)
-    
-    # TODO: not here
-    # Set random rotations
-    def _get_random_rotation(min, max):
-        x_rotation = np.random.uniform(min, max)
-        y_rotation = np.random.uniform(min, max)
-        z_rotation = np.random.uniform(min, max)
-        return Euler((x_rotation, y_rotation, z_rotation), "XYZ")
-    
-    arm.rotation_euler = _get_random_rotation(-np.pi, np.pi)
-    forearm.rotation_euler = _get_random_rotation(-np.pi / 2, np.pi / 2)
-    hand.rotation_euler = _get_random_rotation(-np.pi / 2, np.pi / 2)
 
     if arm is None or forearm is None or hand is None:
         raise ValueError("Bones not found.")
+
+    _set_random_bones_rotation(arm, forearm, hand)
 
     return armature, arm, forearm, hand, armature_suffix
 
@@ -199,7 +230,7 @@ def get_parser() -> argument_parser.ArgumentParserForBlender:
         type=bool,
         default=False,
     )
-    
+
     parser.add_argument(
         "-q",
         "--quit",
@@ -212,23 +243,9 @@ def get_parser() -> argument_parser.ArgumentParserForBlender:
     return parser
 
 
-def main(args) -> None:
-    """
-    The main function.
-
-    Args:
-        args (argparse.Namespace): The command line arguments.
-    """
-    set_seed()
-
-    # Get bones
-    armature, arm, forearm, hand, armature_suffix = setup_scene_and_get_objects(
-        hide_armature_probability=HIDE_ARMATURE_PROBABILITY,
-    )
-
-    # Get input data
-    print("Generating input data...")
-    room_id = "room"
+def _get_module_generators(
+    room_id: str = "room",
+) -> Tuple[ModuleGenerator, ModuleGenerator, List[ModuleGenerator]]:
     room_module = RandomRoomModuleGenerator(
         name="Room",
         id=room_id,
@@ -245,35 +262,36 @@ def main(args) -> None:
         focal_length=CAMERA_FOCAL_LENGTH,
         fov=math.radians(CAMERA_FOV_DEGREES),
     )
-    #TODO: fine tune the rules
     modules = [
         RandomSunModuleGenerator(name="Sun", id="sun", energy_range=(0.0, 1.0)),
-        SomeOf([
-            RandomChristmasTreeModuleGenerator(
-                name="ChristmasTreeTall",
-                id="christmas_tree_tall",
-                room_id=room_id,
-                height_range=(5, 10),
-                radius_range=(1, 2),
-                n_leds_range=(25, 200),
-                led_radius_range=(0.03, 0.06),
-                emission_range=(1, 5),
-                flicker_probability_range=(0.00, 0.01),
-                padding=0.1,
-            ),
-            RandomChristmasTreeModuleGenerator(
-                name="ChristmasTreeSmall",
-                id="christmas_tree_small",
-                room_id=room_id,
-                height_range=(5, 7),
-                radius_range=(0.5, 1),
-                n_leds_range=(10, 25),
-                led_radius_range=(0.03, 0.06),
-                emission_range=(1, 5),
-                flicker_probability_range=(0.00, 0.01),
-                padding=0.1,
-            ),
-        ]),
+        SomeOf(
+            [
+                RandomChristmasTreeModuleGenerator(
+                    name="ChristmasTreeTall",
+                    id="christmas_tree_tall",
+                    room_id=room_id,
+                    height_range=(5, 10),
+                    radius_range=(1, 2),
+                    n_leds_range=(25, 200),
+                    led_radius_range=(0.03, 0.06),
+                    emission_range=(1, 5),
+                    flicker_probability_range=(0.00, 0.01),
+                    padding=0.1,
+                ),
+                RandomChristmasTreeModuleGenerator(
+                    name="ChristmasTreeSmall",
+                    id="christmas_tree_small",
+                    room_id=room_id,
+                    height_range=(5, 7),
+                    radius_range=(0.5, 1),
+                    n_leds_range=(10, 25),
+                    led_radius_range=(0.03, 0.06),
+                    emission_range=(1, 5),
+                    flicker_probability_range=(0.00, 0.01),
+                    padding=0.1,
+                ),
+            ]
+        ),
         RandomWallLampModuleGenerator(
             name="WallLamp",
             id="wall_lamp",
@@ -425,7 +443,28 @@ def main(args) -> None:
         #     persistance=0.3,
         #     n_octaves=2,
         # ),
-    ]
+    ] # TODO: fine tune the rules
+    
+    return room_module, camera_module, modules
+
+
+def main(args) -> None:
+    """
+    The main function.
+
+    Args:
+        args (argparse.Namespace): The command line arguments.
+    """
+    set_seed()
+
+    # Get bones
+    armature, arm, forearm, hand, armature_suffix = setup_scene_and_get_objects(
+        hide_armature_probability=HIDE_ARMATURE_PROBABILITY,
+    )
+
+    # Get input data
+    print("Generating input data...")
+    room_module, camera_module, modules = _get_module_generators()
     input_data_generator = InputDataGenerator(
         room_module=room_module, camera_module=camera_module, modules=modules
     )
@@ -433,7 +472,7 @@ def main(args) -> None:
     input_file_parser = InputDataParser(input_data)
     input_data = input_file_parser.parse(armature)
 
-    # Apply gesture sequence
+    # Add gesture sequence
     print("Applying gestures...")
     gestures = input_data["gestures"]
     gesture_sequence = GestureSequence(
@@ -445,7 +484,7 @@ def main(args) -> None:
     )
     gesture_sequence.apply()
 
-    # Add background
+    # Add background objects
     print("Adding background...")
     blender_objects = input_data["blender_objects"]
     background = get_background(blender_objects)
@@ -470,6 +509,7 @@ def main(args) -> None:
     random_background_image_generator.apply_to_scene()
 
     # Set output resolution
+    print(f"Resolution set to {RENDER_RESOLUTION[0]}x{RENDER_RESOLUTION[1]}")
     bpy.context.scene.render.resolution_x = RENDER_RESOLUTION[0]
     bpy.context.scene.render.resolution_y = RENDER_RESOLUTION[1]
 
@@ -481,13 +521,14 @@ def main(args) -> None:
     print("Done!")
 
     # Close Blender
-    
+
     if args.quit:
+        print("Quitting Blender.")
         bpy.ops.wm.quit_blender()
 
 
 if __name__ == "__main__":
-    # blender ..\data\base_multi.blend --python run.py -- -r True
+    # TODO: blender ..\data\base_multi.blend --python run.py -- -r True
     parser = get_parser()
     args = parser.parse_args()
 
