@@ -113,10 +113,8 @@ class RandomTableModuleGenerator(ModuleGenerator):
         existing_objects_per_wall: dict = None,
     ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
         set_seed()
-        
+
         wall_scale = wall_scales_per_wall[self.type]
-        print(existing_objects_per_wall) # TODO: Test because it sometimes fails here with keys being not modulegeneratortype
-        print(existing_objects_per_wall.keys())
         existing_objects = existing_objects_per_wall[self.type]
 
         width, length = wall_scale
@@ -152,9 +150,10 @@ class RandomTableModuleGenerator(ModuleGenerator):
             if np.sum(position_map) / position_map.size < 0.1:
                 positions = np.argwhere(position_map == 1)
                 if positions.size == 0:
+                    existing_objects_per_wall[self.type] = existing_objects
                     return (
                         tables_data,
-                        existing_objects,
+                        existing_objects_per_wall,
                     )  # If there is no more space, stop the process
                 x, y = positions[random.randint(0, positions.shape[0] - 1)]
             else:  # Special case to speed up the process when a lot of space is available
