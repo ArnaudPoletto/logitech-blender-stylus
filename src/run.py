@@ -427,22 +427,21 @@ def _get_module_generators(
         PerlinRotationSineGestureModuleGenerator(
             id="perlin_rotation_sine",
             start_frame=1,
-            end_frame=2,
+            end_frame=250,
             period_range=(1, 4),
             amplitude_range=(0.5, 2),
             persistance=0.3,
             n_octaves=5,
         ),
-        # TODO: uncomment
-        # PerlinRotationWaveGestureModuleGenerator(
-        #     id="perlin_rotation_wave",
-        #     start_frame=2,
-        #     end_frame=3,
-        #     period_range=(1, 3),
-        #     amplitude_range=(1, 2),
-        #     persistance=0.3,
-        #     n_octaves=2,
-        # ),
+        PerlinRotationWaveGestureModuleGenerator(
+            id="perlin_rotation_wave",
+            start_frame=250,
+            end_frame=500,
+            period_range=(1, 3),
+            amplitude_range=(1, 2),
+            persistance=0.3,
+            n_octaves=2,
+        ),
     ] # TODO: fine tune the rules
     
     return room_module, camera_module, modules
@@ -509,7 +508,7 @@ def main(args) -> None:
     random_background_image_generator.apply_to_scene()
 
     # Set output resolution
-    print(f"Resolution set to {RENDER_RESOLUTION[0]}x{RENDER_RESOLUTION[1]}")
+    print(f"Resolution set to {RENDER_RESOLUTION[0]}x{RENDER_RESOLUTION[1]}.")
     bpy.context.scene.render.resolution_x = RENDER_RESOLUTION[0]
     bpy.context.scene.render.resolution_y = RENDER_RESOLUTION[1]
 

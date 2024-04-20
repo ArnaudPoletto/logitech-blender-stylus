@@ -103,5 +103,4 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
                     }
                 }
             
-            
         return perlin_data, existing_objects_per_wall
