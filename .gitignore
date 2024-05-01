@@ -1,1 +1,3 @@
-data/
+data/renders
+data/renders.zip
+__pycache__/
