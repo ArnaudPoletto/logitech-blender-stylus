@@ -6,7 +6,7 @@ DATA_PATH = os.path.join(wrk_dir, "..", "data")
 INPUTS_FOLDER = os.path.join(DATA_PATH, "inputs")
 RENDER_FOLDER_PATH = os.path.join(DATA_PATH, "renders")
 
-SEED = 668
+SEED = 669
 if SEED is None:
     SEED = np.random.randint(0, 2**32 - 1, dtype=np.uint32)
     print(f"Running with random seed: {SEED}.")

@@ -494,17 +494,17 @@ def main(args) -> None:
     random_background_image_generator = RandomBackgroundImageGenerator(
         width=RENDER_RESOLUTION[0],
         height=RENDER_RESOLUTION[1],
-        n_patches_range=(5, 20),
-        n_patch_corners_range=(3, 10),
-        patch_size_range=(25, 200),
-        n_lines_range=(5, 20),
-        line_size_range=(25, 100),
-        n_line_points_range=(10, 50),
+        n_patches_range=(10, 100),
+        n_patch_corners_range=(3, 30),
+        patch_size_range=(10, 100),
+        n_lines_range=(10, 100),
+        line_size_range=(3, 30),
+        n_line_points_range=(3, 25),
         line_thickness_range=(1, 3),
         smooth_gaussian_kernel_size=301,
-        n_blur_steps=10,
-        max_blur=10,
-        color_range=(0.5, 1.0),
+        n_blur_steps=3,
+        max_blur=3,
+        color_range=(0.0, 1.0),
     )
     random_background_image_generator.apply_to_scene()
 

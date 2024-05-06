@@ -213,5 +213,4 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
                 mask[..., np.newaxis], blurred_image, background_image
             )
 
-        print("Generated random background image", np.unique(background_image))
         return background_image
