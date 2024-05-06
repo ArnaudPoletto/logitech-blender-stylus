@@ -1,3 +1,4 @@
 data/renders
 data/renders.zip
 __pycache__/
+*.pyc
