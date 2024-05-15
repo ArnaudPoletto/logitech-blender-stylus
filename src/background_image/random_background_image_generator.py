@@ -1,5 +1,4 @@
 import cv2
-import bpy
 import random
 import numpy as np
 from typing import Tuple
