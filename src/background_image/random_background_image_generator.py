@@ -25,7 +25,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
         smooth_gaussian_kernel_size: int,
         n_blur_steps: int,
         max_blur: int,
-        color_range: Tuple[float, float],
+        color_skew_factor: int,
     ) -> None:
         """
         Initialize the random background image generator.
@@ -43,7 +43,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
             smooth_gaussian_kernel_size (int): The size of the smooth Gaussian kernel.
             n_blur_steps (int): The number of blur steps.
             max_blur (int): The maximum blur.
-            color_range (Tuple[float, float]): The range of the color.
+            color_skew_factor (int): The color skew factor.
         
         Raises:
             ValueError: If the number of patches is less than or equal to 0.
@@ -68,6 +68,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
             ValueError: If the minimum color is less than 0.
             ValueError: If the maximum color is greater than 1.
             ValueError: If the maximum color is less than the minimum color.
+            ValueError: If the color skew factor is less than or equal to 0.
         """
         if n_patches_range[0] <= 0:
             raise ValueError("Number of patches must be greater than 0")
@@ -119,12 +120,8 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
             raise ValueError("Number of blur steps must be greater than 0")
         if max_blur <= 0:
             raise ValueError("Maximum blur must be greater than 0")
-        if color_range[0] < 0:
-            raise ValueError("Minimum color must be greater than 0")
-        if color_range[1] > 1:
-            raise ValueError("Maximum color must be less than or equal to 1")
-        if color_range[1] < color_range[0]:
-            raise ValueError("Maximum color must be greater than minimum color")
+        if color_skew_factor <= 0:
+            raise ValueError("Color skew factor must be greater than 0")
 
         super(RandomBackgroundImageGenerator, self).__init__(width=width, height=height)
 
@@ -140,7 +137,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
         self.smooth_gaussian_kernel_size = smooth_gaussian_kernel_size
         self.n_blur_steps = n_blur_steps
         self.max_blur = max_blur
-        self.color_range = color_range
+        self.color_skew_factor = color_skew_factor
 
     def _get_background_image(self) -> np.array:
         background_image = np.ones((self.height, self.width, 4), dtype=np.float32)
@@ -168,7 +165,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
             )
             points = np.array(points)
 
-            color = random.uniform(*self.color_range)
+            color = min(1.0, random.uniform(0, 1) * self.color_skew_factor)
             cv2.fillPoly(background_image, [points], color=(color, color, color, 1.0))
 
         # Add random curves resembling tree branches
@@ -184,7 +181,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
             xs = np.random.randint(x, x + line_width, n_line_points)
             ys = np.random.randint(y, y + line_height, n_line_points)
             points = np.column_stack((xs, ys)).astype(int)
-            color = random.uniform(*self.color_range)
+            color = min(1.0, random.uniform(0, 1) * self.color_skew_factor)
             cv2.polylines(
                 background_image,
                 [points],

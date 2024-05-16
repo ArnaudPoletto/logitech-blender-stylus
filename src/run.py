@@ -84,6 +84,7 @@ from utils.config import (
     BACKGROUND_COLLECTION_NAME,
     HIDE_ARMATURE_PROBABILITY,
     ANIMATION_LENGTH,
+    BACKGROUND_COLOR_SKEW_FACTOR,
 )
 
 
@@ -505,7 +506,7 @@ def main(args) -> None:
         smooth_gaussian_kernel_size=301,
         n_blur_steps=5,
         max_blur=5,
-        color_range=(0.0, 1.0),
+        color_skew_factor=BACKGROUND_COLOR_SKEW_FACTOR
     )
     random_background_image_generator.apply_to_scene()
 
