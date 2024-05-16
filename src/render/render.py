@@ -39,6 +39,23 @@ def _get_object_center(object) -> Vector:
     return global_bbox_center
 
 
+def _get_object_bbox(object) -> list:
+    """
+    Get the bounding box of an object.
+
+    Args:
+        object: The object to get the bounding box of.
+
+    Returns:
+        The bounding box of the object.
+    """
+    bbox = []
+    for i in range(8):
+        bbox.append(object.matrix_world @ Vector(object.bound_box[i]))
+
+    return bbox
+
+
 def _is_led_occluded(led, camera_object, leds, armature_arm, distance_eps: float = 1e-3) -> bool:
     """
     Check if an LED is occluded by any object between the camera and the LED.
@@ -53,30 +70,36 @@ def _is_led_occluded(led, camera_object, leds, armature_arm, distance_eps: float
         True if the LED is occluded, False otherwise.
     """
     # Get the direction from the camera to the LED
-    led_location = _get_object_center(led)
-    direction = camera_object.location - led_location
-    length = direction.length
-    direction.normalize()
+    led_locations = _get_object_bbox(led)
+    is_led_occluded = True
+    for led_location in led_locations:
+        direction = camera_object.location - led_location
+        length = direction.length
+        direction.normalize()
 
-    # Remove LEDs and arm if needed from the scene
-    for l in leds:
-        l.hide_set(True)
-    armature_arm.hide_set(armature_arm.hide_render)
+        # Remove LEDs and add arm if needed from the scene
+        for l in leds:
+            l.hide_set(True)
+        armature_arm.hide_set(armature_arm.hide_render)
 
-    # Cast a ray from the camera to the LED
-    scene = bpy.context.scene
-    result = scene.ray_cast(
-        depsgraph=bpy.context.evaluated_depsgraph_get(),
-        origin=led_location,
-        direction=direction,
-        distance=length + distance_eps,
-    )
+        # Cast a ray from the camera to the LED
+        scene = bpy.context.scene
+        result = scene.ray_cast(
+            depsgraph=bpy.context.evaluated_depsgraph_get(),
+            origin=led_location,
+            direction=direction,
+            distance=length + distance_eps,
+        )
 
-    # Add stylus outer back to the scene
-    for l in leds:
-        l.hide_set(False)
+        # Add stylus outer back to the scene
+        for l in leds:
+            l.hide_set(False)
 
-    return result[0]
+        if not result[0]:
+            is_led_occluded = False
+            break
+
+    return is_led_occluded
 
 
 def _is_led_in_frame(led, camera_object) -> bool:

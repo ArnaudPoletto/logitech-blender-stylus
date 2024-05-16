@@ -83,6 +83,7 @@ from utils.config import (
     RENDER_RESOLUTION,
     BACKGROUND_COLLECTION_NAME,
     HIDE_ARMATURE_PROBABILITY,
+    ANIMATION_LENGTH,
 )
 
 
@@ -427,7 +428,7 @@ def _get_module_generators(
         PerlinRotationSineGestureModuleGenerator(
             id="perlin_rotation_sine",
             start_frame=1,
-            end_frame=250,
+            end_frame=ANIMATION_LENGTH // 2,
             period_range=(1, 4),
             amplitude_range=(0.5, 2),
             persistance=0.3,
@@ -435,8 +436,8 @@ def _get_module_generators(
         ),
         PerlinRotationWaveGestureModuleGenerator(
             id="perlin_rotation_wave",
-            start_frame=250,
-            end_frame=500,
+            start_frame=ANIMATION_LENGTH // 2,
+            end_frame=ANIMATION_LENGTH,
             period_range=(1, 3),
             amplitude_range=(1, 2),
             persistance=0.3,
@@ -494,16 +495,16 @@ def main(args) -> None:
     random_background_image_generator = RandomBackgroundImageGenerator(
         width=RENDER_RESOLUTION[0],
         height=RENDER_RESOLUTION[1],
-        n_patches_range=(10, 100),
-        n_patch_corners_range=(3, 30),
-        patch_size_range=(10, 100),
-        n_lines_range=(10, 100),
-        line_size_range=(3, 30),
+        n_patches_range=(100, 10000),
+        n_patch_corners_range=(3, 10),
+        patch_size_range=(1, 50),
+        n_lines_range=(10, 1000),
+        line_size_range=(1, 50),
         n_line_points_range=(3, 25),
         line_thickness_range=(1, 3),
         smooth_gaussian_kernel_size=301,
-        n_blur_steps=3,
-        max_blur=3,
+        n_blur_steps=5,
+        max_blur=5,
         color_range=(0.0, 1.0),
     )
     random_background_image_generator.apply_to_scene()
