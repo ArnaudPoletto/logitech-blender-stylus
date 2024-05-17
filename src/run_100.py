@@ -13,7 +13,7 @@ def get_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "-n",
-        "--num_processes",
+        "--num-processes",
         help="The number of processes to run.",
         type=int,
         default=1,
@@ -21,7 +21,7 @@ def get_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "-t",
-        "--total_processes",
+        "--total-processes",
         help="The total number of processes to run.",
         type=int,
         default=100,
@@ -30,7 +30,7 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 def _run_instance() -> None:
-    os.system('blender ../data/base_multi.blend --python run.py -- -r True -q True')
+    os.system('blender ../data/base_multi_new.blend --python run.py -- -r True -q True')
 
 def main(args) -> None:
     pool = multiprocessing.Pool(processes=args.num_processes)

@@ -6,7 +6,7 @@ DATA_PATH = os.path.join(wrk_dir, "..", "data")
 INPUTS_FOLDER = os.path.join(DATA_PATH, "inputs")
 RENDER_FOLDER_PATH = os.path.join(DATA_PATH, "renders")
 
-SEED = 671
+SEED = None
 if SEED is None:
     SEED = np.random.randint(0, 2**32 - 1, dtype=np.uint32)
     print(f"Running with random seed: {SEED}.")
@@ -25,7 +25,7 @@ RENDER_RESOLUTION = (640, 480) # (640, 480) # (3840, 2160)
 GROUND_TRUTH_WITH_ARM_MODEL = True # Whether to render the ground truth with the arm model hiding the LEDS, but without reflections on the arm
 HIDE_ARMATURE_PROBABILITY = 0.5
 ANIMATION_LENGTH = 100
-BACKGROUND_COLOR_SKEW_FACTOR = 2.0
+BACKGROUND_COLOR_SKEW_FACTOR = 1.5
 
 MIN_PRIORITY = np.iinfo(np.int32).max
 MAX_PRIORITY = 0
