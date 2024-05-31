@@ -176,6 +176,13 @@ def setup_scene_and_get_objects(
 
     _set_random_bones_rotation(arm, forearm, hand)
 
+    # Randomly choose not to render the armature
+    p = np.random.rand()
+    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
+    if armature_arm is None:
+        raise ValueError(f"Arm model {armature_arm} not found.")
+    armature_arm.hide_render = p < hide_armature_probability
+
     return armature, arm, forearm, hand, armature_suffix
 
 

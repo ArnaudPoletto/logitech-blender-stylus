@@ -23,7 +23,7 @@ FRAME_RATE = 24
 RESOLUTION_DIGITS = 2
 RENDER_RESOLUTION = (640, 480) # (640, 480) # (3840, 2160)
 GROUND_TRUTH_WITH_ARM_MODEL = True # Whether to render the ground truth with the arm model hiding the LEDS, but without reflections on the arm
-HIDE_ARMATURE_PROBABILITY = 0.5
+HIDE_ARMATURE_PROBABILITY = 0.75 # Probability of hiding the armature during rendering
 ANIMATION_LENGTH = 100
 BACKGROUND_COLOR_SKEW_FACTOR = 1.5
 
