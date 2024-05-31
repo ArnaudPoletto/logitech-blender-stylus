@@ -175,7 +175,7 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
         if np.sum(position_map) / position_map.size < 0.1:
             positions = np.argwhere(position_map == 1)
             if positions.size == 0:
-                return {}, existing_objects
+                return {}, existing_objects_per_wall
             x, y = positions[random.randint(0, positions.shape[0] - 1)]
         else:  # Special case to speed up the process when a lot of space is available
             is_valid_position = False

@@ -444,7 +444,7 @@ def _get_module_generators(
             persistance=0.3,
             n_octaves=2,
         ),
-    ] # TODO: fine tune the rules
+    ]
     
     return room_module, camera_module, modules
 
@@ -530,7 +530,6 @@ def main(args) -> None:
 
 
 if __name__ == "__main__":
-    # TODO: blender ..\data\base_multi.blend --python run.py -- -r True
     parser = get_parser()
     args = parser.parse_args()
 

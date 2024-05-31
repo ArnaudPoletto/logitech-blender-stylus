@@ -82,7 +82,7 @@ class RandomRoomModuleGenerator(ModuleGenerator):
                             "x": 0,
                             "y": 0,
                             "z": 0,
-                        },  # TODO: remove hardcoding
+                        },
                         "scale": {"x": scale_x, "y": scale_y, "z": scale_z},
                     },
                 }
