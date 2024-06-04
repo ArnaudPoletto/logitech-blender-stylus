@@ -81,7 +81,7 @@ from input_data_generation.perlin_rotation_wave_gesture_module_generator import 
 from input_data_generation.random_camera_module_generator import (
     RandomCameraModuleGenerator,
 )
-from utils.config import (
+from src.utils import (
     ROOM_NAME,
     ROOM_ID,
     CAMERA_NAME,

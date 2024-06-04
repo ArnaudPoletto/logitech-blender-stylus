@@ -1,5 +1,7 @@
+# This utility file is used to parse the input data from a JSON dictionary, to create the selected objects as Python class instances.
+
 import bpy
-import json
+from typing import Any
 from mathutils import Vector, Euler
 
 from utils.axis import Axis
@@ -33,11 +35,14 @@ class InputDataParser:
     ) -> None:
         """
         Initialize the input data parser.
+
+        Args:
+            input_data (str): The input data as a JSON string.
         """
         self.input_data = input_data
 
     @staticmethod
-    def _parse_dimension_argument(args, arg_name, arg_type):
+    def __parse_dimension_argument(args: dict, arg_name: str, arg_type: type) -> Any:
         """
         Parse a 2D or 3D dimension argument from the arguments dictionary.
 
@@ -51,10 +56,10 @@ class InputDataParser:
             ValueError: If the argument is not a dimension argument.
         """
         if arg_name not in args:
-            raise ValueError(f"Argument {arg_name} not found in the arguments.")
+            raise ValueError(f"❌ Argument {arg_name} not found in the arguments.")
 
         if "x" not in args[arg_name] or "y" not in args[arg_name]:
-            raise ValueError(f"Argument {arg_name} is not a 2D or 3D argument.")
+            raise ValueError(f"❌ Argument {arg_name} is not a 2D or 3D argument.")
 
         x = args[arg_name]["x"]
         y = args[arg_name]["y"]
@@ -66,7 +71,7 @@ class InputDataParser:
 
         return arg_type((x, y, z))
 
-    def _parse_gestures(self, input_data: dict, armature: bpy.types.Object) -> dict:
+    def __parse_gestures(self, input_data: dict, armature: bpy.types.Object) -> dict:
         """
         Parse the gestures data from the input data.
 
@@ -86,55 +91,56 @@ class InputDataParser:
             ValueError: If the bone of a gesture is invalid.
         """
         if "gestures" not in input_data:
-            raise ValueError("No gestures found in the input data.")
+            raise ValueError("❌ No gestures found in the input data.")
         gestures = input_data["gestures"]
 
         # Reformat gestures
         new_gestures = []
         for _, gesture_object in gestures.items():
             if "type" not in gesture_object:
-                raise ValueError("No gesture type found in the input data.")
+                raise ValueError("❌ No gesture type found in the input data.")
 
             if "args" not in gesture_object:
-                raise ValueError("No gesture args found in the input data.")
+                raise ValueError("❌ No gesture args found in the input data.")
 
             if gesture_object["type"] not in globals():
-                raise ValueError(f"Gesture type {gesture_object['type']} not found.")
+                raise ValueError(f"❌ Gesture type {gesture_object['type']} not found.")
 
             gesture_type = globals()[gesture_object["type"]]
             gesture_args = gesture_object["args"]
             new_gestures.append((gesture_type, gesture_args))
         gestures = new_gestures
 
+        # Reformat gesture arguments
         for _, gesture_args in gestures:
             if "axis" in gesture_args:
                 axis_name = gesture_args["axis"]
                 if not Axis.is_valid_axis_string(axis_name):
-                    raise ValueError(f"Axis {axis_name} not found.")
+                    raise ValueError(f"❌ Axis {axis_name} not found.")
 
                 gesture_args["axis"] = Axis(axis_name)
 
             if "vector" in gesture_args:
-                gesture_args["vector"] = InputDataParser._parse_dimension_argument(
+                gesture_args["vector"] = InputDataParser.__parse_dimension_argument(
                     gesture_args, "vector", Vector
                 )
 
             if "euler" in gesture_args:
-                gesture_args["euler"] = InputDataParser._parse_dimension_argument(
+                gesture_args["euler"] = InputDataParser.__parse_dimension_argument(
                     gesture_args, "euler", Euler
                 )
 
             if "bone" in gesture_args:
                 bone_name = gesture_args["bone"]
                 if bone_name not in Bone.__members__:
-                    raise ValueError(f"Bone {bone_name} not found.")
+                    raise ValueError(f"❌ Bone {bone_name} not found.")
 
                 bone = armature.pose.bones.get(bone_name)
                 gesture_args["bone"] = bone
 
         return gestures
-    
-    def _parse_blender_objects(self, input_data: dict) -> dict:
+
+    def __parse_blender_objects(self, input_data: dict) -> dict:
         """
         Parse the blender objects data from the input data.
 
@@ -145,38 +151,38 @@ class InputDataParser:
             dict: The parsed blender objects data.
 
         Raises:
-            ValueError: If no blender_objects section is found in the input daata.
+            ValueError: If no blender objects section is found in the input daata.
             ValueError: If the blender object type is not specified.
             ValueError: If the blender object args are not specified.
             ValueError: If the blender object type is not found.
         """
         if "blender_objects" not in input_data:
-            raise ValueError("No blender_objects found in the input dat.")
+            raise ValueError("❌ No blender objects found in the input data.")
         blender_objects = input_data["blender_objects"]
 
         background_data = {}
         for blender_object_name, blender_object in blender_objects.items():
             if "type" not in blender_object:
-                raise ValueError("No type found in the blender object.")
+                raise ValueError("❌ No type found in the blender object.")
 
             if "args" not in blender_object:
-                raise ValueError("No args found in the blender object.")
+                raise ValueError("❌ No args found in the blender object.")
 
             if blender_object["type"] not in globals():
                 raise ValueError(
-                    f"Blender object type {blender_object['type']} not found."
+                    f"❌ Blender object type {blender_object['type']} not found."
                 )
 
             # Get object information
             blender_object_type = globals()[blender_object["type"]]
             blender_object_args = blender_object["args"]
-            
+
             mathutils_names = ["location", "relative_location", "scale", "rotation"]
             mathutils_types = [Vector, Vector, Vector, Euler]
             for mathutils_name, mathutils_type in zip(mathutils_names, mathutils_types):
                 if mathutils_name in blender_object_args:
                     blender_object_args[mathutils_name] = (
-                        InputDataParser._parse_dimension_argument(
+                        InputDataParser.__parse_dimension_argument(
                             blender_object_args, mathutils_name, mathutils_type
                         )
                     )
@@ -236,8 +242,8 @@ class InputDataParser:
         Returns:
             dict: The parsed data as a dictionary of the form {"gestures": gestures_data, "blender_objects": blender_objects_data}.
         """
-        gestures_data = self._parse_gestures(self.input_data, armature)
-        blender_objects_data = self._parse_blender_objects(self.input_data)
+        gestures_data = self.__parse_gestures(self.input_data, armature)
+        blender_objects_data = self.__parse_blender_objects(self.input_data)
 
         return {
             "gestures": gestures_data,

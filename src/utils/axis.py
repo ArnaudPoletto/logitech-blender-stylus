@@ -1,3 +1,5 @@
+# This utility file contains the Axis enum class, which represents the axis of a 3D space.
+
 from enum import Enum
 
 

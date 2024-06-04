@@ -3,7 +3,7 @@ from typing import Tuple
 
 from utils.axis import Axis
 from utils.seed import set_seed
-from utils.config import FRAME_RATE
+from src.utils import FRAME_RATE
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 

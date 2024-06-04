@@ -1,10 +1,13 @@
+# This utility file contains a class to parse arguments for Blender scripts.
+
 import argparse
 import sys
 
 
-# https://blender.stackexchange.com/questions/6817/how-to-pass-command-line-arguments-to-a-blender-python-script
 class ArgumentParserForBlender(argparse.ArgumentParser):
     """
+    See https://blender.stackexchange.com/questions/6817/how-to-pass-command-line-arguments-to-a-blender-python-script
+    
     This class is identical to its superclass, except for the parse_args
     method (see docstring). It resolves the ambiguity generated when calling
     Blender from the CLI with a python script, and both Blender and the script

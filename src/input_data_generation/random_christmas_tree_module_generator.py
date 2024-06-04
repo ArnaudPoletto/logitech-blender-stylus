@@ -3,7 +3,7 @@ import numpy as np
 from typing import List, Tuple
 
 from utils.seed import set_seed
-from utils.config import RESOLUTION_DIGITS, MIN_PRIORITY
+from src.utils import RESOLUTION_DIGITS, MIN_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
