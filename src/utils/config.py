@@ -8,10 +8,13 @@ RENDER_FOLDER_PATH = os.path.join(DATA_PATH, "renders")
 
 SEED = None
 if SEED is None:
-    SEED = np.random.randint(0, 2**32 - 1, dtype=np.uint32)
-    print(f"Running with random seed: {SEED}.")
+    SEED = int(np.random.randint(0, 2**32 - 1, dtype=np.uint32))
+    print(f"✅ Running with random seed: {SEED}.")
 
+ROOM_NAME = "Room"
+ROOM_ID = "room"
 CAMERA_NAME = "Camera"
+CAMERA_ID = "camera"
 ARMATURE_NAME = "Armature"
 BACKGROUND_COLLECTION_NAME = "Background"
 
