@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 from abc import abstractmethod
 
-from utils.config import MIN_PRIORITY
+from src.utils import MIN_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
 

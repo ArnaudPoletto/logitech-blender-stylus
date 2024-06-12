@@ -4,7 +4,7 @@ from typing import Tuple
 from mathutils import Vector
 
 from utils.seed import set_seed
-from utils.config import MAX_PRIORITY
+from src.utils import MAX_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 

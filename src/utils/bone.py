@@ -1,3 +1,5 @@
+# This utility file contains the Bone enum class, which represents the bones of an armature.
+
 from enum import Enum
 
 

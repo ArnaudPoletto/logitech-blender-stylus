@@ -1,11 +1,13 @@
+# This utility file is used to set the random seed for reproducibility.
+
 import random
 import numpy as np
 
-from utils.config import SEED
+from src.utils import SEED
 
-def set_seed():
+def set_seed() -> None:
     """
-    Set the seed for the random number generator.
+    Set the random seed for reproducibility.
     """
     random.seed(SEED)
     np.random.seed(SEED)

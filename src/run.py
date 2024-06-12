@@ -1,7 +1,13 @@
+# This script runs a single Blender instance for synthetic data generation.
+# Run this script with the following command:
+# python src/run.py --render <render> --quit <quit>
+# , where:
+#   <render> is whether to render the animation after generating the scene.
+#   <quit> is whether to quit Blender after rendering the animation.
+
 import os
 import bpy
 import sys
-import json
 import math
 import numpy as np
 import importlib.util
@@ -75,8 +81,11 @@ from input_data_generation.perlin_rotation_wave_gesture_module_generator import 
 from input_data_generation.random_camera_module_generator import (
     RandomCameraModuleGenerator,
 )
-from utils.config import (
+from src.utils import (
+    ROOM_NAME,
+    ROOM_ID,
     CAMERA_NAME,
+    CAMERA_ID,
     CAMERA_TYPE,
     CAMERA_FOCAL_LENGTH,
     CAMERA_FOV_DEGREES,
@@ -88,9 +97,9 @@ from utils.config import (
 )
 
 
-def _setup_armature() -> Tuple[bpy.types.Object, str]:
+def setup_armature() -> Tuple[bpy.types.Object, str]:
     """
-    Choose a random armature among the existing ones and delete the rest.
+    Setup the armature by choosing a random armature among the existing ones and deleting the rest.
 
     Returns:
         bpy.types.Object: The armature object.
@@ -115,11 +124,11 @@ def _setup_armature() -> Tuple[bpy.types.Object, str]:
     return armature, armature_suffix
 
 
-def _set_random_bones_rotation(
+def set_random_bones_rotation(
     arm: bpy.types.Bone, forearm: bpy.types.Bone, hand: bpy.types.Bone
 ) -> None:
     """
-    Set random rotation to the bones.
+    Set random rotation to the given bones.
 
     Args:
         arm (bpy.types.Bone): The arm bone.
@@ -127,9 +136,9 @@ def _set_random_bones_rotation(
         hand (bpy.types.Bone): The hand bone.
     """
 
-    def _get_random_rotation(min: float, max: float) -> Euler:
+    def get_random_euler_rotation(min: float, max: float) -> Euler:
         """
-        Get a random rotation.
+        Get a random Euler rotation.
 
         Args:
             min (float): The minimum value.
@@ -144,9 +153,27 @@ def _set_random_bones_rotation(
 
         return Euler((x_rotation, y_rotation, z_rotation), "XYZ")
 
-    arm.rotation_euler = _get_random_rotation(-np.pi, np.pi)
-    forearm.rotation_euler = _get_random_rotation(-np.pi / 2, np.pi / 2)
-    hand.rotation_euler = _get_random_rotation(-np.pi / 2, np.pi / 2)
+    arm.rotation_euler = get_random_euler_rotation(-np.pi, np.pi)
+    forearm.rotation_euler = get_random_euler_rotation(-np.pi / 2, np.pi / 2)
+    hand.rotation_euler = get_random_euler_rotation(-np.pi / 2, np.pi / 2)
+
+
+def set_hide_armature(armature_suffix: str, hide_armature_probability: float) -> None:
+    """
+    Hide the armature with a given probability.
+
+    Args:
+        armature_suffix (str): The armature suffix.
+        hide_armature_probability (float): The probability of hiding the armature.
+
+    Raises:
+        ValueError: If the armature model is not found.
+    """
+    p = np.random.rand()
+    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
+    if armature_arm is None:
+        raise ValueError(f"Arm model {armature_arm} not found.")
+    armature_arm.hide_render = p < hide_armature_probability
 
 
 def setup_scene_and_get_objects(
@@ -158,59 +185,31 @@ def setup_scene_and_get_objects(
     Args:
         hide_armature_probability (float): The probability of hiding the armature.
 
+    Raises:
+        ValueError: If the bones are not found.
+
     Returns:
         Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, str]: The armature, arm, forearm, hand, and armature suffix.
     """
     set_seed()
 
-    armature, armature_suffix = _setup_armature()
-
-    # Get bones
+    # Choose a random armature and get the bones
+    armature, armature_suffix = setup_armature()
     pose = armature.pose
     arm = pose.bones.get(Bone.Arm.value)
     forearm = pose.bones.get(Bone.Forearm.value)
     hand = pose.bones.get(Bone.Hand.value)
 
     if arm is None or forearm is None or hand is None:
-        raise ValueError("Bones not found.")
+        raise ValueError(f"❌ Bones of armature {armature_suffix} not found.")
 
-    _set_random_bones_rotation(arm, forearm, hand)
+    # Set random rotation to the bones
+    set_random_bones_rotation(arm, forearm, hand)
 
     # Randomly choose not to render the armature
-    p = np.random.rand()
-    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
-    if armature_arm is None:
-        raise ValueError(f"Arm model {armature_arm} not found.")
-    armature_arm.hide_render = p < hide_armature_probability
+    set_hide_armature(armature_suffix, hide_armature_probability)
 
     return armature, arm, forearm, hand, armature_suffix
-
-
-def get_background(blender_objects: dict) -> BlenderCollection:
-    """
-    Get the blender objects to add to the background.
-
-    Args:
-        blender_objects (dict): The blender objects.
-
-    Returns:
-        BlenderCollection: The background collection.
-    """
-    background_collection = BlenderCollection(BACKGROUND_COLLECTION_NAME)
-
-    objects = []
-    for _, blender_object_args in blender_objects.items():
-        blender_object_object = blender_object_args["object"]
-        blender_object_parents = blender_object_args["parents"]
-        if blender_object_parents is None:
-            objects.append(blender_object_object)
-        else:
-            for blender_object_parent in blender_object_parents:
-                blender_object_parent.add_relative_blender_object(blender_object_object)
-
-    background_collection.add_all_objects(objects)
-
-    return background_collection
 
 
 def get_parser() -> argument_parser.ArgumentParserForBlender:
@@ -252,18 +251,24 @@ def get_parser() -> argument_parser.ArgumentParserForBlender:
     return parser
 
 
-def _get_module_generators(
-    room_id: str = "room",
-) -> Tuple[ModuleGenerator, ModuleGenerator, List[ModuleGenerator]]:
+def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[ModuleGenerator]]:
+    """
+    Get the module generators, used to generate random synthetic data.
+    
+    Returns:
+        ModuleGenerator: The room module generator.
+        ModuleGenerator: The camera module generator.
+        List[ModuleGenerator]: The list of module generators.
+    """
     room_module = RandomRoomModuleGenerator(
-        name="Room",
-        id=room_id,
+        name=ROOM_NAME,
+        id=ROOM_ID,
         xy_scale_range=(20, 100),
         z_scale_range=(10, 25),
     )
     camera_module = RandomCameraModuleGenerator(
         name=CAMERA_NAME,
-        id="camera",
+        id=CAMERA_ID,
         xy_distance_range=(3, 6),
         z_distance_range=(0, 1),
         fixation_point_range=1,
@@ -278,7 +283,7 @@ def _get_module_generators(
                 RandomChristmasTreeModuleGenerator(
                     name="ChristmasTreeTall",
                     id="christmas_tree_tall",
-                    room_id=room_id,
+                    room_id=ROOM_ID,
                     height_range=(5, 10),
                     radius_range=(1, 2),
                     n_leds_range=(25, 200),
@@ -290,7 +295,7 @@ def _get_module_generators(
                 RandomChristmasTreeModuleGenerator(
                     name="ChristmasTreeSmall",
                     id="christmas_tree_small",
-                    room_id=room_id,
+                    room_id=ROOM_ID,
                     height_range=(5, 7),
                     radius_range=(0.5, 1),
                     n_leds_range=(10, 25),
@@ -304,7 +309,7 @@ def _get_module_generators(
         RandomWallLampModuleGenerator(
             name="WallLamp",
             id="wall_lamp",
-            room_id=room_id,
+            room_id=ROOM_ID,
             n_wall_lamps=10,
             xy_scale_range=(1, 5),
             emission_strength_range=(0.1, 1),
@@ -314,7 +319,7 @@ def _get_module_generators(
             wall_type=ModuleGeneratorType.FRONT_WALL,
             name="WindowFront",
             id="window_front",
-            room_id=room_id,
+            room_id=ROOM_ID,
             n_windows=10,
             xy_scale_range=(1, 4),
             shades_probability=0.5,
@@ -334,7 +339,7 @@ def _get_module_generators(
             wall_type=ModuleGeneratorType.BACK_WALL,
             name="WindowBack",
             id="window_back",
-            room_id=room_id,
+            room_id=ROOM_ID,
             n_windows=10,
             xy_scale_range=(1, 4),
             shades_probability=0.5,
@@ -354,7 +359,7 @@ def _get_module_generators(
             wall_type=ModuleGeneratorType.LEFT_WALL,
             name="WindowLeft",
             id="window_left",
-            room_id=room_id,
+            room_id=ROOM_ID,
             n_windows=10,
             xy_scale_range=(1, 4),
             shades_probability=0.5,
@@ -374,7 +379,7 @@ def _get_module_generators(
             wall_type=ModuleGeneratorType.RIGHT_WALL,
             name="WindowRight",
             id="window_right",
-            room_id=room_id,
+            room_id=ROOM_ID,
             n_windows=10,
             xy_scale_range=(1, 4),
             shades_probability=0.5,
@@ -397,7 +402,7 @@ def _get_module_generators(
                     priority=1,
                     name="TableUnlimited",
                     id="table_unlimited",
-                    room_id=room_id,
+                    room_id=ROOM_ID,
                     n_tables=-1,
                     xy_scale_range=(2, 5),
                     z_scale_range=(1, 3),
@@ -410,7 +415,7 @@ def _get_module_generators(
                     priority=0,
                     name="TableSmall",
                     id="table_small",
-                    room_id=room_id,
+                    room_id=ROOM_ID,
                     n_tables=5,
                     xy_scale_range=(1, 2),
                     z_scale_range=(1, 3),
@@ -423,7 +428,7 @@ def _get_module_generators(
                     priority=0,
                     name="TableBig",
                     id="table_big",
-                    room_id=room_id,
+                    room_id=ROOM_ID,
                     n_tables=3,
                     xy_scale_range=(5, 8),
                     z_scale_range=(2, 3),
@@ -452,17 +457,47 @@ def _get_module_generators(
             n_octaves=2,
         ),
     ]
-    
+
     return room_module, camera_module, modules
+
+
+def get_background(blender_objects: dict) -> BlenderCollection:
+    """
+    Get the background collection.
+
+    Args:
+        blender_objects (dict): The blender objects.
+
+    Returns:
+        BlenderCollection: The background collection.
+    """
+    background_collection = BlenderCollection(BACKGROUND_COLLECTION_NAME)
+
+    objects = []
+    for _, blender_object_args in blender_objects.items():
+        blender_object = blender_object_args["object"]
+        blender_object_parents = blender_object_args["parents"]
+        
+        # Objects with parents are linked to their parents, not the background collection
+        if blender_object_parents is None:
+            objects.append(blender_object)
+        else:
+            for blender_object_parent in blender_object_parents:
+                blender_object_parent.add_relative_blender_object(blender_object)
+
+    background_collection.add_all_objects(objects)
+
+    return background_collection
 
 
 def main(args) -> None:
     """
-    The main function.
-
-    Args:
-        args (argparse.Namespace): The command line arguments.
+    Run a Blender scene for synthetic data generation.
     """
+    # Parse the arguments
+    parser = get_parser()
+    args = parser.parse_args()
+    
     set_seed()
 
     # Get bones
@@ -470,9 +505,9 @@ def main(args) -> None:
         hide_armature_probability=HIDE_ARMATURE_PROBABILITY,
     )
 
-    # Get input data
+    # Generate input data
     print("Generating input data...")
-    room_module, camera_module, modules = _get_module_generators()
+    room_module, camera_module, modules = get_module_generators()
     input_data_generator = InputDataGenerator(
         room_module=room_module, camera_module=camera_module, modules=modules
     )
@@ -513,7 +548,7 @@ def main(args) -> None:
         smooth_gaussian_kernel_size=301,
         n_blur_steps=5,
         max_blur=5,
-        color_skew_factor=BACKGROUND_COLOR_SKEW_FACTOR
+        color_skew_factor=BACKGROUND_COLOR_SKEW_FACTOR,
     )
     random_background_image_generator.apply_to_scene()
 
@@ -537,7 +572,4 @@ def main(args) -> None:
 
 
 if __name__ == "__main__":
-    parser = get_parser()
-    args = parser.parse_args()
-
-    main(args)
+    main()

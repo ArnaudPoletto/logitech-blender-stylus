@@ -12,7 +12,7 @@ from background_image.black_background_image_generator import (
 from background_image.random_background_image_generator import (
     RandomBackgroundImageGenerator,
 )
-from utils.config import (
+from src.utils import (
     RENDER_FOLDER_PATH,
     CAMERA_NAME,
     CAMERA_TYPE,
