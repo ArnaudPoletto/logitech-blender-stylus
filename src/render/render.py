@@ -22,7 +22,7 @@ from src.utils import (
 )
 
 
-def _get_object_center(object) -> Vector:
+def get_object_center(object) -> Vector:
     """
     Get the bounding box center of an object.
 
@@ -113,7 +113,7 @@ def _is_led_in_frame(led, camera_object) -> bool:
     Returns:
         True if the LED is in the frame, False otherwise.
     """
-    led_center = _get_object_center(led)
+    led_center = get_object_center(led)
     led_projected_coordinates = world_to_camera_view(
         bpy.context.scene, camera_object, led_center
     )
@@ -308,7 +308,7 @@ def _render_and_get_frame_info(
         stylus, Vector((1, 0, 0)), camera_object
     )
     for led in leds:
-        led_center = _get_object_center(led)
+        led_center = get_object_center(led)
         # TODO: as enum type, and get projected coordinates in camera class
         if CAMERA_TYPE == "PERSP":
             led_projected_coordinates = _get_projected_coordinates_perspective(led_center, camera_object)
