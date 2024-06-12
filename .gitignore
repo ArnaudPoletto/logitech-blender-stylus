@@ -1,9 +1,5 @@
 data/renders
-data/renders_old
 data/renders.zip
-
-data/renders_home.zip
-data/renders_salad.zip
 
 __pycache__/
 *.pyc
