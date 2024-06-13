@@ -2,7 +2,7 @@ import numpy as np
 from typing import Tuple
 from abc import abstractmethod
 
-from src.utils import MIN_PRIORITY, MAX_PRIORITY
+from config.config import MIN_PRIORITY, MAX_PRIORITY
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
 

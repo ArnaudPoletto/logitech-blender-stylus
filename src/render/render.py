@@ -1,9 +1,12 @@
+# This file contains functions to render the animation and collect frame data.
+
 import os
 import bpy
 import math
 import json
 from tqdm import tqdm
 from mathutils import Vector
+from typing import Tuple, List, Dict, Any
 from bpy_extras.object_utils import world_to_camera_view
 
 from background_image.black_background_image_generator import (
@@ -12,174 +15,42 @@ from background_image.black_background_image_generator import (
 from background_image.random_background_image_generator import (
     RandomBackgroundImageGenerator,
 )
-from src.utils import (
+from config.config import (
     RENDER_FOLDER_PATH,
     CAMERA_NAME,
     CAMERA_TYPE,
     BACKGROUND_COLLECTION_NAME,
     RENDER_RESOLUTION,
-    GROUND_TRUTH_WITH_ARM_MODEL,
 )
 
 
-def get_object_center(object) -> Vector:
+def render_bg_frame(
+    render_folder_path: str,
+    frame_index: int,
+) -> None:
     """
-    Get the bounding box center of an object.
+    Render a frame with a random background image.
 
     Args:
-        object: The object to get the bounding box center of.
-
-    Returns:
-        The bounding box center of the object.
+        render_folder_path (str): The folder path to render the frame to.
+        frame_index (int): The frame index to render.
     """
-
-    local_bbox_center = 0.125 * sum((Vector(b) for b in object.bound_box), Vector())
-    global_bbox_center = object.matrix_world @ local_bbox_center
-
-    return global_bbox_center
-
-
-def _get_object_bbox(object) -> list:
-    """
-    Get the bounding box of an object.
-
-    Args:
-        object: The object to get the bounding box of.
-
-    Returns:
-        The bounding box of the object.
-    """
-    bbox = []
-    for i in range(8):
-        bbox.append(object.matrix_world @ Vector(object.bound_box[i]))
-
-    return bbox
-
-
-def _is_led_occluded(led, camera_object, leds, armature_arm, distance_eps: float = 1e-3) -> bool:
-    """
-    Check if an LED is occluded by any object between the camera and the LED.
-
-    Args:
-        camera_object: The camera object.
-        leds: The LEDs object.
-        armature_arm: The armature arm object.
-        distance_eps: The distance epsilon to cast the ray.
-
-    Returns:
-        True if the LED is occluded, False otherwise.
-    """
-    # Get the direction from the camera to the LED
-    led_locations = _get_object_bbox(led)
-    is_led_occluded = True
-    for led_location in led_locations:
-        direction = camera_object.location - led_location
-        length = direction.length
-        direction.normalize()
-
-        # Remove LEDs and add arm if needed from the scene
-        for l in leds:
-            l.hide_set(True)
-        armature_arm.hide_set(armature_arm.hide_render)
-
-        # Cast a ray from the camera to the LED
-        scene = bpy.context.scene
-        result = scene.ray_cast(
-            depsgraph=bpy.context.evaluated_depsgraph_get(),
-            origin=led_location,
-            direction=direction,
-            distance=length + distance_eps,
-        )
-
-        # Add stylus outer back to the scene
-        for l in leds:
-            l.hide_set(False)
-
-        if not result[0]:
-            is_led_occluded = False
-            break
-
-    return is_led_occluded
-
-
-def _is_led_in_frame(led, camera_object) -> bool:
-    """
-    Check if an LED is in the camera frame.
-
-    Args:
-        camera_object: The camera object.
-        led: The LED object.
-
-    Returns:
-        True if the LED is in the frame, False otherwise.
-    """
-    led_center = get_object_center(led)
-    led_projected_coordinates = world_to_camera_view(
-        bpy.context.scene, camera_object, led_center
+    bpy.data.scenes["Scene"].render.filepath = os.path.join(
+        render_folder_path, "bg", f"{frame_index}.png"
     )
-
-    return (
-        0 <= led_projected_coordinates.x <= 1 and 0 <= led_projected_coordinates.y <= 1
-    )
+    bpy.ops.render.render(animation=False, write_still=True)
 
 
-def _get_relative_orientation(
-    object: bpy.types.Object, object_vector: Vector, camera_object: bpy.types.Object
-) -> float:
+def get_black_material(material_name: str = "BlackMaterial") -> bpy.types.Material:
     """
-    Get the relative orientation of the stylus to the camera.
+    Get a black material, creating it if it does not exist.
 
     Args:
-        object (bpy.types.Object): The object to get the relative orientation of.
-        object_vector (Vector): The vector of the object.
-        camera_object (bpy.types.Object): The camera object.
+        material_name (str): The name of the material.
+
+    Returns:
+        bpy.types.Material: The black material.
     """
-    object_rotation = object.matrix_world.to_3x3()
-    camera_rotation = camera_object.matrix_world.to_3x3()
-    object_direction = object_rotation @ object_vector
-    object_direction.normalize()
-    camera_view_direction = camera_rotation @ Vector((0, 0, -1))
-    camera_view_direction.normalize()
-    relative_orientation = object_direction.dot(camera_view_direction)
-
-    return relative_orientation
-
-# TODO: documentation
-def _get_projected_coordinates_perspective(led_center, camera_object) -> Vector:
-    scene = bpy.context.scene
-    return world_to_camera_view(
-        scene, camera_object, led_center
-    )
-
-def _get_projected_coordinates_panoramic(led_center, camera, camera_object) -> Vector:
-    # TODO from https://blender.stackexchange.com/questions/40702/how-can-i-get-the-projection-matrix-of-a-panoramic-camera-with-a-fisheye-equisol
-    scene = bpy.context.scene
-    f = camera_object.data.fisheye_lens
-    pixel_aspect_ratio = scene.render.resolution_x / scene.render.resolution_y
-    if camera.sensor_fit == "VERTICAL":
-        h = camera.sensor_height
-        w = pixel_aspect_ratio * h
-    else:
-        w = camera.sensor_width
-        h = w / pixel_aspect_ratio
-        
-    led_center = camera_object.matrix_world.inverted() @ led_center
-    led_center.normalize()
-    
-    phi = math.atan2(led_center.y, led_center.x)
-    l = (led_center.x ** 2 + led_center.y ** 2) ** 0.5
-    theta = math.asin(l)
-    
-    # Equisolid projection
-    r = 2.0 * f * math.sin(theta / 2.0)
-    u = r * math.cos(phi) / w + 0.5
-    v = r * math.sin(phi) / h + 0.5
-    
-    return Vector((u, v))
-
-# TODO: doc and black_material name not hardcoded
-def _get_black_material():
-    material_name = "BlackMaterial"
     if material_name not in bpy.data.materials:
         black_material = bpy.data.materials.new(name=material_name)
         black_material.use_nodes = True
@@ -200,79 +71,44 @@ def _get_black_material():
 
     return black_material
 
-# TODO: add/update documentation and REFACTO
-def _render_and_get_frame_info(
-    render_folder_path,
-    frame,
-    camera_object,
-    camera,
-    stylus,
-    leds,
-    armature_suffix,
-    random_background_image_generator,
-) -> dict:
+
+def hide_background(
+    frame_index: int,
+    armature_suffix: str,
+) -> Dict[bpy.types.Object, bool]:
     """
-    Render a frame and get the camera projection coordinates of LED.
+    Hide the background in the scene.
 
     Args:
-        render_folder_path: The folder path to render the frame to.
-        frame: The frame to render.
-        camera_object: The camera object to render from.
-        camera: The camera.
-        sylus: The stylus object.
-        leds: The LED objects to get the 3D object center of.
-        armature_suffix: The suffix of the armature.
-        random_background_image_generator: The random background image generator.
+        frame_index (int): The frame index.
+        armature_suffix (str): The suffix of the armature.
+
+    Raises:
+        ValueError: If the armature arm is not found.
+        ValueError: If the inner stylus is not found.
 
     Returns:
-        The 3D object center in the frame.
+        Dict[bpy.types.Object, bool]: The old hide render states of the background objects.
     """
-    # Camera
-    bpy.context.scene.camera = camera_object
-
-    ## Render frame with background
-    bpy.context.scene.frame_set(frame)
-
-    # Add back the random background image
-    random_background_image_generator.apply_to_scene()
-
-    bpy.data.scenes["Scene"].render.filepath = os.path.join(
-        render_folder_path, "bg", f"{frame}.png"
-    )
-    bpy.ops.render.render(
-        animation=False, write_still=True
-    )
-
-    ## Render frame without background
-    bpy.data.scenes["Scene"].render.filepath = os.path.join(
-        render_folder_path, "no-bg", f"{frame}.png"
-    )
-
-    # Hide background objects
+    # Hide background objects and store old states
     background_objects = bpy.data.collections[BACKGROUND_COLLECTION_NAME].objects
-    old_hide_render_states = [obj.hide_render for obj in background_objects]
+    old_hide_render_states = {obj: obj.hide_render for obj in background_objects}
     for background_object in background_objects:
         background_object.hide_render = True
-        background_object.keyframe_insert(data_path="hide_render", frame=frame)
+        background_object.keyframe_insert(data_path="hide_render", frame=frame_index)
 
-    # Hide/black arm model
+    # Set black arm model
     armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
     if armature_arm is None:
-        raise ValueError("Armature arm not found.")
-    if not GROUND_TRUTH_WITH_ARM_MODEL:
-        old_armature_arm_hide_render = armature_arm.hide_render
-        armature_arm.hide_render = True
-    else:
-        # Set model as black material
-        black_material = _get_black_material()
-        armature_arm.data.materials.clear()
-        armature_arm.data.materials.append(black_material)
+        raise ValueError("❌ Armature arm not found.")
+    black_material = get_black_material()
+    armature_arm.data.materials.clear()
+    armature_arm.data.materials.append(black_material)
 
     # Set device as black material
     inner_stylus = bpy.data.objects.get(f"Inner{armature_suffix}")
     if inner_stylus is None:
-        raise ValueError("Inner stylus not found.")
-    black_material = _get_black_material()
+        raise ValueError("❌ Inner stylus not found.")
     inner_stylus.data.materials.clear()
     inner_stylus.data.materials.append(black_material)
 
@@ -280,49 +116,316 @@ def _render_and_get_frame_info(
     black_background_image_generator = BlackBackgroundImageGenerator(
         width=RENDER_RESOLUTION[0], height=RENDER_RESOLUTION[1]
     )
-
     black_background_image_generator.apply_to_scene()
-    bpy.ops.render.render(
-        animation=False, write_still=True
-    )
+
+    return old_hide_render_states
+
+
+def show_background(
+    frame_index: int,
+    armature_suffix: str,
+    random_background_image_generator: RandomBackgroundImageGenerator,
+    old_hide_render_states: Dict[bpy.types.Object, bool],
+) -> None:
+    """
+    Show the background in the scene.
+
+    Args:
+        frame_index (int): The frame index.
+        armature_suffix (str): The suffix of the armature.
+        random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
+        old_hide_render_states (Dict[bpy.types.Object, bool]): The old hide render states of the background objects.
+
+    Raises:
+        ValueError: If the armature arm is not found.
+        ValueError: If the inner stylus is not found.
+    """
+    # Add back the random background image
+    random_background_image_generator.apply_to_scene()
 
     # Add back the background objects
-    for background_object, old_hide_render_state in zip(
-        background_objects, old_hide_render_states
-    ):
+    for background_object, old_hide_render_state in old_hide_render_states.items():
         background_object.hide_render = old_hide_render_state
-        background_object.keyframe_insert(data_path="hide_render", frame=frame)
+        background_object.keyframe_insert(data_path="hide_render", frame=frame_index)
 
-    # Show/remove black material arm model
-    if not GROUND_TRUTH_WITH_ARM_MODEL:
-        armature_arm.hide_render = old_armature_arm_hide_render
-    else:
-        armature_arm.data.materials.clear()
+    # Remove black material arm model
+    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
+    if armature_arm is None:
+        raise ValueError("❌ Armature arm not found.")
+    armature_arm.data.materials.clear()
 
     # Remove black device material
+    inner_stylus = bpy.data.objects.get(f"Inner{armature_suffix}")
+    if inner_stylus is None:
+        raise ValueError("❌ Inner stylus not found.")
     inner_stylus.data.materials.clear()
 
-    # Get pixel coordinates of LEDs
-    leds_data = {}
-    stylus_relative_orientation = _get_relative_orientation(
+
+def render_no_bg_frame(
+    render_folder_path: str,
+    frame_index: int,
+    armature_suffix: str,
+    random_background_image_generator: RandomBackgroundImageGenerator,
+) -> None:
+    """
+    Render a frame without background noise.
+
+    Args:
+        render_folder_path (str): The folder path to render the frame to.
+        frame_index (int): The frame index to render.
+        armature_suffix (str): The suffix of the armature.
+        random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
+    """
+    old_hide_render_states = hide_background(
+        frame_index,
+        armature_suffix,
+    )
+
+    # Render the frame
+    bpy.data.scenes["Scene"].render.filepath = os.path.join(
+        render_folder_path, "no-bg", f"{frame_index}.png"
+    )
+    bpy.ops.render.render(animation=False, write_still=True)
+
+    show_background(
+        frame_index,
+        armature_suffix,
+        random_background_image_generator,
+        old_hide_render_states,
+    )
+
+
+def get_object_center(object: bpy.types.Object) -> Vector:
+    """
+    Get the center of an object, which has an associated arrow object.
+
+    Args:
+        object (bpy.types.Object): The object to get the center of.
+
+    Raises:
+        ValueError: If the associated arrow object is not found.
+
+    Returns:
+        Vector: The center of the object.
+    """
+    arrow_name = object.name.replace("LED", "Arrow")
+    arrow = bpy.data.objects.get(arrow_name)
+    if arrow is None:
+        raise ValueError(
+            f"❌ Associated arrow {arrow_name} for object {object.name} not found."
+        )
+    arrow_location = arrow.matrix_world.translation
+
+    return arrow_location
+
+
+def is_led_occluded(
+    led: bpy.types.Object,
+    camera_object: bpy.types.Object,
+    leds: List[bpy.types.Object],
+    armature_arm: bpy.types.Object,
+    distance_eps: float = 1e-3,
+) -> bool:
+    """
+    Check if an LED is occluded by any object between the camera and the LED.
+
+    Args:
+        led (bpy.types.Object): The LED object.
+        camera_object (bpy.types.Object): The camera object.
+        leds (List[bpy.types.Object]): The LED objects.
+        armature_arm (bpy.types.Object): The armature arm object.
+        distance_eps (float): The distance epsilon.
+
+    Returns:
+        bool: Whether the LED is occluded.
+    """
+    # Get the direction from the camera to the LED
+    led_location = get_object_center(led)
+    direction = camera_object.location - led_location
+    length = direction.length
+    direction.normalize()
+
+    # Remove LEDs and add arm if needed from the scene
+    for l in leds:
+        l.hide_set(True)
+    armature_arm.hide_set(armature_arm.hide_render)
+
+    # Cast a ray from the camera to the LED
+    scene = bpy.context.scene
+    result = scene.ray_cast(
+        depsgraph=bpy.context.evaluated_depsgraph_get(),
+        origin=led_location,
+        direction=direction,
+        distance=length + distance_eps,
+    )
+
+    # Add back LEDs to the scene
+    for l in leds:
+        l.hide_set(False)
+
+    return result[0]
+
+
+def is_led_in_frame(led: bpy.types.Object, camera_object: bpy.types.Object) -> bool:
+    """
+    Check if a LED is in the camera frame.
+
+    Args:
+        led (bpy.types.Object): The LED object.
+        camera_object (bpy.types.Object): The camera object.
+
+    Returns:
+        bool: Whether the LED is in the camera frame.
+    """
+    led_center = get_object_center(led)
+    led_projected_coordinates = world_to_camera_view(
+        bpy.context.scene, camera_object, led_center
+    )
+
+    return (
+        0 <= led_projected_coordinates.x <= 1 and 0 <= led_projected_coordinates.y <= 1
+    )
+
+
+def get_object_relative_orientation(
+    object: bpy.types.Object, object_vector: Vector, camera_object: bpy.types.Object
+) -> float:
+    """
+    Get the relative orientation of an object to the camera.
+
+    Args:
+        object (bpy.types.Object): The object to get the relative orientation of.
+        object_vector (Vector): The vector of the object.
+        camera_object (bpy.types.Object): The camera object.
+    """
+    object_rotation = object.matrix_world.to_3x3()
+    camera_rotation = camera_object.matrix_world.to_3x3()
+    object_direction = object_rotation @ object_vector
+    object_direction.normalize()
+    camera_view_direction = camera_rotation @ Vector((0, 0, -1))
+    camera_view_direction.normalize()
+    relative_orientation = object_direction.dot(camera_view_direction)
+
+    return relative_orientation
+
+
+def get_projected_coordinates_perspective(led_center: Vector, camera_object: bpy.types.Object) -> Vector:
+    """
+    Get the projected coordinates of a point in the camera view for a perspective camera.
+
+    Args:
+        led_center (Vector): The center of the LED.
+        camera_object (bpy.types.Object): The camera object.
+
+    Returns:
+        Vector: The projected coordinates of the LED.
+    """
+    scene = bpy.context.scene
+    return world_to_camera_view(scene, camera_object, led_center)
+
+
+def get_projected_coordinates_panoramic(led_center: Vector, camera: bpy.types.Camera, camera_object: bpy.types.Object) -> Vector:
+    """
+    Get the projected coordinates of a point in the camera view for a panoramic camera.
+    From: https://blender.stackexchange.com/questions/40702/how-can-i-get-the-projection-matrix-of-a-panoramic-camera-with-a-fisheye-equisol.
+
+    Args:
+        led_center (Vector): The center of the LED.
+        camera (bpy.types.Camera): The camera.
+        camera_object (bpy.types.Object): The camera object.
+
+    Returns:
+        Vector: The projected coordinates of the LED.
+    """
+    scene = bpy.context.scene
+    f = camera_object.data.fisheye_lens
+    pixel_aspect_ratio = scene.render.resolution_x / scene.render.resolution_y
+    if camera.sensor_fit == "VERTICAL":
+        h = camera.sensor_height
+        w = pixel_aspect_ratio * h
+    else:
+        w = camera.sensor_width
+        h = w / pixel_aspect_ratio
+
+    led_center = camera_object.matrix_world.inverted() @ led_center
+    led_center.normalize()
+
+    phi = math.atan2(led_center.y, led_center.x)
+    l = (led_center.x**2 + led_center.y**2) ** 0.5
+    theta = math.asin(l)
+
+    # Equisolid projection
+    r = 2.0 * f * math.sin(theta / 2.0)
+    u = r * math.cos(phi) / w + 0.5
+    v = r * math.sin(phi) / h + 0.5
+
+    return Vector((u, v))
+
+
+def get_frame_data(
+    camera_object: bpy.types.Object,
+    camera: bpy.types.Camera,
+    stylus: bpy.types.Object,
+    leds: List[bpy.types.Object],
+    armature_suffix: str,
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Get the frame data.
+
+    Args:
+        camera_object (bpy.types.Object): The camera object.
+        camera (bpy.types.Camera): The camera.
+        stylus (bpy.types.Object): The stylus.
+        leds (List[bpy.types.Object]): The LED objects.
+        armature_suffix (str): The suffix of the armature.
+
+    Raises:
+        ValueError: If the armature arm is not found.
+
+    Returns:
+        Dict[str, Dict[str, Any]]: The frame data.
+    """
+    # Get armature arm
+    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
+    if armature_arm is None:
+        raise ValueError("❌ Armature arm not found.")
+
+    # Get frame data
+    frame_data = {}
+    stylus_relative_orientation = get_object_relative_orientation(
         stylus, Vector((1, 0, 0)), camera_object
     )
+    frame_data["stylus_relative_orientation"] = stylus_relative_orientation
+    frame_data["leds"] = {}
     for led in leds:
+        # Get camera and world coordinates
         led_center = get_object_center(led)
-        # TODO: as enum type, and get projected coordinates in camera class
         if CAMERA_TYPE == "PERSP":
-            led_projected_coordinates = _get_projected_coordinates_perspective(led_center, camera_object)
+            led_projected_coordinates = get_projected_coordinates_perspective(
+                led_center, camera_object
+            )
         elif CAMERA_TYPE == "PANO":
-            led_projected_coordinates = _get_projected_coordinates_panoramic(led_center, camera, camera_object)
+            led_projected_coordinates = get_projected_coordinates_panoramic(
+                led_center, camera, camera_object
+            )
         else:
             raise ValueError(f"Camera type {CAMERA_TYPE} not supported.")
-        is_occluded = _is_led_occluded(led, camera_object, leds, armature_arm)
-        is_in_frame = _is_led_in_frame(led, camera_object)
+        
+        # Get location information
+        is_occluded = is_led_occluded(led, camera_object, leds, armature_arm)
+        is_in_frame = is_led_in_frame(led, camera_object)
         distance_from_camera = (camera_object.location - led_center).length
-        led_relative_orientation = _get_relative_orientation(
-            led, Vector((0, 0, 1)), camera_object
+
+        # Get orientation information
+        arrow_name = led.name.replace("LED", "Arrow")
+        arrow = bpy.data.objects.get(arrow_name)
+        if arrow is None:
+            raise ValueError(f"❌ Arrow {arrow_name} not found.")
+        led_relative_orientation = get_object_relative_orientation(
+            arrow, Vector((0, 0, 1)), camera_object
         )
-        leds_data[led.name] = {
+
+        frame_data["leds"][led.name] = {
             "u": led_projected_coordinates.x,
             "v": led_projected_coordinates.y,
             "x": led_center.x,
@@ -331,11 +434,124 @@ def _render_and_get_frame_info(
             "is_occluded": is_occluded,
             "is_in_frame": is_in_frame,
             "distance_from_camera": distance_from_camera,
-            "stylus_relative_orientation": stylus_relative_orientation,
             "led_relative_orientation": led_relative_orientation,
         }
 
-    return leds_data
+    return frame_data
+
+
+def render_and_get_frame_data(
+    render_folder_path: str,
+    frame_index: int,
+    camera_object: bpy.types.Object,
+    camera: bpy.types.Camera,
+    stylus: bpy.types.Object,
+    leds: List[bpy.types.Object],
+    armature_suffix: str,
+    random_background_image_generator: RandomBackgroundImageGenerator,
+) -> dict:
+    """
+    Render a frame and get the camera projection coordinates of LED.
+
+    Args:
+        render_folder_path (str): The folder path to render the frame to.
+        frame_index (int): The frame index to render.
+        camera_object (bpy.types.Object): The camera object.
+        camera (bpy.types.Camera): The camera.
+        stylus (bpy.types.Object): The stylus object.
+        leds (List[bpy.types.Object]): The LED objects.
+        armature_suffix (str): The suffix of the armature.
+        random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
+
+    Returns:
+        dict: The frame data.
+    """
+    # Set camera and frame index for Blender
+    bpy.context.scene.camera = camera_object
+    bpy.context.scene.frame_set(frame_index)
+
+    render_bg_frame(
+        render_folder_path,
+        frame_index,
+    )
+
+    render_no_bg_frame(
+        render_folder_path,
+        frame_index,
+        armature_suffix,
+        random_background_image_generator,
+    )
+
+    frame_data = get_frame_data(
+        camera_object,
+        camera,
+        stylus,
+        leds,
+        armature_suffix,
+    )
+
+    return frame_data
+
+
+def get_main_objects(
+    armature_suffix: str,
+) -> Tuple[
+    bpy.types.Object, bpy.types.Camera, bpy.types.Object, List[bpy.types.Object]
+]:
+    """
+    Get the main objects of the scene.
+
+    Args:
+        armature_suffix (str): The suffix of the armature.
+
+    Raises:
+        ValueError: If the camera is not found.
+        ValueError: If the camera object is not found.
+        ValueError: If the stylus is not found.
+        ValueError: If no LED is found.
+
+    Returns:
+        bpy.types.Object: The camera object.
+        bpy.types.Camera: The camera.
+        bpy.types.Object: The stylus object.
+        List[bpy.types.Object]: The LED objects.
+    """
+    camera_object = bpy.data.objects.get(CAMERA_NAME)
+    if camera_object is None:
+        raise ValueError("❌ Camera object not found.")
+
+    camera = bpy.data.cameras.get(CAMERA_NAME)
+    if camera is None:
+        raise ValueError("❌ Camera not found.")
+
+    stylus = bpy.data.objects.get(f"Stylus{armature_suffix}")
+    if stylus is None:
+        raise ValueError("❌ Stylus not found.")
+
+    leds = [obj for obj in bpy.data.objects if "LED" in obj.name]
+    if len(leds) == 0:
+        raise ValueError("❌ No LED found.")
+    print(f"➡️  Found {len(leds)} LEDs.")
+
+    return camera_object, camera, stylus, leds
+
+
+def get_render_subfolder() -> str:
+    """
+    Get the render subfolder path, and create it.
+
+    Returns:
+        str: The render subfolder path.
+    """
+    render_folder_path = RENDER_FOLDER_PATH
+    render_subfolder_path = 1
+    while os.path.exists(os.path.join(render_folder_path, str(render_subfolder_path))):
+        render_subfolder_path += 1
+    render_folder_path = os.path.join(render_folder_path, str(render_subfolder_path))
+    os.makedirs(render_folder_path, exist_ok=True)
+    print(f"➡️  Rendering to {os.path.abspath(render_folder_path)}.")
+
+    return render_folder_path
 
 
 def render(
@@ -349,34 +565,18 @@ def render(
         ValueError: If the camera is not found.
         ValueError: If the stylus is not found.
     """
-    camera_object = bpy.data.objects.get(CAMERA_NAME)
-    if camera_object is None:
-        raise ValueError("Camera object not found.")
-    
-    camera = bpy.data.cameras.get(CAMERA_NAME)
-    if camera is None:
-        raise ValueError("Camera not found.")
-
-    stylus = bpy.data.objects.get(f"Stylus{armature_suffix}")
-    if stylus is None:
-        raise ValueError("Stylus not found.")
-
-    leds = [obj for obj in bpy.data.objects if "LED" in obj.name]
+    # Get objects
+    camera_object, camera, stylus, leds = get_main_objects(armature_suffix)
 
     # Get render folder path
-    render_folder_path = RENDER_FOLDER_PATH
-    render_subfolder_path = 1
-    while os.path.exists(os.path.join(render_folder_path, str(render_subfolder_path))):
-        render_subfolder_path += 1
-    render_folder_path = os.path.join(render_folder_path, str(render_subfolder_path))
-    os.makedirs(render_folder_path, exist_ok=True)
+    render_folder_path = get_render_subfolder()
 
     data = {}
     for frame in tqdm(
         range(bpy.context.scene.frame_start, bpy.context.scene.frame_end + 1),
-        desc="Rendering frames",
+        desc="🔄 Rendering frames...",
     ):
-        data[frame] = _render_and_get_frame_info(
+        data[frame] = render_and_get_frame_data(
             render_folder_path,
             frame,
             camera_object,
@@ -388,6 +588,7 @@ def render(
         )
 
     # Write data to JSON file
+    print("⏳ Writing data to JSON file...")
     output_file_path = os.path.join(render_folder_path, "data.json")
     with open(output_file_path, "w") as f:
         json.dump(data, f, indent=4)

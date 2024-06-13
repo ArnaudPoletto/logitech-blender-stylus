@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from src.utils import MIN_PRIORITY
+from config.config import MIN_PRIORITY
 from module_operators.module_operator import ModuleOperator
 from input_data_generation.module_generator import ModuleGenerator
 

@@ -4,7 +4,7 @@ from typing import List, Tuple
 from tqdm import tqdm
 
 from utils.seed import set_seed
-from src.utils import RESOLUTION_DIGITS, MIN_PRIORITY
+from config.config import RESOLUTION_DIGITS, MIN_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 

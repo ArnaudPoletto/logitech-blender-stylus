@@ -9,7 +9,7 @@ INPUTS_FOLDER = os.path.join(DATA_PATH, "inputs")
 RENDER_FOLDER_PATH = os.path.join(DATA_PATH, "renders")
 
 # The generation seed. If None, a random seed will be used
-SEED = None
+SEED = 572410950
 if SEED is None:
     SEED = int(np.random.randint(0, 2**32 - 1, dtype=np.uint32))
     print(f"✅ Running with random seed: {SEED}.")
@@ -28,10 +28,9 @@ CAMERA_FOV_DEGREES = 110 # Camera field of view parameter, not used for PERSP
 FRAME_RATE = 24 # Frame rate of the generated animations
 RESOLUTION_DIGITS = 2 # Grid space resolution in the Blender scene, as an exponent of 10
 RENDER_RESOLUTION = (640, 480) # Is generally (640, 480), (1280, 720), (1920, 1080), or (3840, 2160)
-GROUND_TRUTH_WITH_ARM_MODEL = True # Whether to render the ground truth with the arm model hiding the LEDS, but without reflections on the arm
-HIDE_ARMATURE_PROBABILITY = 0.75 # Probability of hiding the armature during rendering
+HIDE_ARMATURE_PROBABILITY = 0.5 # Probability of hiding the armature during rendering
 ANIMATION_LENGTH = 100 # Number of frames per animation
-BACKGROUND_COLOR_SKEW_FACTOR = 1.5 # Factor to skew the background color towards lighter colors (1.0 is no skew)
+BACKGROUND_COLOR_SKEW_FACTOR = 1.2 # Factor to skew the background color towards lighter colors (1.0 is no skew)
 
 # Priority levels for scene generation
 MIN_PRIORITY = np.iinfo(np.int32).max

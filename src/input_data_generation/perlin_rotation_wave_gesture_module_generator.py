@@ -3,7 +3,7 @@ from typing import Tuple
 
 from utils.axis import Axis
 from utils.seed import set_seed
-from src.utils import FRAME_RATE
+from config.config import FRAME_RATE
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 
@@ -20,7 +20,7 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
         period_range: Tuple[float, float],
         amplitude_range: Tuple[float, float],
         persistance: float,
-        n_octaves: int
+        n_octaves_range: Tuple[int, int],
     ) -> None:
         """
         Initialize the perlin rotation wave gesture module generator.
@@ -32,7 +32,7 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
             period_range (Tuple[float, float]): The range of the period of the noise function.
             amplitude_range (Tuple[float, float]): The range of the amplitude of the noise function.
             persistance (float): The persistance of the perlin noise.
-            n_octaves (int): The number of octaves.
+            n_octaves_range (Tuple[int, int]): The range of the number of octaves.
             
         Raises:
             ValueError: If the start frame is less than 0.
@@ -41,7 +41,8 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
             ValueError: If the minimum amplitude is greater than the maximum amplitude.
             ValueError: If the persistance is less than 0.
             ValueError: If the persistance is greater than 1.
-            ValueError: If the number of octaves is less than 1.
+            ValueError: If the minimum number of octaves is less than 1.
+            ValueError: If the minimum number of octaves is greater than the maximum number of octaves.
         """
         if start_frame < 0:
             raise ValueError("The start frame must be greater than or equal to 0.")
@@ -55,8 +56,10 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
             raise ValueError("The persistance must be greater than or equal to 0.")
         if persistance > 1:
             raise ValueError("The persistance must be less than or equal to 1.")
-        if n_octaves < 1:
+        if n_octaves_range[0] < 1:
             raise ValueError("The number of octaves must be greater than or equal to 1.")
+        if n_octaves_range[1] < n_octaves_range[0]:
+            raise ValueError("The minimum number of octaves must be less than or equal to the maximum number of octaves.")
         
         super(PerlinRotationWaveGestureModuleGenerator, self).__init__(
             type=ModuleGeneratorType.GESTURE,
@@ -69,7 +72,7 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
         self.period_range = period_range
         self.amplitude_range = amplitude_range
         self.persistance = persistance
-        self.n_octaves = n_octaves
+        self.n_octaves_range = n_octaves_range
 
     def generate(
         self,
@@ -81,7 +84,8 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
         perlin_data = {"gestures": {}}
         for axis in Axis.__members__.values():
             axis = axis.value
-            for octave in range(self.n_octaves):
+            n_octaves = np.random.randint(*self.n_octaves_range)
+            for octave in range(n_octaves):
                 period = np.random.uniform(*self.period_range)
                 amplitude = np.random.uniform(*self.amplitude_range)
                 wave_period = (2 ** octave) * period

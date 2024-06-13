@@ -3,9 +3,9 @@ import numpy as np
 from tqdm import tqdm
 from typing import Tuple
 
-from src.utils import MIN_PRIORITY
+from config.config import MIN_PRIORITY
 from utils.seed import set_seed
-from src.utils import RESOLUTION_DIGITS
+from config.config import RESOLUTION_DIGITS
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
 

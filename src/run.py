@@ -1,9 +1,9 @@
 # This script runs a single Blender instance for synthetic data generation.
 # Run this script with the following command:
-# python src/run.py --render <render> --quit <quit>
+# blender ../data/base_multi_new.blend --python run.py -- --render --quit
 # , where:
-#   <render> is whether to render the animation after generating the scene.
-#   <quit> is whether to quit Blender after rendering the animation.
+#   --render is a flag indicating whether to render the animation after generating the scene, leaving it out will not render the animation.
+#   --quit is a flag indicating whether to quit Blender after rendering the animation, leaving it out will keep Blender open.
 
 import os
 import bpy
@@ -24,6 +24,7 @@ paths = [
     os.path.join(wrk_dir, "module_operators/__init__.py"),
     os.path.join(wrk_dir, "background_image/__init__.py"),
     os.path.join(wrk_dir, "render/__init__.py"),
+    os.path.join(wrk_dir, "config/__init__.py"),
 ]
 names = [
     "utils",
@@ -34,6 +35,7 @@ names = [
     "module_operators",
     "background_image",
     "render",
+    "config",
 ]
 
 for path, name in zip(paths, names):
@@ -81,7 +83,7 @@ from input_data_generation.perlin_rotation_wave_gesture_module_generator import 
 from input_data_generation.random_camera_module_generator import (
     RandomCameraModuleGenerator,
 )
-from src.utils import (
+from config.config import (
     ROOM_NAME,
     ROOM_ID,
     CAMERA_NAME,
@@ -115,6 +117,8 @@ def setup_armature() -> Tuple[bpy.types.Object, str]:
     # Choose one randomly and delete the rest
     armature_name = np.random.choice(armature_names)
     armature_suffix = armature_name.replace("Armature", "")
+    print(f"➡️  Using armature {armature_suffix}.")
+
     for obj in bpy.data.objects:
         if armature_suffix not in obj.name:
             bpy.data.objects.remove(obj)
@@ -169,11 +173,17 @@ def set_hide_armature(armature_suffix: str, hide_armature_probability: float) ->
     Raises:
         ValueError: If the armature model is not found.
     """
-    p = np.random.rand()
+    # Get the armature model
     armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
     if armature_arm is None:
-        raise ValueError(f"Arm model {armature_arm} not found.")
-    armature_arm.hide_render = p < hide_armature_probability
+        raise ValueError(f"❌ Arm model {armature_arm} not found.")
+
+    # Hide the armature with the given probability
+    p = np.random.rand()
+    hide_armature = p < hide_armature_probability
+    armature_arm.hide_render = hide_armature
+    if hide_armature:
+        print(f"➡️  Hiding armature for rendering.")
 
 
 def setup_scene_and_get_objects(
@@ -191,8 +201,6 @@ def setup_scene_and_get_objects(
     Returns:
         Tuple[bpy.types.Bone, bpy.types.Bone, bpy.types.Bone, str]: The armature, arm, forearm, hand, and armature suffix.
     """
-    set_seed()
-
     # Choose a random armature and get the bones
     armature, armature_suffix = setup_armature()
     pose = armature.pose
@@ -222,29 +230,18 @@ def get_parser() -> argument_parser.ArgumentParserForBlender:
     parser = argument_parser.ArgumentParserForBlender()
 
     parser.add_argument(
-        "-if",
-        "--input_file",
-        metavar="INPUT_FILE",
-        help="The input file containing the data to apply gestures and background.",
-        type=str,
-        default=None,
-    )
-
-    parser.add_argument(
         "-r",
         "--render",
-        metavar="RENDER",
         help="Whether to render the animation after applying the gestures.",
-        type=bool,
+        action="store_true",
         default=False,
     )
 
     parser.add_argument(
         "-q",
         "--quit",
-        metavar="QUIT",
         help="Whether to quit Blender after rendering the animation.",
-        type=bool,
+        action="store_true",
         default=False,
     )
 
@@ -293,10 +290,22 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
                     padding=0.1,
                 ),
                 RandomChristmasTreeModuleGenerator(
+                    name="ChristmasTreeMedium",
+                    id="christmas_tree_medium",
+                    room_id=ROOM_ID,
+                    height_range=(5, 8),
+                    radius_range=(0.75, 1.5),
+                    n_leds_range=(20, 100),
+                    led_radius_range=(0.03, 0.06),
+                    emission_range=(1, 5),
+                    flicker_probability_range=(0.00, 0.01),
+                    padding=0.1,
+                ),
+                RandomChristmasTreeModuleGenerator(
                     name="ChristmasTreeSmall",
                     id="christmas_tree_small",
                     room_id=ROOM_ID,
-                    height_range=(5, 7),
+                    height_range=(5, 6),
                     radius_range=(0.5, 1),
                     n_leds_range=(10, 25),
                     led_radius_range=(0.03, 0.06),
@@ -311,7 +320,7 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
             id="wall_lamp",
             room_id=ROOM_ID,
             n_wall_lamps=10,
-            xy_scale_range=(1, 5),
+            xy_scale_range=(0.5, 5),
             emission_strength_range=(0.1, 1),
             padding=0.1,
         ),
@@ -438,24 +447,161 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
                 ),
             ],
         ),
-        PerlinRotationSineGestureModuleGenerator(
-            id="perlin_rotation_sine",
-            start_frame=1,
-            end_frame=ANIMATION_LENGTH // 2,
-            period_range=(1, 4),
-            amplitude_range=(0.5, 2),
-            persistance=0.3,
-            n_octaves=5,
+        OneOf(
+            modules=[
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_1",
+                    start_frame=ANIMATION_LENGTH // 3,
+                    end_frame=2 * ANIMATION_LENGTH // 3,
+                    period_range=(100, 200),
+                    amplitude_range=(0.0, 1e-10),
+                    persistance=0.0,
+                    n_octaves_range=(1, 2),
+                ), # No movement
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_2",
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 3,
+                    period_range=(1, 4),
+                    amplitude_range=(0.5, 2),
+                    persistance=0.3,
+                    n_octaves_range=(1, 5),
+                ), # Baseline movements
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_3",
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 3,
+                    period_range=(3, 6),
+                    amplitude_range=(1, 4),
+                    persistance=0.1,
+                    n_octaves_range=(1, 3),
+                ), # Slower but bigger and smoother movements
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_4",
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 3,
+                    period_range=(4, 8),
+                    amplitude_range=(0.1, 5),
+                    persistance=0.5,
+                    n_octaves_range=(1, 3),
+                ), # Slower, smaller but more rough movements
+            ]
         ),
-        PerlinRotationWaveGestureModuleGenerator(
-            id="perlin_rotation_wave",
-            start_frame=ANIMATION_LENGTH // 2,
-            end_frame=ANIMATION_LENGTH,
-            period_range=(1, 3),
-            amplitude_range=(1, 2),
-            persistance=0.3,
-            n_octaves=2,
+        OneOf(
+            modules=[
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_5",
+                    start_frame=ANIMATION_LENGTH // 3,
+                    end_frame=2 * ANIMATION_LENGTH // 3,
+                    period_range=(100, 200),
+                    amplitude_range=(0.0, 1e-10),
+                    persistance=0.0,
+                    n_octaves_range=(1, 2),
+                ), # No movement
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_6",
+                    start_frame=ANIMATION_LENGTH // 3,
+                    end_frame=2 * ANIMATION_LENGTH // 3,
+                    period_range=(0.5, 2),
+                    amplitude_range=(1, 4),
+                    persistance=0.5,
+                    n_octaves_range=(1, 5),
+                ), # Bigger, faster and rougher movements
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_7",
+                    start_frame=ANIMATION_LENGTH // 3,
+                    end_frame=2 * ANIMATION_LENGTH // 3,
+                    period_range=(1, 4),
+                    amplitude_range=(4, 6),
+                    persistance=0.1,
+                    n_octaves_range=(1, 3),
+                ), # Bigger, slower and smoother movements
+            ]
         ),
+        OneOf(
+            modules=[
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_8",
+                    start_frame=ANIMATION_LENGTH // 3,
+                    end_frame=2 * ANIMATION_LENGTH // 3,
+                    period_range=(100, 200),
+                    amplitude_range=(0.0, 1e-10),
+                    persistance=0.0,
+                    n_octaves_range=(1, 2),
+                ), # No movement
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_9",
+                    start_frame=2 * ANIMATION_LENGTH // 3,
+                    end_frame=ANIMATION_LENGTH,
+                    period_range=(1, 4),
+                    amplitude_range=(0.5, 6),
+                    persistance=0.3,
+                    n_octaves_range=(1, 5),
+                ), # More diverse amplitude
+                PerlinRotationSineGestureModuleGenerator(
+                    id="perlin_rotation_sine_10",
+                    start_frame=2 * ANIMATION_LENGTH // 3,
+                    end_frame=ANIMATION_LENGTH,
+                    period_range=(0.5, 8),
+                    amplitude_range=(0.5, 2),
+                    persistance=0.2,
+                    n_octaves_range=(1, 5),
+                ), # More diverse period
+            ]
+        ),
+        OneOf(
+            modules=[
+                PerlinRotationWaveGestureModuleGenerator(
+                    id="perlin_rotation_wave_1",
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 2,
+                    period_range=(100, 200),
+                    amplitude_range=(0.0, 1e-10),
+                    persistance=0.0,
+                    n_octaves_range=(1, 2),
+                ), # No movements
+                PerlinRotationWaveGestureModuleGenerator(
+                    id="perlin_rotation_wave_2",
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 2,
+                    period_range=(1, 3),
+                    amplitude_range=(1, 2),
+                    persistance=0.1,
+                    n_octaves_range=(1, 3),
+                ), # Baseline movements
+            ]
+        ),
+        OneOf(
+            modules=[
+                PerlinRotationWaveGestureModuleGenerator(
+                    id="perlin_rotation_wave_3",
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 2,
+                    period_range=(100, 200),
+                    amplitude_range=(0.0, 1e-10),
+                    persistance=0.0,
+                    n_octaves_range=(1, 2),
+                ), # No movements
+                PerlinRotationWaveGestureModuleGenerator(
+                    id="perlin_rotation_wave_4",
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 2,
+                    period_range=(1, 3),
+                    amplitude_range=(4, 6),
+                    persistance=0.1,
+                    n_octaves_range=(1, 3),
+                ), # Bigger movements
+                PerlinRotationWaveGestureModuleGenerator(
+                    id="perlin_rotation_wave_5",
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 2,
+                    period_range=(0.5, 1),
+                    amplitude_range=(4, 6),
+                    persistance=0.1,
+                    n_octaves_range=(1, 3),
+                ), # Faster movements
+            ]
+        )
     ]
 
     return room_module, camera_module, modules
@@ -490,7 +636,7 @@ def get_background(blender_objects: dict) -> BlenderCollection:
     return background_collection
 
 
-def main(args) -> None:
+def main() -> None:
     """
     Run a Blender scene for synthetic data generation.
     """
@@ -506,7 +652,7 @@ def main(args) -> None:
     )
 
     # Generate input data
-    print("Generating input data...")
+    print("⏳ Generating input data...")
     room_module, camera_module, modules = get_module_generators()
     input_data_generator = InputDataGenerator(
         room_module=room_module, camera_module=camera_module, modules=modules
@@ -516,7 +662,7 @@ def main(args) -> None:
     input_data = input_file_parser.parse(armature)
 
     # Add gesture sequence
-    print("Applying gestures...")
+    print("⏳ Applying gestures...")
     gestures = input_data["gestures"]
     gesture_sequence = GestureSequence(
         gestures=gestures,
@@ -528,13 +674,13 @@ def main(args) -> None:
     gesture_sequence.apply()
 
     # Add background objects
-    print("Adding background...")
+    print("⏳ Adding background...")
     blender_objects = input_data["blender_objects"]
     background = get_background(blender_objects)
     background.apply()
 
     # Add background image
-    print("Adding background image...")
+    print("⏳ Adding background image...")
     random_background_image_generator = RandomBackgroundImageGenerator(
         width=RENDER_RESOLUTION[0],
         height=RENDER_RESOLUTION[1],
@@ -553,21 +699,20 @@ def main(args) -> None:
     random_background_image_generator.apply_to_scene()
 
     # Set output resolution
-    print(f"Resolution set to {RENDER_RESOLUTION[0]}x{RENDER_RESOLUTION[1]}.")
+    print(f"➡️  Resolution set to {RENDER_RESOLUTION[0]}×{RENDER_RESOLUTION[1]}.")
     bpy.context.scene.render.resolution_x = RENDER_RESOLUTION[0]
     bpy.context.scene.render.resolution_y = RENDER_RESOLUTION[1]
 
     # Render the animation if specified
     if args.render:
-        print("Rendering...")
+        print("⏳ Rendering...")
         render(armature_suffix, random_background_image_generator)
 
-    print("Done!")
+    print("✅ Done!")
 
     # Close Blender
-
     if args.quit:
-        print("Quitting Blender.")
+        print("⏹️ Quitting Blender.")
         bpy.ops.wm.quit_blender()
 
 

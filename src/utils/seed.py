@@ -3,7 +3,7 @@
 import random
 import numpy as np
 
-from src.utils import SEED
+from config.config import SEED
 
 def set_seed() -> None:
     """
