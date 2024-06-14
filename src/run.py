@@ -266,9 +266,9 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
     camera_module = RandomCameraModuleGenerator(
         name=CAMERA_NAME,
         id=CAMERA_ID,
-        xy_distance_range=(1, 4),
+        xy_distance_range=(2, 4),
         z_distance_range=(0, 1),
-        fixation_point_range=1,
+        fixation_point_range=0.5,
         type=CAMERA_TYPE,
         focal_length=CAMERA_FOCAL_LENGTH,
         fov=math.radians(CAMERA_FOV_DEGREES),
