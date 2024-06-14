@@ -21,9 +21,9 @@ CAMERA_ID = "camera"
 ARMATURE_NAME = "Armature"
 BACKGROUND_COLLECTION_NAME = "Background"
 
-CAMERA_TYPE = "PERSP" # Either PERSP or PANO
+CAMERA_TYPE = "PANO" # Either PERSP or PANO
 CAMERA_FOCAL_LENGTH = 25 # Camera focal length parameter
-CAMERA_FOV_DEGREES = 110 # Camera field of view parameter, not used for PERSP
+CAMERA_FOV_DEGREES = 120 # Camera field of view parameter, not used for PERSP
 
 FRAME_RATE = 24 # Frame rate of the generated animations
 RESOLUTION_DIGITS = 2 # Grid space resolution in the Blender scene, as an exponent of 10

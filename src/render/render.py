@@ -75,7 +75,7 @@ def get_black_material(material_name: str = "BlackMaterial") -> bpy.types.Materi
 def hide_background(
     frame_index: int,
     armature_suffix: str,
-) -> Dict[bpy.types.Object, bool]:
+) -> Tuple[Dict[bpy.types.Object, bool], float]:
     """
     Hide the background in the scene.
 
@@ -86,9 +86,11 @@ def hide_background(
     Raises:
         ValueError: If the armature arm is not found.
         ValueError: If the inner stylus is not found.
+        ValueError: If the glare node is not found.
 
     Returns:
         Dict[bpy.types.Object, bool]: The old hide render states of the background objects.
+        float: The old glare value.
     """
     # Hide background objects and store old states
     background_objects = bpy.data.collections[BACKGROUND_COLLECTION_NAME].objects
@@ -118,7 +120,17 @@ def hide_background(
     )
     black_background_image_generator.apply_to_scene()
 
-    return old_hide_render_states
+    # Remove fog effect
+    tree = bpy.context.scene.node_tree
+    glare_node = tree.nodes.get("Glare")
+    if glare_node is None:
+        raise ValueError("❌ Glare node not found.")
+    print(glare_node.inputs.keys())
+    old_glare_value = glare_node.mix
+    glare_node.mix = -1
+
+
+    return old_hide_render_states, old_glare_value
 
 
 def show_background(
@@ -126,6 +138,7 @@ def show_background(
     armature_suffix: str,
     random_background_image_generator: RandomBackgroundImageGenerator,
     old_hide_render_states: Dict[bpy.types.Object, bool],
+    old_glare_value: float,
 ) -> None:
     """
     Show the background in the scene.
@@ -139,6 +152,7 @@ def show_background(
     Raises:
         ValueError: If the armature arm is not found.
         ValueError: If the inner stylus is not found.
+        ValueError: If the glare node is not found.
     """
     # Add back the random background image
     random_background_image_generator.apply_to_scene()
@@ -160,6 +174,13 @@ def show_background(
         raise ValueError("❌ Inner stylus not found.")
     inner_stylus.data.materials.clear()
 
+    # Add back fog effect
+    tree = bpy.context.scene.node_tree
+    glare_node = tree.nodes.get("Glare")
+    if glare_node is None:
+        raise ValueError("❌ Glare node not found.")
+    glare_node.mix = old_glare_value
+
 
 def render_no_bg_frame(
     render_folder_path: str,
@@ -176,7 +197,7 @@ def render_no_bg_frame(
         armature_suffix (str): The suffix of the armature.
         random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
     """
-    old_hide_render_states = hide_background(
+    old_hide_render_states, old_glare_value = hide_background(
         frame_index,
         armature_suffix,
     )
@@ -192,6 +213,7 @@ def render_no_bg_frame(
         armature_suffix,
         random_background_image_generator,
         old_hide_render_states,
+        old_glare_value
     )
 
 
