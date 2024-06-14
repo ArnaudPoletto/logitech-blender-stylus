@@ -42,7 +42,7 @@ def run_instance() -> None:
     """
     Run a single Blender instance.
     """
-    os.system("blender ../data/base_multi_new.blend --python run.py -- -r True -q True")
+    os.system("blender ../data/base_multi_new.blend --python run.py -- -r -q")
 
 
 def main() -> None:

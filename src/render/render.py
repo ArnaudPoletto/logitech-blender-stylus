@@ -125,7 +125,6 @@ def hide_background(
     glare_node = tree.nodes.get("Glare")
     if glare_node is None:
         raise ValueError("❌ Glare node not found.")
-    print(glare_node.inputs.keys())
     old_glare_value = glare_node.mix
     glare_node.mix = -1
 

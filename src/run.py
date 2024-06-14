@@ -451,8 +451,8 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
             modules=[
                 PerlinRotationSineGestureModuleGenerator(
                     id="perlin_rotation_sine_1",
-                    start_frame=ANIMATION_LENGTH // 3,
-                    end_frame=2 * ANIMATION_LENGTH // 3,
+                    start_frame=1,
+                    end_frame=ANIMATION_LENGTH // 3,
                     period_range=(100, 200),
                     amplitude_range=(0.0, 1e-10),
                     persistance=0.0,
@@ -522,8 +522,8 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
             modules=[
                 PerlinRotationSineGestureModuleGenerator(
                     id="perlin_rotation_sine_8",
-                    start_frame=ANIMATION_LENGTH // 3,
-                    end_frame=2 * ANIMATION_LENGTH // 3,
+                    start_frame=2 * ANIMATION_LENGTH // 3,
+                    end_frame=ANIMATION_LENGTH,
                     period_range=(100, 200),
                     amplitude_range=(0.0, 1e-10),
                     persistance=0.0,
@@ -575,8 +575,8 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
             modules=[
                 PerlinRotationWaveGestureModuleGenerator(
                     id="perlin_rotation_wave_3",
-                    start_frame=1,
-                    end_frame=ANIMATION_LENGTH // 2,
+                    start_frame=ANIMATION_LENGTH // 2,
+                    end_frame=ANIMATION_LENGTH,
                     period_range=(100, 200),
                     amplitude_range=(0.0, 1e-10),
                     persistance=0.0,
@@ -584,8 +584,8 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
                 ), # No movements
                 PerlinRotationWaveGestureModuleGenerator(
                     id="perlin_rotation_wave_4",
-                    start_frame=1,
-                    end_frame=ANIMATION_LENGTH // 2,
+                    start_frame=ANIMATION_LENGTH // 2,
+                    end_frame=ANIMATION_LENGTH,
                     period_range=(1, 3),
                     amplitude_range=(4, 6),
                     persistance=0.1,
@@ -593,8 +593,8 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
                 ), # Bigger movements
                 PerlinRotationWaveGestureModuleGenerator(
                     id="perlin_rotation_wave_5",
-                    start_frame=1,
-                    end_frame=ANIMATION_LENGTH // 2,
+                    start_frame=ANIMATION_LENGTH // 2,
+                    end_frame=ANIMATION_LENGTH,
                     period_range=(0.5, 1),
                     amplitude_range=(4, 6),
                     persistance=0.1,
