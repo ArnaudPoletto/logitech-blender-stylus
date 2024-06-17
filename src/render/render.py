@@ -372,7 +372,7 @@ def get_projected_coordinates_panoramic(led_center: Vector, camera: bpy.types.Ca
     led_center.normalize()
 
     phi = math.atan2(led_center.y, led_center.x)
-    l = (led_center.x**2 + led_center.y**2) ** 0.5
+    l = min((led_center.x**2 + led_center.y**2) ** 0.5, 1.0)
     theta = math.asin(l)
 
     # Equisolid projection
