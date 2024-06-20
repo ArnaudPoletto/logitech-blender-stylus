@@ -287,21 +287,16 @@ def is_led_occluded(
     return result[0]
 
 
-def is_led_in_frame(led: bpy.types.Object, camera_object: bpy.types.Object) -> bool:
+def is_led_in_frame(led_projected_coordinates: Vector) -> bool:
     """
     Check if a LED is in the camera frame.
 
     Args:
-        led (bpy.types.Object): The LED object.
-        camera_object (bpy.types.Object): The camera object.
-
+        led_projected_coordinates (Vector): The projected coordinates of the LED.
+        
     Returns:
         bool: Whether the LED is in the camera frame.
     """
-    led_center = get_object_center(led)
-    led_projected_coordinates = world_to_camera_view(
-        bpy.context.scene, camera_object, led_center
-    )
 
     return (
         0 <= led_projected_coordinates.x <= 1 and 0 <= led_projected_coordinates.y <= 1
@@ -434,7 +429,7 @@ def get_frame_data(
         
         # Get location information
         is_occluded = is_led_occluded(led, camera_object, leds, armature_arm)
-        is_in_frame = is_led_in_frame(led, camera_object)
+        is_in_frame = is_led_in_frame(led_projected_coordinates)
         distance_from_camera = (camera_object.location - led_center).length
 
         # Get orientation information
