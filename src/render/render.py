@@ -23,6 +23,7 @@ from config.config import (
     CAMERA_TYPE,
     BACKGROUND_COLLECTION_NAME,
     RENDER_RESOLUTION,
+    BOUNDING_BOX_PADDING,
 )
 
 
@@ -220,7 +221,7 @@ def render_no_bg_frame(
     )
 
 
-def render_tags_frame(
+def get_frame_tags(
     render_folder_path: str,
     frame_index: int,
     armature_suffix: str,
@@ -230,6 +231,22 @@ def render_tags_frame(
     armature_arm: bpy.types.Object,
     random_background_image_generator: RandomBackgroundImageGenerator,
 ) -> None:
+    """
+    Get the tags of a frame, i.e. each individual LED rendered separately.
+
+    Args:
+        render_folder_path (str): The folder path to render the frame to.
+        frame_index (int): The frame index to render.
+        armature_suffix (str): The suffix of the armature.
+        leds (List[bpy.types.Object]): The LED objects.
+        camera (bpy.types.Camera): The camera.
+        camera_object (bpy.types.Object): The camera object.
+        armature_arm (bpy.types.Object): The armature arm object.
+        random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
+
+    Raises:
+        ValueError: If the camera type is not supported.
+    """
     # Create tags folder
     tags_folder = os.path.join(render_folder_path, "tags")
     os.makedirs(tags_folder, exist_ok=True)
@@ -307,6 +324,9 @@ def render_tags_frame(
     np.save(tags_file_path, tags)
 
     # Delete temporary tags subfolder
+    for tags_file in tags_files:
+        tags_file_path = os.path.join(tags_id_folder, tags_file)
+        os.remove(tags_file_path)
     os.rmdir(tags_id_folder)
 
 
@@ -476,6 +496,69 @@ def get_projected_coordinates_panoramic(
     return Vector((u, v))
 
 
+def get_bounding_box(
+    leds: List[bpy.types.Object],
+    camera_object: bpy.types.Object,
+    camera: bpy.types.Camera,
+    armature_arm: bpy.types.Object,
+    padding: int,
+) -> Tuple[Vector, int, int]:
+    """
+    Get the bounding box of the LEDs in the camera view.
+
+    Args:
+        leds (List[bpy.types.Object]): The LED objects.
+        camera_object (bpy.types.Object): The camera object.
+        camera (bpy.types.Camera): The camera.
+        padding (int): The padding of the bounding box, in camera view coordinates.
+
+    Raises:
+        ValueError: If the camera type is not supported.
+
+    Returns:
+        Vector: The center of the bounding box.
+        int: The width of the bounding box.
+        int: The height of the bounding box.
+    """
+    projected_coordinates = []
+    for led in leds:
+        # Check if LED is visible
+        led_center = get_object_center(led)
+        if CAMERA_TYPE == "PERSP":
+            led_projected_coordinates = get_projected_coordinates_perspective(
+                led_center, camera_object
+            )
+        elif CAMERA_TYPE == "PANO":
+            led_projected_coordinates = get_projected_coordinates_panoramic(
+                led_center, camera, camera_object
+            )
+        else:
+            raise ValueError(f"❌ Camera type {CAMERA_TYPE} not supported.")
+
+        is_occluded = is_led_occluded(led, camera_object, leds, armature_arm)
+        is_in_frame = is_led_in_frame(led_projected_coordinates)
+
+        if is_occluded or not is_in_frame:
+            continue
+
+        projected_coordinates.append(led_projected_coordinates)
+
+    if len(projected_coordinates) == 0:
+        return None, None, None
+
+    # Get bounding box
+    u_min = max(min([p.x for p in projected_coordinates]) - padding, 0)
+    u_max = min(max([p.x for p in projected_coordinates]) + padding, 1)
+    v_min = max(min([p.y for p in projected_coordinates]) - padding, 0)
+    v_max = min(max([p.y for p in projected_coordinates]) + padding, 1)
+
+    center = Vector(((u_min + u_max) / 2, (v_min + v_max) / 2))
+    width = u_max - u_min
+    height = v_max - v_min
+
+    return center, width, height
+
+
 def get_frame_data(
     camera_object: bpy.types.Object,
     camera: bpy.types.Camera,
@@ -506,10 +589,30 @@ def get_frame_data(
 
     # Get frame data
     frame_data = {}
+
+    # Get stylus orientation information
     stylus_relative_orientation = get_object_relative_orientation(
         stylus, Vector((1, 0, 0)), camera_object
     )
     frame_data["stylus_relative_orientation"] = stylus_relative_orientation
+
+    # Get bouding box information
+    bb_center, bb_width, bb_height = get_bounding_box(
+        leds, camera_object, camera, armature_arm, BOUNDING_BOX_PADDING
+    )
+    if bb_center is None or bb_width is None or bb_height is None:
+        frame_data["bounding_box"] = None
+    else:
+        frame_data["bounding_box"] = {
+            "center": {
+                "u": bb_center.x,
+                "v": bb_center.y,
+            },
+            "width": bb_width,
+            "height": bb_height,
+        }
+
+    # Get LED information
     frame_data["leds"] = {}
     for led in leds:
         # Get camera and world coordinates
@@ -599,7 +702,7 @@ def render_and_get_frame_data(
         random_background_image_generator,
     )
 
-    render_tags_frame(
+    get_frame_tags(
         render_folder_path,
         frame_index,
         armature_suffix,
