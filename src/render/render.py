@@ -1,9 +1,11 @@
 # This file contains functions to render the animation and collect frame data.
 
 import os
+import numpy as np
 import bpy
 import math
 import json
+from PIL import Image
 from tqdm import tqdm
 from mathutils import Vector
 from typing import Tuple, List, Dict, Any
@@ -75,6 +77,7 @@ def get_black_material(material_name: str = "BlackMaterial") -> bpy.types.Materi
 def hide_background(
     frame_index: int,
     armature_suffix: str,
+    armature_arm: bpy.types.Object,
 ) -> Tuple[Dict[bpy.types.Object, bool], float]:
     """
     Hide the background in the scene.
@@ -82,6 +85,7 @@ def hide_background(
     Args:
         frame_index (int): The frame index.
         armature_suffix (str): The suffix of the armature.
+        armature_arm (bpy.types.Object): The armature arm object.
 
     Raises:
         ValueError: If the armature arm is not found.
@@ -100,9 +104,6 @@ def hide_background(
         background_object.keyframe_insert(data_path="hide_render", frame=frame_index)
 
     # Set black arm model
-    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
-    if armature_arm is None:
-        raise ValueError("❌ Armature arm not found.")
     black_material = get_black_material()
     armature_arm.data.materials.clear()
     armature_arm.data.materials.append(black_material)
@@ -128,7 +129,6 @@ def hide_background(
     old_glare_value = glare_node.mix
     glare_node.mix = -1
 
-
     return old_hide_render_states, old_glare_value
 
 
@@ -147,6 +147,7 @@ def show_background(
         armature_suffix (str): The suffix of the armature.
         random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
         old_hide_render_states (Dict[bpy.types.Object, bool]): The old hide render states of the background objects.
+        old_glare_value (float): The old glare value.
 
     Raises:
         ValueError: If the armature arm is not found.
@@ -185,6 +186,7 @@ def render_no_bg_frame(
     render_folder_path: str,
     frame_index: int,
     armature_suffix: str,
+    armature_arm: bpy.types.Object,
     random_background_image_generator: RandomBackgroundImageGenerator,
 ) -> None:
     """
@@ -194,11 +196,13 @@ def render_no_bg_frame(
         render_folder_path (str): The folder path to render the frame to.
         frame_index (int): The frame index to render.
         armature_suffix (str): The suffix of the armature.
+        armature_arm (bpy.types.Object): The armature arm object.
         random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
     """
     old_hide_render_states, old_glare_value = hide_background(
         frame_index,
         armature_suffix,
+        armature_arm,
     )
 
     # Render the frame
@@ -212,8 +216,98 @@ def render_no_bg_frame(
         armature_suffix,
         random_background_image_generator,
         old_hide_render_states,
-        old_glare_value
+        old_glare_value,
     )
+
+
+def render_tags_frame(
+    render_folder_path: str,
+    frame_index: int,
+    armature_suffix: str,
+    leds: List[bpy.types.Object],
+    camera: bpy.types.Camera,
+    camera_object: bpy.types.Object,
+    armature_arm: bpy.types.Object,
+    random_background_image_generator: RandomBackgroundImageGenerator,
+) -> None:
+    # Create tags folder
+    tags_folder = os.path.join(render_folder_path, "tags")
+    os.makedirs(tags_folder, exist_ok=True)
+
+    # Create temporary tags subfolder
+    tags_id_folder = os.path.join(tags_folder, str(frame_index))
+    os.makedirs(tags_id_folder, exist_ok=True)
+
+    # Hide background objects
+    old_hide_render_states, old_glare_value = hide_background(
+        frame_index,
+        armature_suffix,
+        armature_arm,
+    )
+
+    n_leds = 0
+    for i, led in enumerate(leds):
+        # Check if LED is visible
+        led_center = get_object_center(led)
+        if CAMERA_TYPE == "PERSP":
+            led_projected_coordinates = get_projected_coordinates_perspective(
+                led_center, camera_object
+            )
+        elif CAMERA_TYPE == "PANO":
+            led_projected_coordinates = get_projected_coordinates_panoramic(
+                led_center, camera, camera_object
+            )
+        else:
+            raise ValueError(f"❌ Camera type {CAMERA_TYPE} not supported.")
+
+        is_occluded = is_led_occluded(led, camera_object, leds, armature_arm)
+        is_in_frame = is_led_in_frame(led_projected_coordinates)
+
+        if is_occluded or not is_in_frame:
+            continue
+
+        # Hide all LEDs except the current one
+        for l in leds:
+            l.hide_render = l != led
+
+        # Render the frame
+        bpy.data.scenes["Scene"].render.filepath = os.path.join(
+            tags_id_folder, f"{i}.png"
+        )
+        bpy.ops.render.render(animation=False, write_still=True)
+
+        # Show LED again
+        for l in leds:
+            l.hide_render = False
+
+        n_leds += 1
+
+    # Show background objects again
+    show_background(
+        frame_index,
+        armature_suffix,
+        random_background_image_generator,
+        old_hide_render_states,
+        old_glare_value,
+    )
+
+    # Read all images and merge them into a single tags tensor
+    tags = np.zeros(
+        (RENDER_RESOLUTION[1], RENDER_RESOLUTION[0], n_leds), dtype=np.uint8
+    )
+    tags_files = os.listdir(tags_id_folder)
+    for i, tags_file in enumerate(tags_files):
+        tags_file_path = os.path.join(tags_id_folder, tags_file)
+        image = Image.open(tags_file_path)
+        image = np.array(image.convert("L"))
+        tags[:, :, i] = image
+
+    # Write tags tensor to disk
+    tags_file_path = os.path.join(tags_folder, f"{frame_index}.npy")
+    np.save(tags_file_path, tags)
+
+    # Delete temporary tags subfolder
+    os.rmdir(tags_id_folder)
 
 
 def get_object_center(object: bpy.types.Object) -> Vector:
@@ -293,7 +387,7 @@ def is_led_in_frame(led_projected_coordinates: Vector) -> bool:
 
     Args:
         led_projected_coordinates (Vector): The projected coordinates of the LED.
-        
+
     Returns:
         bool: Whether the LED is in the camera frame.
     """
@@ -325,7 +419,9 @@ def get_object_relative_orientation(
     return relative_orientation
 
 
-def get_projected_coordinates_perspective(led_center: Vector, camera_object: bpy.types.Object) -> Vector:
+def get_projected_coordinates_perspective(
+    led_center: Vector, camera_object: bpy.types.Object
+) -> Vector:
     """
     Get the projected coordinates of a point in the camera view for a perspective camera.
 
@@ -340,7 +436,9 @@ def get_projected_coordinates_perspective(led_center: Vector, camera_object: bpy
     return world_to_camera_view(scene, camera_object, led_center)
 
 
-def get_projected_coordinates_panoramic(led_center: Vector, camera: bpy.types.Camera, camera_object: bpy.types.Object) -> Vector:
+def get_projected_coordinates_panoramic(
+    led_center: Vector, camera: bpy.types.Camera, camera_object: bpy.types.Object
+) -> Vector:
     """
     Get the projected coordinates of a point in the camera view for a panoramic camera.
     From: https://blender.stackexchange.com/questions/40702/how-can-i-get-the-projection-matrix-of-a-panoramic-camera-with-a-fisheye-equisol.
@@ -425,8 +523,8 @@ def get_frame_data(
                 led_center, camera, camera_object
             )
         else:
-            raise ValueError(f"Camera type {CAMERA_TYPE} not supported.")
-        
+            raise ValueError(f"❌ Camera type {CAMERA_TYPE} not supported.")
+
         # Get location information
         is_occluded = is_led_occluded(led, camera_object, leds, armature_arm)
         is_in_frame = is_led_in_frame(led_projected_coordinates)
@@ -464,6 +562,7 @@ def render_and_get_frame_data(
     stylus: bpy.types.Object,
     leds: List[bpy.types.Object],
     armature_suffix: str,
+    armature_arm: bpy.types.Object,
     random_background_image_generator: RandomBackgroundImageGenerator,
 ) -> dict:
     """
@@ -477,6 +576,7 @@ def render_and_get_frame_data(
         stylus (bpy.types.Object): The stylus object.
         leds (List[bpy.types.Object]): The LED objects.
         armature_suffix (str): The suffix of the armature.
+        armature_arm (bpy.types.Object): The armature arm object.
         random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
 
     Returns:
@@ -495,6 +595,18 @@ def render_and_get_frame_data(
         render_folder_path,
         frame_index,
         armature_suffix,
+        armature_arm,
+        random_background_image_generator,
+    )
+
+    render_tags_frame(
+        render_folder_path,
+        frame_index,
+        armature_suffix,
+        leds,
+        camera,
+        camera_object,
+        armature_arm,
         random_background_image_generator,
     )
 
@@ -512,7 +624,11 @@ def render_and_get_frame_data(
 def get_main_objects(
     armature_suffix: str,
 ) -> Tuple[
-    bpy.types.Object, bpy.types.Camera, bpy.types.Object, List[bpy.types.Object]
+    bpy.types.Object,
+    bpy.types.Camera,
+    bpy.types.Object,
+    List[bpy.types.Object],
+    bpy.types.Object,
 ]:
     """
     Get the main objects of the scene.
@@ -531,6 +647,7 @@ def get_main_objects(
         bpy.types.Camera: The camera.
         bpy.types.Object: The stylus object.
         List[bpy.types.Object]: The LED objects.
+        bpy.types.Object: The armature arm object.
     """
     camera_object = bpy.data.objects.get(CAMERA_NAME)
     if camera_object is None:
@@ -545,11 +662,16 @@ def get_main_objects(
         raise ValueError("❌ Stylus not found.")
 
     leds = [obj for obj in bpy.data.objects if "LED" in obj.name]
+    leds.sort(key=lambda x: x.name)
     if len(leds) == 0:
         raise ValueError("❌ No LED found.")
     print(f"➡️  Found {len(leds)} LEDs.")
 
-    return camera_object, camera, stylus, leds
+    armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
+    if armature_arm is None:
+        raise ValueError("❌ Armature arm not found.")
+
+    return camera_object, camera, stylus, leds, armature_arm
 
 
 def get_render_subfolder() -> str:
@@ -582,7 +704,9 @@ def render(
         ValueError: If the stylus is not found.
     """
     # Get objects
-    camera_object, camera, stylus, leds = get_main_objects(armature_suffix)
+    camera_object, camera, stylus, leds, armature_arm = get_main_objects(
+        armature_suffix
+    )
 
     # Get render folder path
     render_folder_path = get_render_subfolder()
@@ -600,6 +724,7 @@ def render(
             stylus,
             leds,
             armature_suffix,
+            armature_arm,
             random_background_image_generator,
         )
 
