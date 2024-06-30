@@ -38,8 +38,14 @@ def render_bg_frame(
         render_folder_path (str): The folder path to render the frame to.
         frame_index (int): The frame index to render.
     """
-    bpy.data.scenes["Scene"].render.filepath = os.path.join(
-        render_folder_path, "bg", f"{frame_index}.png"
+    image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
+    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
+    image_output_node.base_path = os.path.join(
+        render_folder_path, "bg"
+    )
+    segmentation_output_node.mute = False
+    segmentation_output_node.base_path = os.path.join(
+        render_folder_path, "segmentation"
     )
     bpy.ops.render.render(animation=False, write_still=True)
 
@@ -207,9 +213,12 @@ def render_no_bg_frame(
     )
 
     # Render the frame
-    bpy.data.scenes["Scene"].render.filepath = os.path.join(
-        render_folder_path, "no-bg", f"{frame_index}.png"
+    image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
+    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
+    image_output_node.base_path = os.path.join(
+        render_folder_path, "no-bg"
     )
+    segmentation_output_node.mute = True # Do not render segmentation here
     bpy.ops.render.render(animation=False, write_still=True)
 
     show_background(
@@ -288,10 +297,23 @@ def get_frame_tags(
             l.hide_render = l != led
 
         # Render the frame
-        bpy.data.scenes["Scene"].render.filepath = os.path.join(
-            tags_id_folder, f"{i}.png"
+        image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
+        segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
+        image_output_node.base_path = os.path.join(
+            render_folder_path, "tags", f"{frame_index}"
         )
+        segmentation_output_node.mute = True # Do not render segmentation here
         bpy.ops.render.render(animation=False, write_still=True)
+
+        # Rename the file
+        old_file_path = os.path.join(
+            render_folder_path, "tags", f"{frame_index}", f"{frame_index:04}.png"
+        )
+        new_file_path = os.path.join(
+            render_folder_path, "tags", f"{frame_index}", f"{frame_index:04}_{i}.png"
+        )
+        os.rename(old_file_path, new_file_path)
+
 
         # Show LED again
         for l in leds:
@@ -320,7 +342,7 @@ def get_frame_tags(
         tags[:, :, i] = image
 
     # Write tags tensor to disk
-    tags_file_path = os.path.join(tags_folder, f"{frame_index}.npy")
+    tags_file_path = os.path.join(tags_folder, f"{frame_index:04}.npy")
     np.save(tags_file_path, tags)
 
     # Delete temporary tags subfolder
