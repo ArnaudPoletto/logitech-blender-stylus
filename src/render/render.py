@@ -39,15 +39,14 @@ def render_bg_frame(
         frame_index (int): The frame index to render.
     """
     image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
-    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
     image_output_node.base_path = os.path.join(
         render_folder_path, "bg"
     )
-    segmentation_output_node.mute = False
+    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
     segmentation_output_node.base_path = os.path.join(
         render_folder_path, "segmentation"
     )
-    bpy.ops.render.render(animation=False, write_still=True)
+    bpy.ops.render.render(animation=False, write_still=False)
 
 
 def get_black_material(material_name: str = "BlackMaterial") -> bpy.types.Material:
@@ -214,12 +213,14 @@ def render_no_bg_frame(
 
     # Render the frame
     image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
-    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
     image_output_node.base_path = os.path.join(
         render_folder_path, "no-bg"
     )
-    segmentation_output_node.mute = True # Do not render segmentation here
-    bpy.ops.render.render(animation=False, write_still=True)
+    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
+    segmentation_output_node.base_path = os.path.join(
+        render_folder_path, "segmentation"
+    )
+    bpy.ops.render.render(animation=False, write_still=False)
 
     show_background(
         frame_index,
@@ -298,12 +299,14 @@ def get_frame_tags(
 
         # Render the frame
         image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
-        segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
         image_output_node.base_path = os.path.join(
             render_folder_path, "tags", f"{frame_index}"
         )
-        segmentation_output_node.mute = True # Do not render segmentation here
-        bpy.ops.render.render(animation=False, write_still=True)
+        segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
+        segmentation_output_node.base_path = os.path.join(
+            render_folder_path, "segmentation"
+        )
+        bpy.ops.render.render(animation=False, write_still=False)
 
         # Rename the file
         old_file_path = os.path.join(
