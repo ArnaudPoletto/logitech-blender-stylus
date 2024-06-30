@@ -217,10 +217,9 @@ def render_no_bg_frame(
         render_folder_path, "no-bg"
     )
     segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
-    segmentation_output_node.base_path = os.path.join(
-        render_folder_path, "segmentation"
-    )
+    segmentation_output_node.mute = True
     bpy.ops.render.render(animation=False, write_still=False)
+    segmentation_output_node.mute = False
 
     show_background(
         frame_index,
@@ -303,10 +302,9 @@ def get_frame_tags(
             render_folder_path, "tags", f"{frame_index}"
         )
         segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
-        segmentation_output_node.base_path = os.path.join(
-            render_folder_path, "segmentation"
-        )
+        segmentation_output_node.mute = True
         bpy.ops.render.render(animation=False, write_still=False)
+        segmentation_output_node.mute = False
 
         # Rename the file
         old_file_path = os.path.join(
