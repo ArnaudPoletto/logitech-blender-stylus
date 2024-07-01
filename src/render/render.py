@@ -24,6 +24,7 @@ from config.config import (
     BACKGROUND_COLLECTION_NAME,
     RENDER_RESOLUTION,
     BOUNDING_BOX_PADDING,
+    SEED,
 )
 
 
@@ -611,7 +612,7 @@ def get_frame_data(
         raise ValueError("❌ Armature arm not found.")
 
     # Get frame data
-    frame_data = {}
+    frame_data = {"seed": SEED}
 
     # Get stylus orientation information
     stylus_relative_orientation = get_object_relative_orientation(
