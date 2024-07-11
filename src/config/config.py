@@ -9,7 +9,7 @@ INPUTS_FOLDER = os.path.join(DATA_PATH, "inputs")
 RENDER_FOLDER_PATH = os.path.join(DATA_PATH, "renders")
 
 # The generation seed. If None, a random seed will be used
-SEED = None
+SEED = 124
 if SEED is None:
     SEED = int(np.random.randint(0, 2**32 - 1, dtype=np.uint32))
     print(f"✅ Running with random seed: {SEED}.")
