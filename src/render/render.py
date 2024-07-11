@@ -24,20 +24,19 @@ from config.config import (
     BACKGROUND_COLLECTION_NAME,
     RENDER_RESOLUTION,
     BOUNDING_BOX_PADDING,
+    TAGS_THRESHOLD,
     SEED,
 )
 
 
 def render_bg_frame(
     render_folder_path: str,
-    frame_index: int,
 ) -> None:
     """
     Render a frame with a random background image.
 
     Args:
         render_folder_path (str): The folder path to render the frame to.
-        frame_index (int): The frame index to render.
     """
     image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
     image_output_node.base_path = os.path.join(
@@ -272,7 +271,6 @@ def get_frame_tags(
         armature_arm,
     )
 
-    n_leds = 0
     for i, led in enumerate(leds):
         # Check if LED is visible
         led_center = get_object_center(led)
@@ -287,7 +285,6 @@ def get_frame_tags(
         else:
             raise ValueError(f"❌ Camera type {CAMERA_TYPE} not supported.")
 
-        is_occluded = is_led_occluded(led, camera_object, leds, armature_arm)
         is_in_frame = is_led_in_frame(led_projected_coordinates)
 
         if not is_in_frame:
@@ -321,8 +318,6 @@ def get_frame_tags(
         for l in leds:
             l.hide_render = False
 
-        n_leds += 1
-
     # Show background objects again
     show_background(
         frame_index,
@@ -333,15 +328,16 @@ def get_frame_tags(
     )
 
     # Read all images and merge them into a single tags tensor
-    tags = np.zeros(
-        (RENDER_RESOLUTION[1], RENDER_RESOLUTION[0], n_leds), dtype=np.uint8
-    )
+    tags = []
     tags_files = os.listdir(tags_id_folder)
     for i, tags_file in enumerate(tags_files):
         tags_file_path = os.path.join(tags_id_folder, tags_file)
         image = Image.open(tags_file_path)
         image = np.array(image.convert("L"))
-        tags[:, :, i] = image
+        image = np.where(image < TAGS_THRESHOLD, 0, 1) # Threshold dark pixels
+        if np.sum(image) > 0: # Do not count entirely occluded LEDs
+            tags.append(i)
+    tags = np.array(tags)
 
     # Write tags tensor to disk
     tags_file_path = os.path.join(tags_folder, f"{frame_index:04}.npy")
@@ -715,7 +711,6 @@ def render_and_get_frame_data(
 
     render_bg_frame(
         render_folder_path,
-        frame_index,
     )
 
     render_no_bg_frame(

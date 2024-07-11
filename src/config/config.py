@@ -32,6 +32,7 @@ HIDE_ARMATURE_PROBABILITY = 0.5 # Probability of hiding the armature during rend
 ANIMATION_LENGTH = 100 # Number of frames per animation
 BACKGROUND_COLOR_SKEW_FACTOR = 1.2 # Factor to skew the background color towards lighter colors (1.0 is no skew)
 BOUNDING_BOX_PADDING = 0.025 # Padding factor for the constellation bounding box of the scene
+TAGS_THRESHOLD = 10
 
 # Priority levels for scene generation
 MIN_PRIORITY = np.iinfo(np.int32).max
