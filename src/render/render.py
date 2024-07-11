@@ -290,7 +290,7 @@ def get_frame_tags(
         is_occluded = is_led_occluded(led, camera_object, leds, armature_arm)
         is_in_frame = is_led_in_frame(led_projected_coordinates)
 
-        if is_occluded or not is_in_frame:
+        if not is_in_frame:
             continue
 
         # Hide all LEDs except the current one
