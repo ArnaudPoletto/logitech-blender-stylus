@@ -26,6 +26,7 @@ from config.config import (
     BOUNDING_BOX_PADDING,
     TAGS_THRESHOLD,
     SEED,
+    CENTER_CAMERA_ON_DEVICE_PROBABILITY,
 )
 
 
@@ -708,6 +709,28 @@ def render_and_get_frame_data(
     # Set camera and frame index for Blender
     bpy.context.scene.camera = camera_object
     bpy.context.scene.frame_set(frame_index)
+
+    # Center camera on device with a given probability
+    if frame_index == 1 and np.random.rand() < CENTER_CAMERA_ON_DEVICE_PROBABILITY:
+        print("➡️  Centering camera on device.")
+        device = bpy.data.objects.get(f"Stylus{armature_suffix}")
+        if device is None:
+            raise ValueError(f"❌ Device not found.")
+        # Get world coordinates of device
+        device_location = device.matrix_world.translation
+        # Add random variation
+        fixation_location = Vector((
+            device_location.x + np.random.uniform(-1, 1),
+            device_location.y + np.random.uniform(-1, 1),
+            device_location.z + np.random.uniform(-1, 1),
+        ))
+
+        camera_location = camera_object.matrix_world.translation
+        fixation_direction = (fixation_location - camera_location).normalized()
+        rotation = fixation_direction.to_track_quat("-Z", "Y").to_euler()
+
+        camera_object.rotation_euler = rotation
+        bpy.context.view_layer.update()
 
     render_bg_frame(
         render_folder_path,

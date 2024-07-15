@@ -71,6 +71,7 @@ class RandomCameraModuleGenerator(ModuleGenerator):
         self,
         wall_scales_per_wall: dict = None,
         existing_objects_per_wall: dict = None,
+        fixation_point: Vector | None = None,
     ) -> Tuple[dict, dict]:
         set_seed()
         
@@ -82,17 +83,22 @@ class RandomCameraModuleGenerator(ModuleGenerator):
         # Convert polar coordinates to cartesian coordinates
         x = xy_distance * math.cos(alpha)
         y = xy_distance * math.sin(alpha)
-        z = z_distance 
+        z = z_distance
+        camera_location = Vector((x, y, z))
         
         # Get fixation point and rotation needed to look at the fixation point
-        fixation_point = Vector((
-            random.uniform(-self.fixation_point_range, self.fixation_point_range),
-            random.uniform(-self.fixation_point_range, self.fixation_point_range),
-            random.uniform(-self.fixation_point_range, self.fixation_point_range),
-        ))
-        fixation_direction = Vector((x, y, z)) - fixation_point
-        fixation_direction.normalize()
-        rotation = fixation_direction.to_track_quat("Z", "Y").to_euler()
+        if fixation_point == None:
+            fixation_point = Vector((
+                random.uniform(-self.fixation_point_range, self.fixation_point_range),
+                random.uniform(-self.fixation_point_range, self.fixation_point_range),
+                random.uniform(-self.fixation_point_range, self.fixation_point_range),
+            ))
+
+        if fixation_point == camera_location:
+            raise ValueError("❌ The camera position and the fixation point must be different.")
+        
+        fixation_direction = (fixation_point - camera_location).normalized()
+        rotation = fixation_direction.to_track_quat("-Z", "Y").to_euler()
         
         # Generate camera data
         camera_data = {

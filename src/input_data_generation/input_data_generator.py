@@ -1,4 +1,5 @@
 from typing import List
+from mathutils import Vector
 from utils.seed import set_seed
 
 from module_operators.module_operator import ModuleOperator

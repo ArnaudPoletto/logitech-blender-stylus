@@ -266,7 +266,7 @@ def get_module_generators() -> Tuple[ModuleGenerator, ModuleGenerator, List[Modu
     camera_module = RandomCameraModuleGenerator(
         name=CAMERA_NAME,
         id=CAMERA_ID,
-        xy_distance_range=(2, 4),
+        xy_distance_range=(4, 6),
         z_distance_range=(0, 1),
         fixation_point_range=0.5,
         type=CAMERA_TYPE,
@@ -654,8 +654,11 @@ def main() -> None:
     # Generate input data
     print("⏳ Generating input data...")
     room_module, camera_module, modules = get_module_generators()
+
     input_data_generator = InputDataGenerator(
-        room_module=room_module, camera_module=camera_module, modules=modules
+        room_module=room_module, 
+        camera_module=camera_module, 
+        modules=modules,
     )
     input_data = input_data_generator.generate_input_data()
     input_file_parser = InputDataParser(input_data)
