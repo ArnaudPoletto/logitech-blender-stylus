@@ -339,7 +339,7 @@ def get_frame_tags(
         image = np.where(image < TAGS_THRESHOLD, 0, 1)  # Threshold dark pixels
         if np.sum(image) > 0:  # Do not count entirely occluded LEDs
             tags.append(image)
-    tags = np.array(tags)
+    tags = np.array(tags, dtype=bool)
 
     # Write tags tensor to disk
     tags_file_path = os.path.join(tags_folder, f"{frame_index:04}.npy")
