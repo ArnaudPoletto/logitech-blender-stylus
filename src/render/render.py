@@ -312,7 +312,7 @@ def get_frame_tags(
             render_folder_path, "tags", f"{frame_index}", f"{frame_index:04}.png"
         )
         new_file_path = os.path.join(
-            render_folder_path, "tags", f"{frame_index}", f"{frame_index:04}_{i}.png"
+            render_folder_path, "tags", f"{frame_index}", f"{frame_index:04}_{i:04}.png"
         )
         os.rename(old_file_path, new_file_path)
 

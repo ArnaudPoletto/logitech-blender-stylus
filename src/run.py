@@ -9,6 +9,7 @@ import os
 import bpy
 import sys
 import math
+import platform
 import numpy as np
 import importlib.util
 from typing import Tuple, List
@@ -717,6 +718,9 @@ def main() -> None:
     if args.quit:
         print("⏹️ Quitting Blender.")
         bpy.ops.wm.quit_blender()
+
+        if platform.system() == 'Linux':
+            os.system('pkill blender') # Force kill Blender on WSL is necessary
 
 
 if __name__ == "__main__":
