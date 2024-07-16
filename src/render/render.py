@@ -40,10 +40,10 @@ def render_bg_frame(
         render_folder_path (str): The folder path to render the frame to.
     """
     image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
-    image_output_node.base_path = os.path.join(
-        render_folder_path, "bg"
-    )
-    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
+    image_output_node.base_path = os.path.join(render_folder_path, "bg")
+    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes[
+        "Segmentation Output"
+    ]
     segmentation_output_node.base_path = os.path.join(
         render_folder_path, "segmentation"
     )
@@ -214,10 +214,10 @@ def render_no_bg_frame(
 
     # Render the frame
     image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
-    image_output_node.base_path = os.path.join(
-        render_folder_path, "no-bg"
-    )
-    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
+    image_output_node.base_path = os.path.join(render_folder_path, "no-bg")
+    segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes[
+        "Segmentation Output"
+    ]
     segmentation_output_node.mute = True
     bpy.ops.render.render(animation=False, write_still=False)
     segmentation_output_node.mute = False
@@ -300,7 +300,9 @@ def get_frame_tags(
         image_output_node.base_path = os.path.join(
             render_folder_path, "tags", f"{frame_index}"
         )
-        segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Segmentation Output"]
+        segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes[
+            "Segmentation Output"
+        ]
         segmentation_output_node.mute = True
         bpy.ops.render.render(animation=False, write_still=False)
         segmentation_output_node.mute = False
@@ -313,7 +315,6 @@ def get_frame_tags(
             render_folder_path, "tags", f"{frame_index}", f"{frame_index:04}_{i}.png"
         )
         os.rename(old_file_path, new_file_path)
-
 
         # Show LED again
         for l in leds:
@@ -335,9 +336,9 @@ def get_frame_tags(
         tags_file_path = os.path.join(tags_id_folder, tags_file)
         image = Image.open(tags_file_path)
         image = np.array(image.convert("L"))
-        image = np.where(image < TAGS_THRESHOLD, 0, 1) # Threshold dark pixels
-        if np.sum(image) > 0: # Do not count entirely occluded LEDs
-            tags.append(i)
+        image = np.where(image < TAGS_THRESHOLD, 0, 1)  # Threshold dark pixels
+        if np.sum(image) > 0:  # Do not count entirely occluded LEDs
+            tags.append(image)
     tags = np.array(tags)
 
     # Write tags tensor to disk
@@ -719,11 +720,13 @@ def render_and_get_frame_data(
         # Get world coordinates of device
         device_location = device.matrix_world.translation
         # Add random variation
-        fixation_location = Vector((
-            device_location.x + np.random.uniform(-1, 1),
-            device_location.y + np.random.uniform(-1, 1),
-            device_location.z + np.random.uniform(-1, 1),
-        ))
+        fixation_location = Vector(
+            (
+                device_location.x + np.random.uniform(-1, 1),
+                device_location.y + np.random.uniform(-1, 1),
+                device_location.z + np.random.uniform(-1, 1),
+            )
+        )
 
         camera_location = camera_object.matrix_world.translation
         fixation_direction = (fixation_location - camera_location).normalized()
