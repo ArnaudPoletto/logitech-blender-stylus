@@ -873,12 +873,12 @@ def render(
     # Get render folder path
     render_folder_path = get_render_subfolder()
 
-    data = {}
+    output_file_path = os.path.join(render_folder_path, "data.json")
     for frame in tqdm(
         range(bpy.context.scene.frame_start, bpy.context.scene.frame_end + 1),
         desc="🔄 Rendering frames...",
     ):
-        data[frame] = render_and_get_frame_data(
+        frame_data = render_and_get_frame_data(
             render_folder_path,
             frame,
             camera_object,
@@ -890,8 +890,12 @@ def render(
             random_background_image_generator,
         )
 
-    # Write data to JSON file
-    print("⏳ Writing data to JSON file...")
-    output_file_path = os.path.join(render_folder_path, "data.json")
-    with open(output_file_path, "w") as f:
-        json.dump(data, f, indent=4)
+        # Read JSON file, update data, and write it back
+        if os.path.exists(output_file_path):
+            with open(output_file_path, "r") as f:
+                data = json.load(f)
+        else:
+            data = {}
+        data[frame] = frame_data
+        with open(output_file_path, "w") as f:
+            json.dump(data, f, indent=4)
