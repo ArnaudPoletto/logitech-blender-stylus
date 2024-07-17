@@ -1,6 +1,7 @@
 # This file contains functions to render the animation and collect frame data.
 
 import os
+import gc
 import numpy as np
 import bpy
 import math
@@ -47,7 +48,11 @@ def render_bg_frame(
     segmentation_output_node.base_path = os.path.join(
         render_folder_path, "segmentation"
     )
+    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # Redraw the scene to prevent memory leak
     bpy.ops.render.render(animation=False, write_still=False)
+    bpy.ops.outliner.orphans_purge(do_recursive=True) # Remove orphaned objects
+    gc.collect() # Collect garbage
+    bpy.ops.wm.memory_statistics() # Print memory statistics
 
 
 def get_black_material(material_name: str = "BlackMaterial") -> bpy.types.Material:
@@ -219,7 +224,11 @@ def render_no_bg_frame(
         "Segmentation Output"
     ]
     segmentation_output_node.mute = True
+    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # Redraw the scene to prevent memory leak
     bpy.ops.render.render(animation=False, write_still=False)
+    bpy.ops.outliner.orphans_purge(do_recursive=True) # Remove orphaned objects
+    gc.collect() # Collect garbage
+    bpy.ops.wm.memory_statistics() # Print memory statistics
     segmentation_output_node.mute = False
 
     show_background(
@@ -304,7 +313,9 @@ def get_frame_tags(
             "Segmentation Output"
         ]
         segmentation_output_node.mute = True
+        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # Redraw the scene to prevent memory leak
         bpy.ops.render.render(animation=False, write_still=False)
+        bpy.ops.outliner.orphans_purge(do_recursive=True) # Remove orphaned objects
         segmentation_output_node.mute = False
 
         # Rename the file
@@ -319,6 +330,9 @@ def get_frame_tags(
         # Show LED again
         for l in leds:
             l.hide_render = False
+
+    gc.collect() # Collect garbage
+    bpy.ops.wm.memory_statistics() # Print memory statistics
 
     # Show background objects again
     show_background(
