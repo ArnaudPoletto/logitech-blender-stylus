@@ -1,3 +1,5 @@
+# This file contains the Blender collection class.
+
 import bpy
 from typing import List
 
