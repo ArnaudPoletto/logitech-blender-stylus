@@ -6,7 +6,9 @@ from utils.seed import set_seed
 from module_operators.module_operator import ModuleOperator
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.random_room_module_generator import RandomRoomModuleGenerator
-from input_data_generation.random_camera_module_generator import RandomCameraModuleGenerator
+from input_data_generation.random_camera_module_generator import (
+    RandomCameraModuleGenerator,
+)
 
 
 class InputDataGenerator:
@@ -33,7 +35,9 @@ class InputDataGenerator:
         self.modules = modules
 
     @staticmethod
-    def __update_input_data(input_data: Dict[str, Any], update_data: Dict[str, Any]) -> Dict[str, Any]:
+    def __update_input_data(
+        input_data: Dict[str, Any], update_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Update the input data with the update data.
 
@@ -79,11 +83,11 @@ class InputDataGenerator:
         room_data, wall_scales_per_wall = self.room_module.generate()
         InputDataGenerator.__update_input_data(input_data, room_data)
         existing_objects_per_wall = {k: [] for k in wall_scales_per_wall.keys()}
-        
+
         # Generate the camera
         camera_data, _ = self.camera_module.generate()
         InputDataGenerator.__update_input_data(input_data, camera_data)
-        
+
         # Generate data from other modules
         for module in self.modules:
             module_data, existing_objects_per_wall = module.generate(

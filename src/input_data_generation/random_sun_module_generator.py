@@ -36,7 +36,9 @@ class RandomSunModuleGenerator(ModuleGenerator):
             ValueError: If the maximum energy is less than the minimum energy.
         """
         if energy_range[0] < 0:
-            raise ValueError("❌ The minimum energy must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum energy must be greater than or equal to 0."
+            )
         if energy_range[1] < energy_range[0]:
             raise ValueError(
                 "❌ The maximum energy must be greater than or equal to the minimum energy."
@@ -79,6 +81,8 @@ class RandomSunModuleGenerator(ModuleGenerator):
         }
 
         # Also set the background emission to that value
-        bpy.context.scene.world.node_tree.nodes["Emission"].inputs["Strength"].default_value = energy
+        bpy.context.scene.world.node_tree.nodes["Emission"].inputs[
+            "Strength"
+        ].default_value = energy
 
         return sun_data, existing_objects_per_wall

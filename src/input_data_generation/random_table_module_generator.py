@@ -63,13 +63,17 @@ class RandomTableModuleGenerator(ModuleGenerator):
                 "❌ The number of tables must be greater than or equal to -1."
             )
         if xy_scale_range[0] < 0:
-            raise ValueError("❌ The minimum xy scale must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum xy scale must be greater than or equal to 0."
+            )
         if xy_scale_range[1] < xy_scale_range[0]:
             raise ValueError(
                 "❌ The maximum xy scale must be greater than or equal to the minimum xy scale."
             )
         if z_scale_range[0] < 0:
-            raise ValueError("❌ The minimum z scale must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum z scale must be greater than or equal to 0."
+            )
         if z_scale_range[1] < z_scale_range[0]:
             raise ValueError(
                 "❌ The maximum z scale must be greater than or equal to the minimum z scale."
@@ -116,21 +120,21 @@ class RandomTableModuleGenerator(ModuleGenerator):
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """
         Generate the table module.
-        
+
         Args:
             wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
             existing_objects_per_wall (Dict[str, Any] | None): The existing objects for each wall.
-            
+
         Raises:
             ValueError: If the existing objects per wall is None.
-        
+
         Returns:
             Dict[str, Any]: The table data.
             Dict[str, Any]: Updated data of existing objects for the room.
-            """
+        """
         if existing_objects_per_wall is None:
             raise ValueError("❌ The existing objects per wall must be provided.")
-        
+
         set_seed()
 
         wall_scale = wall_scales_per_wall[self.type]

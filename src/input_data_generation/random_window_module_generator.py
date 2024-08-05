@@ -15,6 +15,7 @@ class RandomWindowModuleGenerator(ModuleGenerator):
     """
     A random window generator, linked to an input data generator to generate window data.
     """
+
     def __init__(
         self,
         wall_type: ModuleGeneratorType,
@@ -63,7 +64,7 @@ class RandomWindowModuleGenerator(ModuleGenerator):
             padding (float): The padding between the windows.
             weight (float): The weight of the module, used to determine the probability of the module being selected. Defaults to 1.0.
             priority (int): The priority of the module, used to determine the order of the module being selected. Defaults to the minimum priority.
- 
+
         Raises:
             ValueError: If the wall type is not a vertical wall type.
             ValueError: If the number of windows is less than -1.
@@ -98,7 +99,9 @@ class RandomWindowModuleGenerator(ModuleGenerator):
                 "❌ The number of windows must be greater than or equal to -1."
             )
         if xy_scale_range[0] < 0:
-            raise ValueError("❌ The minimum xy scale must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum xy scale must be greater than or equal to 0."
+            )
         if xy_scale_range[1] < xy_scale_range[0]:
             raise ValueError(
                 "❌ The maximum xy scale must be greater than or equal to the minimum xy scale."
@@ -110,7 +113,9 @@ class RandomWindowModuleGenerator(ModuleGenerator):
                 "❌ The minimum shade ratio must be greater than or equal to 0."
             )
         if shade_ratio_range[1] > 1:
-            raise ValueError("❌ The maximum shade ratio must be less than or equal to 1.")
+            raise ValueError(
+                "❌ The maximum shade ratio must be less than or equal to 1."
+            )
         if shade_ratio_range[1] < shade_ratio_range[0]:
             raise ValueError(
                 "❌ The maximum shade ratio must be greater than or equal to the minimum shade ratio."
@@ -209,23 +214,23 @@ class RandomWindowModuleGenerator(ModuleGenerator):
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """
         Generate the windows data.
-        
+
         Args:
             wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
             existing_objects_per_wall (Dict[str, Any] | None): The existing objects on each wall.
-            
+
         Raises:
             ValueError: If the existing objects per wall is not provided.
-        
+
         Returns:
             Dict[str, Any]: The windows data.
             Dict[str, Any]: Updated data of existing objects for the room.
         """
         if existing_objects_per_wall is None:
             raise ValueError("❌ The existing objects per wall must be provided.")
-        
+
         set_seed()
-        
+
         wall_scale = wall_scales_per_wall[self.type]
         existing_objects = existing_objects_per_wall[self.type]
 
@@ -313,7 +318,9 @@ class RandomWindowModuleGenerator(ModuleGenerator):
             if decorator_p < self.blinds_probability:
                 n_blinds = random.randint(*self.n_blinds_range)
                 angle = random.uniform(*self.blind_angle_range)
-                vertical = random.choice([True, False]) if self.blind_vertical else False
+                vertical = (
+                    random.choice([True, False]) if self.blind_vertical else False
+                )
                 windows_data["blender_objects"][f"{window_id}_blinds"] = {
                     "type": "Blinds",
                     "args": {
@@ -341,5 +348,5 @@ class RandomWindowModuleGenerator(ModuleGenerator):
 
         # Update existing objects on the used wall
         existing_objects_per_wall[self.type] = existing_objects
-        
+
         return windows_data, existing_objects_per_wall
