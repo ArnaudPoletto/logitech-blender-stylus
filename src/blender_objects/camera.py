@@ -17,7 +17,7 @@ class Camera(BlenderObject):
         name: str,
         location: Vector,
         rotation: Euler,
-        type: str,  # TODO: as enum and multiple camera types
+        type: str,
         focal_length: float,
         fov: float = None,
     ) -> None:
