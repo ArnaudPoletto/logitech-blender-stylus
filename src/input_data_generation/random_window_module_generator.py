@@ -1,21 +1,20 @@
+# This file contains the random window module generator class.
+
 import random
 import numpy as np
-from typing import List, Tuple
+from typing import Tuple, Dict, Any
 from tqdm import tqdm
 
 from utils.seed import set_seed
-from config.config import RESOLUTION_DIGITS, MIN_PRIORITY
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
+from config.config import MIN_PRIORITY, RESOLUTION_DIGITS
 
 
 class RandomWindowModuleGenerator(ModuleGenerator):
     """
     A random window generator, linked to an input data generator to generate window data.
     """
-
-    # TODO: define default values and setters
-    # TODO: refactor checks to a separate method for bounds checking
     def __init__(
         self,
         wall_type: ModuleGeneratorType,
@@ -93,50 +92,50 @@ class RandomWindowModuleGenerator(ModuleGenerator):
             ValueError: If the padding is less than 0.
         """
         if wall_type not in ModuleGeneratorType.get_vertical_wall_types():
-            raise ValueError("The wall type must be a vertical wall type.")
+            raise ValueError("❌ The wall type must be a vertical wall type.")
         if n_windows < -1:
             raise ValueError(
-                "The number of windows must be greater than or equal to -1."
+                "❌ The number of windows must be greater than or equal to -1."
             )
         if xy_scale_range[0] < 0:
-            raise ValueError("The minimum xy scale must be greater than or equal to 0.")
+            raise ValueError("❌ The minimum xy scale must be greater than or equal to 0.")
         if xy_scale_range[1] < xy_scale_range[0]:
             raise ValueError(
-                "The maximum xy scale must be greater than or equal to the minimum xy scale."
+                "❌ The maximum xy scale must be greater than or equal to the minimum xy scale."
             )
         if shades_probability < 0 or shades_probability > 1:
-            raise ValueError("The shades probability must be between 0 and 1.")
+            raise ValueError("❌ The shades probability must be between 0 and 1.")
         if shade_ratio_range[0] < 0:
             raise ValueError(
-                "The minimum shade ratio must be greater than or equal to 0."
+                "❌ The minimum shade ratio must be greater than or equal to 0."
             )
         if shade_ratio_range[1] > 1:
-            raise ValueError("The maximum shade ratio must be less than or equal to 1.")
+            raise ValueError("❌ The maximum shade ratio must be less than or equal to 1.")
         if shade_ratio_range[1] < shade_ratio_range[0]:
             raise ValueError(
-                "The maximum shade ratio must be greater than or equal to the minimum shade ratio."
+                "❌ The maximum shade ratio must be greater than or equal to the minimum shade ratio."
             )
         if shade_transmission_range[0] < 0:
             raise ValueError(
-                "The minimum shade transmission must be greater than or equal to 0."
+                "❌ The minimum shade transmission must be greater than or equal to 0."
             )
         if shade_transmission_range[1] > 1:
             raise ValueError(
-                "The maximum shade transmission must be less than or equal to 1."
+                "❌ The maximum shade transmission must be less than or equal to 1."
             )
         if shade_transmission_range[1] < shade_transmission_range[0]:
             raise ValueError(
-                "The maximum shade transmission must be greater than or equal to the minimum shade transmission."
+                "❌ The maximum shade transmission must be greater than or equal to the minimum shade transmission."
             )
         if blinds_probability < 0 or blinds_probability > 1:
-            raise ValueError("The blinds probability must be between 0 and 1.")
+            raise ValueError("❌ The blinds probability must be between 0 and 1.")
         if n_blinds_range[0] < 0:
             raise ValueError(
-                "The minimum number of blinds must be greater than or equal to 0."
+                "❌ The minimum number of blinds must be greater than or equal to 0."
             )
         if n_blinds_range[1] < n_blinds_range[0]:
             raise ValueError(
-                "The maximum number of blinds must be greater than or equal to the minimum number of blinds."
+                "❌ The maximum number of blinds must be greater than or equal to the minimum number of blinds."
             )
         if blind_angle_range[0] < 0:
             raise ValueError(
@@ -144,40 +143,40 @@ class RandomWindowModuleGenerator(ModuleGenerator):
             )
         if blind_angle_range[1] > np.pi:
             raise ValueError(
-                "The maximum blind angle must be less than or equal to pi."
+                "❌ The maximum blind angle must be less than or equal to pi."
             )
         if blind_angle_range[1] < blind_angle_range[0]:
             raise ValueError(
-                "The maximum blind angle must be greater than or equal to the minimum blind angle."
+                "❌ The maximum blind angle must be greater than or equal to the minimum blind angle."
             )
         if muntins_probability < 0 or muntins_probability > 1:
-            raise ValueError("The muntins probability must be between 0 and 1.")
+            raise ValueError("❌ The muntins probability must be between 0 and 1.")
         if muntin_size_range[0] < 0:
             raise ValueError(
-                "The minimum muntin size must be greater than or equal to 0."
+                "❌ The minimum muntin size must be greater than or equal to 0."
             )
         if n_muntins_width_range[0] < 1:
             raise ValueError(
-                "The minimum number of muntins width must be greater than or equal to 1."
+                "❌ The minimum number of muntins width must be greater than or equal to 1."
             )
         if n_muntins_width_range[1] < n_muntins_width_range[0]:
             raise ValueError(
-                "The maximum number of muntins width must be greater than or equal to the minimum number of muntins width."
+                "❌ The maximum number of muntins width must be greater than or equal to the minimum number of muntins width."
             )
         if n_muntins_height_range[0] < 1:
             raise ValueError(
-                "The minimum number of muntins height must be greater than or equal to 1."
+                "❌ The minimum number of muntins height must be greater than or equal to 1."
             )
         if n_muntins_height_range[1] < n_muntins_height_range[0]:
             raise ValueError(
-                "The maximum number of muntins height must be greater than or equal to the minimum number of muntins height."
+                "❌ The maximum number of muntins height must be greater than or equal to the minimum number of muntins height."
             )
         if blinds_probability + muntins_probability > 1:
             raise ValueError(
-                "The sum of the blinds and muntins probabilities must be less than or equal to 1."
+                "❌ The sum of the blinds and muntins probabilities must be less than or equal to 1."
             )
         if padding < 0:
-            raise ValueError("The padding must be greater than or equal to 0.")
+            raise ValueError("❌ The padding must be greater than or equal to 0.")
 
         super(RandomWindowModuleGenerator, self).__init__(
             type=wall_type,
@@ -205,9 +204,26 @@ class RandomWindowModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-    ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Generate the windows data.
+        
+        Args:
+            wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
+            existing_objects_per_wall (Dict[str, Any] | None): The existing objects on each wall.
+            
+        Raises:
+            ValueError: If the existing objects per wall is not provided.
+        
+        Returns:
+            Dict[str, Any]: The windows data.
+            Dict[str, Any]: Updated data of existing objects for the room.
+        """
+        if existing_objects_per_wall is None:
+            raise ValueError("❌ The existing objects per wall must be provided.")
+        
         set_seed()
         
         wall_scale = wall_scales_per_wall[self.type]

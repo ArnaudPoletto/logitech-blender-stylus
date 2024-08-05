@@ -31,7 +31,7 @@ class Wall(BlenderObject):
             ValueError: If the scale is not a 2D vector.
         """
         if len(scale) != 2:
-            raise ValueError("The scale must be a 2D vector.")
+            raise ValueError("❌ The scale must be a 2D vector.")
 
         scale = Vector((scale.x, scale.y, 1))
         super(Wall, self).__init__(
@@ -126,16 +126,15 @@ class Wall(BlenderObject):
         self, relative_blender_object: RelativeBlenderObject
     ) -> None:
         if not self._relative_blender_object_is_in_bounds(relative_blender_object):
-            pass
-            # raise ValueError(
-            #    f"Relative Blender object {relative_blender_object.name} is not in bounds of the wall."
-            # )
+            raise ValueError(
+               f"❌ Relative Blender object {relative_blender_object.name} is not in bounds of the wall."
+            )
 
         if not self._relative_blender_object_does_not_intersect(
             relative_blender_object
         ):
             raise ValueError(
-                f"Relative Blender object {relative_blender_object.name} intersects with existing decorators."
+                f"❌ Relative Blender object {relative_blender_object.name} intersects with existing decorators."
             )
 
         super(Wall, self).add_relative_blender_object(relative_blender_object)

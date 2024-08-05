@@ -46,25 +46,25 @@ class ChristmasTree(RelativeBlenderObject):
             ValueError: If the maximum emission of the LEDs is less than the minimum emission.
         """
         if height <= 0:
-            raise ValueError("The height of the Christmas tree must be greater than 0.")
+            raise ValueError("❌ The height of the Christmas tree must be greater than 0.")
         if radius <= 0:
-            raise ValueError("The radius of the Christmas tree must be greater than 0.")
+            raise ValueError("❌ The radius of the Christmas tree must be greater than 0.")
         if n_leds <= 0:
-            raise ValueError("The number of LEDs must be greater than 0.")
+            raise ValueError("❌ The number of LEDs must be greater than 0.")
         if led_radius_range[0] <= 0:
-            raise ValueError("The minimum radius of the LEDs must be greater than 0.")
+            raise ValueError("❌ The minimum radius of the LEDs must be greater than 0.")
         if led_radius_range[1] < led_radius_range[0]:
             raise ValueError(
-                "The maximum radius of the LEDs must be greater than the minimum radius."
+                "❌ The maximum radius of the LEDs must be greater than the minimum radius."
             )
         if emission_range[0] < 0:
-            raise ValueError("The minimum emission of the LEDs must be greater than 0.")
+            raise ValueError("❌ The minimum emission of the LEDs must be greater than 0.")
         if emission_range[1] < emission_range[0]:
             raise ValueError(
-                "The maximum emission of the LEDs must be greater than the minimum emission."
+                "❌ The maximum emission of the LEDs must be greater than the minimum emission."
             )
         if flicker_probability < 0 or flicker_probability > 1:
-            raise ValueError("The flicker probability must be between 0 and 1.")
+            raise ValueError("❌ The flicker probability must be between 0 and 1.")
 
         # Define relative location at center of the base and object relative location at the center of the object
         self.object_relative_location = Vector(

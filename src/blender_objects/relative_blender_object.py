@@ -51,5 +51,5 @@ class RelativeBlenderObject(BlenderObject):
             for y values, and the third tuple is the same but for z values.
         """
         raise NotImplementedError(
-            "The get_object_bounds method must be implemented in the subclass."
+            "❌ The get_object_bounds method must be implemented in the subclass."
         )

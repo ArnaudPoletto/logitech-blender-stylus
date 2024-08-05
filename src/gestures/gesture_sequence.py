@@ -63,11 +63,11 @@ class GestureSequence:
             ValueError: If the momentum weight is not between 0 and 1.
         """
         if translation_acceleration_limit < 0:
-            raise ValueError("Translation acceleration limit must be positive.")
+            raise ValueError("❌ Translation acceleration limit must be positive.")
         if rotation_acceleration_limit < 0:
-            raise ValueError("Rotation acceleration limit must be positive.")
+            raise ValueError("❌ Rotation acceleration limit must be positive.")
         if momentum_weight < 0 or momentum_weight > 1:
-            raise ValueError("Momentum weight must be between 0 and 1.")
+            raise ValueError("❌ Momentum weight must be between 0 and 1.")
 
         self.gestures = gestures
         self.remaining_gestures: List[Tuple[type, dict]] = (

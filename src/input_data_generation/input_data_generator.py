@@ -1,5 +1,6 @@
-from typing import List
-from mathutils import Vector
+# This file contains the input data generator class, which generates input data from the modules.
+
+from typing import List, Dict, Any
 from utils.seed import set_seed
 
 from module_operators.module_operator import ModuleOperator
@@ -32,21 +33,21 @@ class InputDataGenerator:
         self.modules = modules
 
     @staticmethod
-    def _update_input_data(input_data: dict, update_data: dict) -> dict:
+    def __update_input_data(input_data: Dict[str, Any], update_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Update the input data with the update data.
 
         Args:
-            input_data (dict): The input data.
-            update_data (dict): The update data.
+            input_data (Dict[str, Any]): The input data.
+            update_data (Dict[str, Any]): The update data.
 
         Returns:
-            dict: The updated input data.
+            Dict[str, Any]: The updated input data.
         """
         if "gestures" in update_data:
             if update_data["gestures"].keys() & input_data["gestures"].keys():
                 raise ValueError(
-                    "Gesture names must be unique: cannot add the same gesture twice."
+                    "❌ Gesture names must be unique: cannot add the same gesture twice."
                 )
             input_data["gestures"].update(update_data["gestures"])
 
@@ -56,16 +57,16 @@ class InputDataGenerator:
                 & input_data["blender_objects"].keys()
             ):
                 raise ValueError(
-                    "Blender object names must be unique: cannot add the same object twice."
+                    "❌ Blender object names must be unique: cannot add the same object twice."
                 )
             input_data["blender_objects"].update(update_data["blender_objects"])
 
-    def generate_input_data(self) -> dict:
+    def generate_input_data(self) -> Dict[str, Any]:
         """
         Generate input data from the modules.
 
         Returns:
-            dict: The input data.
+            Dict[str, Any]: The input data.
         """
         set_seed()
 
@@ -76,18 +77,18 @@ class InputDataGenerator:
 
         # Generate the room and define room masks
         room_data, wall_scales_per_wall = self.room_module.generate()
-        InputDataGenerator._update_input_data(input_data, room_data)
+        InputDataGenerator.__update_input_data(input_data, room_data)
         existing_objects_per_wall = {k: [] for k in wall_scales_per_wall.keys()}
         
         # Generate the camera
         camera_data, _ = self.camera_module.generate()
-        InputDataGenerator._update_input_data(input_data, camera_data)
+        InputDataGenerator.__update_input_data(input_data, camera_data)
         
         # Generate data from other modules
         for module in self.modules:
             module_data, existing_objects_per_wall = module.generate(
                 wall_scales_per_wall, existing_objects_per_wall
             )
-            InputDataGenerator._update_input_data(input_data, module_data)
+            InputDataGenerator.__update_input_data(input_data, module_data)
 
         return input_data

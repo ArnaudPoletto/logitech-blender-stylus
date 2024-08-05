@@ -28,9 +28,9 @@ class Shades(WindowDecorator):
             ValueError: If the transmission is not between 0 and 1.
         """
         if shade_ratio < 0 or shade_ratio > 1:
-            raise ValueError("The shade ratio must be between 0 and 1.")
+            raise ValueError("❌ The shade ratio must be between 0 and 1.")
         if transmission < 0 or transmission > 1:
-            raise ValueError("The transmission must be between 0 and 1.")
+            raise ValueError("❌ The transmission must be between 0 and 1.")
 
         super(Shades, self).__init__(name=name)
 

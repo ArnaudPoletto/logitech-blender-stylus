@@ -27,9 +27,9 @@ class BackgroundImageGenerator:
             ValueError: If the height is less than or equal to 0.
         """
         if width <= 0:
-            raise ValueError("Width must be greater than 0")
+            raise ValueError("❌ Width must be greater than 0")
         if height <= 0:
-            raise ValueError("Height must be greater than 0")
+            raise ValueError("❌ Height must be greater than 0")
 
         self.width = width
         self.height = height
@@ -43,7 +43,7 @@ class BackgroundImageGenerator:
         Returns:
             np.array: The background image.
         """
-        raise NotImplementedError("The _get_background_image method must be implemented.")
+        raise NotImplementedError("❌ The _get_background_image method must be implemented.")
 
     def apply_to_scene(self) -> None:
         """
@@ -57,7 +57,7 @@ class BackgroundImageGenerator:
         # Find scale node
         scale_node = tree.nodes.get("Scale")
         if scale_node is None:
-            raise ValueError("Scale node not found")
+            raise ValueError("❌ Scale node not found")
 
         # Create new image node if it does not exist
         if self.image_node is None:

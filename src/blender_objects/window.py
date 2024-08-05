@@ -28,9 +28,9 @@ class Window(RelativeBlenderObject):
             ValueError: If the scale is not a 2D vector.
         """
         if len(relative_location) != 2:
-            raise ValueError("The location must be a 2D vector.")
+            raise ValueError("❌ The location must be a 2D vector.")
         if len(scale) != 2:
-            raise ValueError("The scale must be a 2D vector.")
+            raise ValueError("❌ The scale must be a 2D vector.")
         
         relative_location = Vector((relative_location.x, relative_location.y, 0))
         scale = Vector((scale.x, scale.y, 1))

@@ -32,10 +32,10 @@ class Blinds(WindowDecorator):
             ValueError: If the angle of the blinds is not between 0 and pi.
         """
         if n_blinds < 1:
-            raise ValueError("The number of blinds must be greater than 0.")
+            raise ValueError("❌ The number of blinds must be greater than 0.")
 
         if angle < 0 or angle > math.pi:
-            raise ValueError("The angle of the blinds must be between 0 and pi.")
+            raise ValueError("❌ The angle of the blinds must be between 0 and pi.")
 
         super(Blinds, self).__init__(name=name)
 

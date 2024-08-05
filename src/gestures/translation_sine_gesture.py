@@ -45,14 +45,10 @@ class TranslationSineGesture(Gesture):
             ValueError: If the wave period is less than or equal to 0.
             ValueError: If the wave amplitude is less than 0.
         """
-        if not isinstance(axis, Axis):
-            raise ValueError("The axis must be an instance of Axis.")
-
         if wave_period <= 0:
-            raise ValueError("The wave period must be greater than 0.")
-
+            raise ValueError("❌ The wave period must be greater than 0.")
         if wave_amplitude < 0:
-            raise ValueError("The wave amplitude must be greater than or equal to 0.")
+            raise ValueError("❌ The wave amplitude must be greater than or equal to 0.")
         
         super(TranslationSineGesture, self).__init__(
             start_frame=start_frame,

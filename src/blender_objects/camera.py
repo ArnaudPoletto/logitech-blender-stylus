@@ -36,11 +36,11 @@ class Camera(BlenderObject):
             ValueError: If the field of view is less than or equal to 0 or greater than 2 * pi.
         """
         if type not in ["PERSP", "ORTHO", "PANO"]:
-            raise ValueError("The camera type must be 'PERSP', 'ORTHO', or 'PANO'.")
+            raise ValueError("❌ The camera type must be 'PERSP', 'ORTHO', or 'PANO'.")
         if focal_length <= 0:
-            raise ValueError("The focal length must be greater than 0.")
+            raise ValueError("❌ The focal length must be greater than 0.")
         if fov <= 0 or fov > 2 * math.pi:
-            raise ValueError("The field of view must be between 0 and 2 * pi.")
+            raise ValueError("❌ The field of view must be between 0 and 2 * pi.")
 
         super(Camera, self).__init__(
             name=name,

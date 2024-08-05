@@ -1,4 +1,6 @@
-from typing import List, Tuple, Union
+# This file contains the base abstract class for a module operator, used to combine and generate modules for more complex scenarios.
+
+from typing import List, Tuple, Union, Dict, Any
 from abc import abstractmethod
 
 from config.config import MIN_PRIORITY
@@ -20,8 +22,8 @@ class ModuleOperator:
         
         Args:
             modules (List[ModuleGenerator|ModuleOperator]): The modules to use.
-            weight (float): The weight of the operator, used to determine the probability of the operator being selected. Defaults to 1.0.
-            priority (int): The priority of the operator, used to determine the order of the operator being selected. Defaults to the minimum priority.
+            weight (float, optional): The weight of the operator, used to determine the probability of the operator being selected. Defaults to 1.0.
+            priority (int, optional): The priority of the operator, used to determine the order of the operator being selected. Defaults to the minimum priority.
             
         Raises:
             ValueError: If the weight is less than 0.
@@ -29,11 +31,11 @@ class ModuleOperator:
             ValueError: If the modules list contains a RandomRoomModuleGenerator.
         """
         if weight < 0:
-            raise ValueError("The weight must be greater than or equal to 0.")
+            raise ValueError("❌ The weight must be greater than or equal to 0.")
         if len(modules) == 0:
-            raise ValueError("The modules list must contain at least one module.")
+            raise ValueError("❌ The modules list must contain at least one module.")
         if any(isinstance(module, RandomRoomModuleGenerator) for module in modules):
-            raise ValueError("The modules list must not contain any RandomRoomModuleGenerator modules.")
+            raise ValueError("❌ The modules list must not contain any RandomRoomModuleGenerator modules.")
         self.modules = modules
         self.weight = weight
         self.priority = priority
@@ -41,5 +43,5 @@ class ModuleOperator:
     @abstractmethod
     def generate(
         self,
-    ) -> Tuple[dict, dict]:
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         raise NotImplementedError("The generate method must be implemented.")

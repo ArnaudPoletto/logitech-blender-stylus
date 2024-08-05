@@ -1,3 +1,5 @@
+# This file contains the module generator type enumeration.
+
 from enum import Enum
 from typing import List
 

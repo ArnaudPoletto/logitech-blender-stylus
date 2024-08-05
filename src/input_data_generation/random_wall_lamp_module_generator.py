@@ -1,13 +1,14 @@
+# This file contains the random wall lamp module generator class.
+
 import random
 import numpy as np
 from tqdm import tqdm
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
-from config.config import MIN_PRIORITY
 from utils.seed import set_seed
-from config.config import RESOLUTION_DIGITS
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
+from config.config import MIN_PRIORITY, RESOLUTION_DIGITS
 
 class RandomWallLampModuleGenerator(ModuleGenerator):
     """
@@ -52,22 +53,22 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
         """
         if n_wall_lamps < -1:
             raise ValueError(
-                "The number of wall lamps must be greater than or equal to -1."
+                "❌ The number of wall lamps must be greater than or equal to -1."
             )
         if xy_scale_range[0] < 0:
-            raise ValueError("The minimum xy scale must be greater than or equal to 0.")
+            raise ValueError("❌ The minimum xy scale must be greater than or equal to 0.")
         if xy_scale_range[1] < xy_scale_range[0]:
             raise ValueError(
-                "The maximum xy scale must be greater than or equal to the minimum xy scale."
+                "❌ The maximum xy scale must be greater than or equal to the minimum xy scale."
             )
         if emission_strength_range[0] < 0:
-            raise ValueError("The minimum emission strength must be greater than or equal to 0.")
+            raise ValueError("❌ The minimum emission strength must be greater than or equal to 0.")
         if emission_strength_range[1] < emission_strength_range[0]:
             raise ValueError(
-                "The maximum emission strength must be greater than or equal to the minimum emission strength."
+                "❌ The maximum emission strength must be greater than or equal to the minimum emission strength."
             )
         if padding < 0:
-            raise ValueError("The padding must be greater than or equal to 0.")
+            raise ValueError("❌ The padding must be greater than or equal to 0.")
             
         super(RandomWallLampModuleGenerator, self).__init__(
             type=ModuleGeneratorType.CEILING,
@@ -85,9 +86,25 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
         
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-    ) -> Tuple[dict, dict]:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Generate the wall lamps.
+        
+        Args:
+            wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
+            existing_objects_per_wall (Dict[str, Any] | None): The existing objects for each wall.
+            
+        Raises:
+            ValueError: If the existing objects per wall is not provided.
+            
+        Returns:
+            Dict[str, Any]: The wall lamps data.
+        """
+        if existing_objects_per_wall is None:
+            raise ValueError("❌ The existing objects per wall must be provided.")
+        
         set_seed()
         
         wall_scale = wall_scales_per_wall[self.type]

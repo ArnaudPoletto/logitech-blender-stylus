@@ -1,6 +1,8 @@
+# This file contains the random table module generator class.
+
 import random
 import numpy as np
-from typing import List, Tuple
+from typing import Tuple, Dict, Any
 from tqdm import tqdm
 
 from utils.seed import set_seed
@@ -58,38 +60,38 @@ class RandomTableModuleGenerator(ModuleGenerator):
         """
         if n_tables < -1:
             raise ValueError(
-                "The number of tables must be greater than or equal to -1."
+                "❌ The number of tables must be greater than or equal to -1."
             )
         if xy_scale_range[0] < 0:
-            raise ValueError("The minimum xy scale must be greater than or equal to 0.")
+            raise ValueError("❌ The minimum xy scale must be greater than or equal to 0.")
         if xy_scale_range[1] < xy_scale_range[0]:
             raise ValueError(
-                "The maximum xy scale must be greater than or equal to the minimum xy scale."
+                "❌ The maximum xy scale must be greater than or equal to the minimum xy scale."
             )
         if z_scale_range[0] < 0:
-            raise ValueError("The minimum z scale must be greater than or equal to 0.")
+            raise ValueError("❌ The minimum z scale must be greater than or equal to 0.")
         if z_scale_range[1] < z_scale_range[0]:
             raise ValueError(
-                "The maximum z scale must be greater than or equal to the minimum z scale."
+                "❌ The maximum z scale must be greater than or equal to the minimum z scale."
             )
         if top_thickness_range[0] < 0:
             raise ValueError(
-                "The minimum top thickness must be greater than or equal to 0."
+                "❌ The minimum top thickness must be greater than or equal to 0."
             )
         if top_thickness_range[1] < top_thickness_range[0]:
             raise ValueError(
-                "The maximum top thickness must be greater than or equal to the minimum top thickness."
+                "❌ The maximum top thickness must be greater than or equal to the minimum top thickness."
             )
         if leg_thickness_range[0] < 0:
             raise ValueError(
-                "The minimum leg thickness must be greater than or equal to 0."
+                "❌ The minimum leg thickness must be greater than or equal to 0."
             )
         if leg_thickness_range[1] < leg_thickness_range[0]:
             raise ValueError(
-                "The maximum leg thickness must be greater than or equal to the minimum leg thickness."
+                "❌ The maximum leg thickness must be greater than or equal to the minimum leg thickness."
             )
         if padding < 0:
-            raise ValueError("The padding must be greater than or equal to 0.")
+            raise ValueError("❌ The padding must be greater than or equal to 0.")
 
         super(RandomTableModuleGenerator, self).__init__(
             type=ModuleGeneratorType.FLOOR,
@@ -109,9 +111,26 @@ class RandomTableModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-    ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Generate the table module.
+        
+        Args:
+            wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
+            existing_objects_per_wall (Dict[str, Any] | None): The existing objects for each wall.
+            
+        Raises:
+            ValueError: If the existing objects per wall is None.
+        
+        Returns:
+            Dict[str, Any]: The table data.
+            Dict[str, Any]: Updated data of existing objects for the room.
+            """
+        if existing_objects_per_wall is None:
+            raise ValueError("❌ The existing objects per wall must be provided.")
+        
         set_seed()
 
         wall_scale = wall_scales_per_wall[self.type]

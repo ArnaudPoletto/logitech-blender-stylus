@@ -26,7 +26,7 @@ class BlenderCollection:
         """
         if name in bpy.data.collections:
             raise Exception(
-                f"Collection with name '{name}' already exists in the scene."
+                f"❌ Collection with name '{name}' already exists in the scene."
             )
 
         # Create the collection
@@ -49,7 +49,7 @@ class BlenderCollection:
         """
         if self.is_added_to_collection:
             raise Exception(
-                "Cannot add Blender object to collection after it has been added to the scene."
+                "❌ Cannot add Blender object to collection after it has been added to the scene."
             )
 
         self.objects.append(blender_object)
@@ -66,7 +66,7 @@ class BlenderCollection:
         """
         if self.is_added_to_collection:
             raise Exception(
-                "Cannot add objects to collection after it has been added to the scene."
+                "❌ Cannot add objects to collection after it has been added to the scene."
             )
 
         for obj in blender_objects:
@@ -84,7 +84,7 @@ class BlenderCollection:
         """
         if self.is_added_to_collection:
             raise Exception(
-                "Cannot add collection to scene after it has already been added."
+                "❌ Cannot add collection to scene after it has already been added."
             )
 
         for obj in self.objects:

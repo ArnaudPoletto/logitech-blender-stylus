@@ -1,5 +1,6 @@
+# This file contains the random room module generator class.
 import random
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 from utils.seed import set_seed
 from config.config import RESOLUTION_DIGITS, MAX_PRIORITY
@@ -37,16 +38,20 @@ class RandomRoomModuleGenerator(ModuleGenerator):
             ValueError: If the resolution digits is less than 0.
         """
         if xy_scale_range[0] < 0:
-            raise ValueError("The minimum xy scale must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum xy scale must be greater than or equal to 0."
+            )
         if xy_scale_range[1] < xy_scale_range[0]:
             raise ValueError(
-                "The maximum xy scale must be greater than or equal to the minimum xy scale."
+                "❌ The maximum xy scale must be greater than or equal to the minimum xy scale."
             )
         if z_scale_range[0] < 0:
-            raise ValueError("The minimum z scale must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum z scale must be greater than or equal to 0."
+            )
         if z_scale_range[1] < z_scale_range[0]:
             raise ValueError(
-                "The maximum z scale must be greater than or equal to the minimum z scale."
+                "❌ The maximum z scale must be greater than or equal to the minimum z scale."
             )
 
         super(RandomRoomModuleGenerator, self).__init__(
@@ -61,11 +66,22 @@ class RandomRoomModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-    ) -> Tuple[dict, dict]:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Generate the room module.
+
+        Args:
+            wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
+            existing_objects_per_wall (Dict[str, Any] | None): The existing objects for each wall.
+
+        Returns:
+            Dict[str, Any]: The room data.
+            Dict[str, Any]: Updated data of existing objects or scales for the room.
+        """
         set_seed()
-        
+
         # Get random room parameters
         scale_x = int(round(random.uniform(*self.xy_scale_range), RESOLUTION_DIGITS))
         scale_y = int(round(random.uniform(*self.xy_scale_range), RESOLUTION_DIGITS))

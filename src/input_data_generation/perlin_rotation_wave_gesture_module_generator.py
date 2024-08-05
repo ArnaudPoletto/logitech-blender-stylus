@@ -1,5 +1,7 @@
+# This file contains the perlin rotation wave gesture module generator class.
+
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 from utils.axis import Axis
 from utils.seed import set_seed
@@ -12,6 +14,7 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
     """
     A perlin rotation wave gesture module generator, linked to an input data generator to generate perlin rotation wave gesture data.
     """
+
     def __init__(
         self,
         id: str,
@@ -24,7 +27,7 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
     ) -> None:
         """
         Initialize the perlin rotation wave gesture module generator.
-        
+
         Args:
             id (str): The id of the module.
             start_frame (int): The start frame.
@@ -33,7 +36,7 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
             amplitude_range (Tuple[float, float]): The range of the amplitude of the noise function.
             persistance (float): The persistance of the perlin noise.
             n_octaves_range (Tuple[int, int]): The range of the number of octaves.
-            
+
         Raises:
             ValueError: If the start frame is less than 0.
             ValueError: If the end frame is less than the start frame.
@@ -45,28 +48,38 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
             ValueError: If the minimum number of octaves is greater than the maximum number of octaves.
         """
         if start_frame < 0:
-            raise ValueError("The start frame must be greater than or equal to 0.")
+            raise ValueError("❌ The start frame must be greater than or equal to 0.")
         if end_frame < start_frame:
-            raise ValueError("The end frame must be greater than or equal to the start frame.")
+            raise ValueError(
+                "❌ The end frame must be greater than or equal to the start frame."
+            )
         if period_range[1] < period_range[0]:
-            raise ValueError("The minimum period must be less than or equal to the maximum period.")
+            raise ValueError(
+                "❌ The minimum period must be less than or equal to the maximum period."
+            )
         if amplitude_range[1] < amplitude_range[0]:
-            raise ValueError("The minimum amplitude must be less than or equal to the maximum amplitude.")
+            raise ValueError(
+                "❌ The minimum amplitude must be less than or equal to the maximum amplitude."
+            )
         if persistance < 0:
-            raise ValueError("The persistance must be greater than or equal to 0.")
+            raise ValueError("❌ The persistance must be greater than or equal to 0.")
         if persistance > 1:
-            raise ValueError("The persistance must be less than or equal to 1.")
+            raise ValueError("❌ The persistance must be less than or equal to 1.")
         if n_octaves_range[0] < 1:
-            raise ValueError("The number of octaves must be greater than or equal to 1.")
+            raise ValueError(
+                "❌ The number of octaves must be greater than or equal to 1."
+            )
         if n_octaves_range[1] < n_octaves_range[0]:
-            raise ValueError("The minimum number of octaves must be less than or equal to the maximum number of octaves.")
-        
+            raise ValueError(
+                "❌ The minimum number of octaves must be less than or equal to the maximum number of octaves."
+            )
+
         super(PerlinRotationWaveGestureModuleGenerator, self).__init__(
             type=ModuleGeneratorType.GESTURE,
             name=None,
             id=id,
         )
-        
+
         self.start_frame = start_frame
         self.end_frame = end_frame
         self.period_range = period_range
@@ -76,11 +89,27 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-    ) -> dict:
+        wall_scales_per_wall: Dict[str, Any] = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Generate the perlin rotation wave gesture module.
+
+        Args:
+            wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
+            existing_objects_per_wall (Dict[str, Any] | None): The existing objects for each wall.
+
+        Raises:
+            ValueError: If the existing objects per wall is not provided.
+
+        Returns:
+            Dict[str, Any]: The perlin data.
+            Dict[str, Any]: The updated data of existing objects for each wall.
+        """
+        if existing_objects_per_wall is None:
+            raise ValueError("❌ The existing objects per wall must be provided.")
         set_seed()
-        
+
         perlin_data = {"gestures": {}}
         for axis in Axis.__members__.values():
             axis = axis.value
@@ -88,8 +117,8 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
             for octave in range(n_octaves):
                 period = np.random.uniform(*self.period_range)
                 amplitude = np.random.uniform(*self.amplitude_range)
-                wave_period = (2 ** octave) * period
-                amplitude = (self.persistance ** octave) * amplitude
+                wave_period = (2**octave) * period
+                amplitude = (self.persistance**octave) * amplitude
                 perlin_data["gestures"][f"{self.id}_{axis}_{octave}"] = {
                     "type": "RotationWaveGesture",
                     "args": {
@@ -99,12 +128,12 @@ class PerlinRotationWaveGestureModuleGenerator(ModuleGenerator):
                         "axis": axis,
                         "wave_period": wave_period,
                         "wave_amplitude": amplitude,
-                        "arm_phase_shift": 0, # TODO: change
-                        "forearm_phase_shift": 0, # TODO: change
-                        "forearm_amplitude_factor": 0.5, # TODO: change
-                        "hand_phase_shift": 0, # TODO: change
-                        "hand_amplitude_factor": 0.5, # TODO: change
-                    }
+                        "arm_phase_shift": 0,
+                        "forearm_phase_shift": 0,
+                        "forearm_amplitude_factor": 0.5,
+                        "hand_phase_shift": 0,
+                        "hand_amplitude_factor": 0.5,
+                    },
                 }
-            
+
         return perlin_data, existing_objects_per_wall

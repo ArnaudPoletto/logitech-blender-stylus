@@ -34,7 +34,7 @@ class Table(RelativeBlenderObject):
         """
         if top_thickness <= 0 or top_thickness >= scale.z:
             raise ValueError(
-                "The top thickness must be a positive number and less than the height."
+                "❌ The top thickness must be a positive number and less than the height."
             )
         if (
             leg_thickness <= 0
@@ -42,7 +42,7 @@ class Table(RelativeBlenderObject):
             or leg_thickness >= scale.y / 2
         ):
             raise ValueError(
-                "The leg thickness must be a positive number and less than half the width or depth."
+                "❌ The leg thickness must be a positive number and less than half the width or depth."
             )
 
         relative_location = Vector((relative_location.x, relative_location.y, 0))

@@ -33,12 +33,12 @@ class WallLamp(RelativeBlenderObject):
             ValueError: If the strength of the wall lamp is less than or equal to 0.
         """
         if len(scale) != 2:
-            raise ValueError("The scale must be a 2D vector.")
+            raise ValueError("❌ The scale must be a 2D vector.")
         if any(value <= 0 for value in scale):
-            raise ValueError("The scale values must be positive.")
+            raise ValueError("❌ The scale values must be positive.")
         if emission_strength <= 0:
             raise ValueError(
-                "The emission strength of the wall lamp must be greater than 0."
+                "❌ The emission strength of the wall lamp must be greater than 0."
             )
 
         relative_location = Vector((relative_location.x, relative_location.y, 0))
