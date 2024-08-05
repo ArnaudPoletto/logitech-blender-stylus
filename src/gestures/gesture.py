@@ -1,4 +1,7 @@
+# This file contains the gesture class, which is an abstract class for all gestures.
+
 import bpy
+from typing import Dict, Any
 from abc import abstractmethod
 
 
@@ -53,15 +56,19 @@ class Gesture:
         self.hand = hand
 
     @abstractmethod
-    def apply(self, displacement_data: dict, current_frame: int) -> dict:
+    def apply(
+        self,
+        displacement_data: Dict[bpy.types.Bone, Dict[str, Any]],
+        current_frame: int,
+    ) -> Dict[bpy.types.Bone, Dict[str, Any]]:
         """
         Apply the gesture to the armature.
 
         Args:
-            displacement_data (dict): The displacement data to update.
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data to update.
             current_frame (int): The current frame of the gesture.
 
         Returns:
-            dict: The updated displacement data.
+            Dict[bpy.types.Bone, Dict[str, Any]]: The updated displacement data.
         """
         raise NotImplementedError("❌ The apply method must be implemented.")

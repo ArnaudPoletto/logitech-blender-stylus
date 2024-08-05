@@ -1,5 +1,8 @@
+# This file contains the rotation wave gesture class.
+
 import bpy
 import math
+from typing import Dict, Any
 
 from utils.axis import Axis
 from gestures.gesture import Gesture
@@ -40,13 +43,13 @@ class RotationWaveGesture(Gesture):
             hand (bpy.types.Bone): The hand bone.
             frame_rate (int): The frame rate.
             axis (str): The axis to rotate.
-            wave_period (float): The period of the wave. Defaults to 4.0.
-            wave_amplitude (float): The amplitude of the wave. Defaults to 0.1.
-            arm_phase_shift (float): The phase shift of the arm wave. Defaults to 0.0.
-            forearm_phase_shift (float): The phase shift of the forearm wave. Defaults to pi/4.
-            forearm_amplitude_factor (float): The amplitude factor of the forearm wave. Defaults to 0.5.
-            hand_phase_shift (float): The phase shift of the hand wave. Defaults to pi/4.
-            hand_amplitude_factor (float): The amplitude factor of the hand wave. Defaults to 0.5.
+            wave_period (float, optional): The period of the wave. Defaults to 4.0.
+            wave_amplitude (float, optional): The amplitude of the wave. Defaults to 0.1.
+            arm_phase_shift (float, optional): The phase shift of the arm wave. Defaults to 0.0.
+            forearm_phase_shift (float, optional): The phase shift of the forearm wave. Defaults to pi/4.
+            forearm_amplitude_factor (float, optional): The amplitude factor of the forearm wave. Defaults to 0.5.
+            hand_phase_shift (float, optional): The phase shift of the hand wave. Defaults to pi/4.
+            hand_amplitude_factor (float, optional): The amplitude factor of the hand wave. Defaults to 0.5.
 
         Raises:
             ValueError: If the axis is not an instance of Axis.
@@ -54,7 +57,7 @@ class RotationWaveGesture(Gesture):
         """
         if wave_period <= 0:
             raise ValueError("❌ The wave period must be greater than 0.")
-        
+
         super(RotationWaveGesture, self).__init__(
             start_frame=start_frame,
             end_frame=end_frame,
@@ -74,7 +77,7 @@ class RotationWaveGesture(Gesture):
         self.hand_phase_shift = hand_phase_shift
         self.hand_amplitude_factor = hand_amplitude_factor
 
-    def _get_arm_rotation_at_frame(self, frame) -> float:
+    def __get_arm_rotation_at_frame(self, frame) -> float:
         """
         Get the rotation of the arm at the specified frame.
 
@@ -87,7 +90,7 @@ class RotationWaveGesture(Gesture):
 
         return math.sin(wave_offset + phase_shift) * wave_amplitude
 
-    def _get_forearm_rotation_at_frame(self, frame) -> float:
+    def __get_forearm_rotation_at_frame(self, frame) -> float:
         """
         Get the rotation of the forearm at the specified frame.
 
@@ -100,7 +103,7 @@ class RotationWaveGesture(Gesture):
 
         return math.sin(wave_offset + phase_shift) * wave_amplitude
 
-    def _get_hand_rotation_at_frame(self, frame) -> float:
+    def __get_hand_rotation_at_frame(self, frame) -> float:
         """
         Get the rotation of the hand at the specified frame.
 
@@ -119,43 +122,60 @@ class RotationWaveGesture(Gesture):
 
         return math.sin(wave_offset + phase_shift) * wave_amplitude
 
-    def _bone_apply(
-        self, displacement_data: dict, bone: bpy.types.Bone, rotation: float
-    ) -> dict:
+    def __bone_apply(
+        self,
+        displacement_data: Dict[bpy.types.Bone, Dict[str, Any]],
+        bone: bpy.types.Bone,
+        rotation: float,
+    ) -> Dict[bpy.types.Bone, Dict[str, Any]]:
         """
         Apply a rotation to a bone.
 
         Args:
-            displacement_data (dict): The displacement data.
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data.
             bone (bpy.types.Bone): The bone to rotate.
             rotation (float): The rotation to apply to the bone in the specified axis.
 
         Returns:
-            dict: The updated displacement data.
+            Dict[bpy.types.Bone, Dict[str, Any]]: The updated displacement data.
         """
         axis_index = Axis.index(self.axis)
         displacement_data[bone]["rotation_euler"][axis_index] += rotation
 
         return displacement_data
 
-    def apply(self, displacement_data: dict, current_frame: int) -> dict:
+    def apply(
+        self,
+        displacement_data: Dict[bpy.types.Bone, Dict[str, Any]],
+        current_frame: int,
+    ) -> Dict[bpy.types.Bone, Dict[str, Any]]:
+        """
+        Apply the rotation wave gesture to the armature.
+
+        Args:
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data.
+            current_frame (int): The current frame.
+
+        Returns:
+            Dict[bpy.types.Bone, Dict[str, Any]]: The updated displacement data.
+        """
         # Calculate rotations for bones
-        arm_rotation = self._get_arm_rotation_at_frame(
+        arm_rotation = self.__get_arm_rotation_at_frame(
             current_frame
-        ) - self._get_arm_rotation_at_frame(current_frame - 1)
-        forearm_rotation = self._get_forearm_rotation_at_frame(
+        ) - self.__get_arm_rotation_at_frame(current_frame - 1)
+        forearm_rotation = self.__get_forearm_rotation_at_frame(
             current_frame
-        ) - self._get_forearm_rotation_at_frame(current_frame - 1)
-        hand_rotation = self._get_hand_rotation_at_frame(
+        ) - self.__get_forearm_rotation_at_frame(current_frame - 1)
+        hand_rotation = self.__get_hand_rotation_at_frame(
             current_frame
-        ) - self._get_hand_rotation_at_frame(current_frame - 1)
+        ) - self.__get_hand_rotation_at_frame(current_frame - 1)
 
         # Apply rotations to bones
-        displacement_data = self._bone_apply(displacement_data, self.arm, arm_rotation)
-        displacement_data = self._bone_apply(
+        displacement_data = self.__bone_apply(displacement_data, self.arm, arm_rotation)
+        displacement_data = self.__bone_apply(
             displacement_data, self.forearm, forearm_rotation
         )
-        displacement_data = self._bone_apply(
+        displacement_data = self.__bone_apply(
             displacement_data, self.hand, hand_rotation
         )
 
