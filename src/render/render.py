@@ -2,11 +2,10 @@
 
 import os
 import gc
-import numpy as np
 import bpy
 import math
 import json
-from PIL import Image
+import numpy as np
 from tqdm import tqdm
 from mathutils import Vector
 from typing import Tuple, List, Dict, Any
@@ -25,7 +24,6 @@ from config.config import (
     BACKGROUND_COLLECTION_NAME,
     RENDER_RESOLUTION,
     BOUNDING_BOX_PADDING,
-#    TAGS_THRESHOLD,
     SEED,
     CENTER_CAMERA_ON_DEVICE_PROBABILITY,
 )
@@ -48,11 +46,12 @@ def render_bg_frame(
     segmentation_output_node.base_path = os.path.join(
         render_folder_path, "segmentation"
     )
-    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # Redraw the scene to prevent memory leak
+    bpy.ops.wm.redraw_timer(
+        type="DRAW_WIN_SWAP", iterations=1
+    )  # Redraw the scene to prevent memory leak
     bpy.ops.render.render(animation=False, write_still=False)
-    bpy.ops.outliner.orphans_purge(do_recursive=True) # Remove orphaned objects
-    gc.collect() # Collect garbage
-    bpy.ops.wm.memory_statistics() # Print memory statistics
+    bpy.ops.outliner.orphans_purge(do_recursive=True)  # Remove orphaned objects
+    gc.collect()  # Collect garbage
 
 
 def get_black_material(material_name: str = "BlackMaterial") -> bpy.types.Material:
@@ -60,7 +59,7 @@ def get_black_material(material_name: str = "BlackMaterial") -> bpy.types.Materi
     Get a black material, creating it if it does not exist.
 
     Args:
-        material_name (str): The name of the material.
+        material_name (str, optional): The name of the material. Defaults to "BlackMaterial".
 
     Returns:
         bpy.types.Material: The black material.
@@ -224,11 +223,12 @@ def render_no_bg_frame(
         "Segmentation Output"
     ]
     segmentation_output_node.mute = True
-    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # Redraw the scene to prevent memory leak
+    bpy.ops.wm.redraw_timer(
+        type="DRAW_WIN_SWAP", iterations=1
+    )  # Redraw the scene to prevent memory leak
     bpy.ops.render.render(animation=False, write_still=False)
-    bpy.ops.outliner.orphans_purge(do_recursive=True) # Remove orphaned objects
-    gc.collect() # Collect garbage
-    bpy.ops.wm.memory_statistics() # Print memory statistics
+    bpy.ops.outliner.orphans_purge(do_recursive=True)  # Remove orphaned objects
+    gc.collect()  # Collect garbage
     segmentation_output_node.mute = False
 
     show_background(
@@ -238,132 +238,6 @@ def render_no_bg_frame(
         old_hide_render_states,
         old_glare_value,
     )
-
-
-# def get_frame_tags(
-#     render_folder_path: str,
-#     frame_index: int,
-#     armature_suffix: str,
-#     leds: List[bpy.types.Object],
-#     camera: bpy.types.Camera,
-#     camera_object: bpy.types.Object,
-#     armature_arm: bpy.types.Object,
-#     random_background_image_generator: RandomBackgroundImageGenerator,
-# ) -> None:
-#     """
-#     Get the tags of a frame, i.e. each individual LED rendered separately.
-
-#     Args:
-#         render_folder_path (str): The folder path to render the frame to.
-#         frame_index (int): The frame index to render.
-#         armature_suffix (str): The suffix of the armature.
-#         leds (List[bpy.types.Object]): The LED objects.
-#         camera (bpy.types.Camera): The camera.
-#         camera_object (bpy.types.Object): The camera object.
-#         armature_arm (bpy.types.Object): The armature arm object.
-#         random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
-
-#     Raises:
-#         ValueError: If the camera type is not supported.
-#     """
-#     # Create tags folder
-#     tags_folder = os.path.join(render_folder_path, "tags")
-#     os.makedirs(tags_folder, exist_ok=True)
-
-#     # Create temporary tags subfolder
-#     tags_id_folder = os.path.join(tags_folder, str(frame_index))
-#     os.makedirs(tags_id_folder, exist_ok=True)
-
-#     # Hide background objects
-#     old_hide_render_states, old_glare_value = hide_background(
-#         frame_index,
-#         armature_suffix,
-#         armature_arm,
-#     )
-
-#     for i, led in enumerate(leds):
-#         # Check if LED is visible
-#         led_center = get_object_center(led)
-#         if CAMERA_TYPE == "PERSP":
-#             led_projected_coordinates = get_projected_coordinates_perspective(
-#                 led_center, camera_object
-#             )
-#         elif CAMERA_TYPE == "PANO":
-#             led_projected_coordinates = get_projected_coordinates_panoramic(
-#                 led_center, camera, camera_object
-#             )
-#         else:
-#             raise ValueError(f"❌ Camera type {CAMERA_TYPE} not supported.")
-
-#         is_in_frame = is_led_in_frame(led_projected_coordinates)
-
-#         if not is_in_frame:
-#             continue
-
-#         # Hide all LEDs except the current one
-#         for l in leds:
-#             l.hide_render = l != led
-
-#         # Render the frame
-#         image_output_node = bpy.data.scenes["Scene"].node_tree.nodes["Image Output"]
-#         image_output_node.base_path = os.path.join(
-#             render_folder_path, "tags", f"{frame_index}"
-#         )
-#         segmentation_output_node = bpy.data.scenes["Scene"].node_tree.nodes[
-#             "Segmentation Output"
-#         ]
-#         segmentation_output_node.mute = True
-#         bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1) # Redraw the scene to prevent memory leak
-#         bpy.ops.render.render(animation=False, write_still=False)
-#         bpy.ops.outliner.orphans_purge(do_recursive=True) # Remove orphaned objects
-#         segmentation_output_node.mute = False
-
-#         # Rename the file
-#         old_file_path = os.path.join(
-#             render_folder_path, "tags", f"{frame_index}", f"{frame_index:04}.png"
-#         )
-#         new_file_path = os.path.join(
-#             render_folder_path, "tags", f"{frame_index}", f"{frame_index:04}_{i:04}.png"
-#         )
-#         os.rename(old_file_path, new_file_path)
-
-#         # Show LED again
-#         for l in leds:
-#             l.hide_render = False
-
-#     gc.collect() # Collect garbage
-#     bpy.ops.wm.memory_statistics() # Print memory statistics
-
-#     # Show background objects again
-#     show_background(
-#         frame_index,
-#         armature_suffix,
-#         random_background_image_generator,
-#         old_hide_render_states,
-#         old_glare_value,
-#     )
-
-#     # Read all images and merge them into a single tags tensor
-#     tags = []
-#     tags_files = os.listdir(tags_id_folder)
-#     for i, tags_file in enumerate(tags_files):
-#         tags_file_path = os.path.join(tags_id_folder, tags_file)
-#         image = Image.open(tags_file_path)
-#         image = np.array(image.convert("L"))
-#         image = np.where(image < TAGS_THRESHOLD, 0, 1)  # Threshold dark pixels
-#         if np.sum(image) > 0:  # Do not count entirely occluded LEDs
-#             tags.append(image)
-#     tags = np.array(tags, dtype=bool)
-
-#     # Write tags tensor to disk
-#     tags_file_path = os.path.join(tags_folder, f"{frame_index:04}.npy")
-#     np.save(tags_file_path, tags)
-
-#     # Delete temporary tags subfolder
-#     for tags_file in tags_files:
-#         tags_file_path = os.path.join(tags_id_folder, tags_file)
-#         os.remove(tags_file_path)
-#     os.rmdir(tags_id_folder)
 
 
 def get_object_center(object: bpy.types.Object) -> Vector:
@@ -405,7 +279,7 @@ def is_led_occluded(
         camera_object (bpy.types.Object): The camera object.
         leds (List[bpy.types.Object]): The LED objects.
         armature_arm (bpy.types.Object): The armature arm object.
-        distance_eps (float): The distance epsilon.
+        distance_eps (float, optional): The distance epsilon. Defaults to 1e-3.
 
     Returns:
         bool: Whether the LED is occluded.
@@ -546,6 +420,7 @@ def get_bounding_box(
         leds (List[bpy.types.Object]): The LED objects.
         camera_object (bpy.types.Object): The camera object.
         camera (bpy.types.Camera): The camera.
+        armature_arm (bpy.types.Object): The armature arm object.
         padding (int): The padding of the bounding box, in camera view coordinates.
 
     Raises:
@@ -601,7 +476,7 @@ def get_frame_data(
     stylus: bpy.types.Object,
     leds: List[bpy.types.Object],
     armature_suffix: str,
-) -> Dict[str, Dict[str, Any]]:
+) -> Dict[str, Any]:
     """
     Get the frame data.
 
@@ -616,7 +491,7 @@ def get_frame_data(
         ValueError: If the armature arm is not found.
 
     Returns:
-        Dict[str, Dict[str, Any]]: The frame data.
+        Dict[str, Any]: The frame data.
     """
     # Get armature arm
     armature_arm = bpy.data.objects.get(f"Arm{armature_suffix}")
@@ -703,7 +578,7 @@ def render_and_get_frame_data(
     armature_suffix: str,
     armature_arm: bpy.types.Object,
     random_background_image_generator: RandomBackgroundImageGenerator,
-) -> dict:
+) -> Dict[str, Any]:
     """
     Render a frame and get the camera projection coordinates of LED.
 
@@ -719,7 +594,7 @@ def render_and_get_frame_data(
         random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
 
     Returns:
-        dict: The frame data.
+        Dict[str, Any]: The frame data.
     """
     # Set camera and frame index for Blender
     bpy.context.scene.camera = camera_object
@@ -760,17 +635,6 @@ def render_and_get_frame_data(
         armature_arm,
         random_background_image_generator,
     )
-
-    # get_frame_tags(
-    #     render_folder_path,
-    #     frame_index,
-    #     armature_suffix,
-    #     leds,
-    #     camera,
-    #     camera_object,
-    #     armature_arm,
-    #     random_background_image_generator,
-    # )
 
     frame_data = get_frame_data(
         camera_object,
@@ -859,7 +723,11 @@ def render(
     random_background_image_generator: RandomBackgroundImageGenerator,
 ) -> None:
     """
-    Render the animation and collect data.
+    Render the animation and collect and write frame data.
+    
+    Args:
+        armature_suffix (str): The suffix of the armature.
+        random_background_image_generator (RandomBackgroundImageGenerator): The random background image generator.
 
     Raises:
         ValueError: If the camera is not found.
