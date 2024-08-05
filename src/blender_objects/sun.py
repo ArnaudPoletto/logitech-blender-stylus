@@ -1,5 +1,7 @@
+# This file contains the sun class.
+
 import bpy
-from mathutils import Vector, Euler
+from mathutils import Euler
 
 from blender_objects.blender_object import BlenderObject
 
@@ -37,6 +39,12 @@ class Sun(BlenderObject):
         self.energy = energy
 
     def apply_to_collection(self, collection: bpy.types.Collection) -> None:
+        """
+        Apply the sun to a Blender collection.
+        
+        Args:
+            collection (bpy.types.Collection): The collection to add the sun to.
+        """
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Define objects and properties

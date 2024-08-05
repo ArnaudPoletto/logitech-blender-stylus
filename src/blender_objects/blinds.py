@@ -1,3 +1,5 @@
+# This file contains the blinds class, which is a window decorator that adds blinds to a window.
+
 import bpy
 import math
 from mathutils import Vector
@@ -48,6 +50,13 @@ class Blinds(WindowDecorator):
         collection: bpy.types.Collection,
         blender_object: bpy.types.Object,
     ) -> None:
+        """
+        Apply the blind window decorator to a Blender object.
+
+        Args:
+            collection (bpy.types.Collection): The collection to add the blind window decorator to.
+            blender_object (bpy.types.Object): The Blender object to decorate.
+        """
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Add blinds to the wall

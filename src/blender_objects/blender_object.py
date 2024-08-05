@@ -1,8 +1,9 @@
+# This file contains the blender object class, which is the base class for all blender objects.
+
 import bpy
 from typing import List
 from abc import abstractmethod
 from mathutils import Vector, Euler
-
 
 
 class BlenderObject:

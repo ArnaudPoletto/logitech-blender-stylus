@@ -1,3 +1,5 @@
+# This file contains the camera class.
+
 import bpy
 import math
 from mathutils import Vector, Euler
@@ -53,6 +55,12 @@ class Camera(BlenderObject):
         self.fov = fov
 
     def apply_to_collection(self, collection: bpy.types.Collection) -> None:
+        """
+        Apply the camera to a Blender collection.
+
+        Args:
+            collection (bpy.types.Collection): The collection to add the camera to.
+        """
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Define the camera
@@ -72,7 +80,7 @@ class Camera(BlenderObject):
                     "The field of view must be provided for a panoramic camera."
                 )
             camera_object.data.fisheye_fov = self.fov
-            camera_object.data.fisheye_lens = self.focal_length 
+            camera_object.data.fisheye_lens = self.focal_length
         if self.type == "PERSP":
             camera_object.data.lens = self.focal_length
 

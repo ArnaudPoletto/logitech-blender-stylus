@@ -1,3 +1,5 @@
+# This file contains the window decorator class, which is a base class for all window decorators.
+
 from mathutils import Vector
 
 from blender_objects.relative_blender_object import RelativeBlenderObject

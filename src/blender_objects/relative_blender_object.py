@@ -1,4 +1,5 @@
-import bpy
+# This file contains the relative Blender object class, which is a blender object relative to a given location and rotation.
+
 from typing import List, Tuple
 from mathutils import Vector, Euler
 from abc import abstractmethod
@@ -33,7 +34,7 @@ class RelativeBlenderObject(BlenderObject):
             rotation=relative_rotation,
             scale=scale,
         )
-        
+
         self.name = name
         self.scale = scale
         self.relative_blender_objects: List[RelativeBlenderObject] = []

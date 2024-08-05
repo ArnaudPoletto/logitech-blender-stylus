@@ -1,3 +1,5 @@
+# This file contains the Christmas tree class.
+
 import bpy
 import math
 import random
@@ -87,16 +89,31 @@ class ChristmasTree(RelativeBlenderObject):
     def get_bounds(
         self,
     ) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]:
+        """
+        Get the bounds of the Christmas tree.
+        
+        Returns:
+            Tuple[float, float]: The bounds of the Christmas tree in the x-direction.
+            Tuple[float, float]: The bounds of the Christmas tree in the y-direction.
+            Tuple[float, float]: The bounds of the Christmas tree in the z-direction.
+        """
         min_x = -self.radius
         max_x = self.radius
         min_y = -self.radius
         max_y = self.radius
 
-        return (min_x, max_x), (min_y, max_y), (0, 0)
+        return (min_x, max_x), (min_y, max_y), (0.0, 0.0)
 
     def apply_to_collection(
         self, collection: bpy.types.Collection, blender_object: bpy.types.Object
     ) -> None:
+        """
+        Apply the Christmas tree to a Blender collection.
+        
+        Args:
+            collection (bpy.types.Collection): The collection to add the Christmas tree to.
+            blender_object (bpy.types.Object): The Blender object to add the Christmas tree to.
+        """
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Add Christmas tree to the collection, a cone with a cylinder as the base

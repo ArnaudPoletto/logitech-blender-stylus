@@ -1,3 +1,5 @@
+# This file contains the shades window decorator class, which is a window decorator that adds shades to a window.
+
 import bpy
 from mathutils import Vector
 
@@ -42,6 +44,13 @@ class Shades(WindowDecorator):
         collection: bpy.types.Collection,
         blender_object: bpy.types.Object,
     ) -> None:
+        """
+        Apply the shades window decorator to a Blender object.
+        
+        Args:
+            collection (bpy.types.Collection): The collection to add the shades window decorator to.
+            blender_object (bpy.types.Object): The Blender object to decorate.
+        """
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Add shade to the wall
