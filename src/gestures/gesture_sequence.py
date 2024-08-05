@@ -1,7 +1,9 @@
+# This file contains the gesture sequence class, which applies a sequence of gestures to an armature.
+
 import bpy
 import math
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 from mathutils import Vector, Euler
 
 from gestures.gesture import Gesture
@@ -69,10 +71,10 @@ class GestureSequence:
             raise ValueError("❌ Momentum weight must be between 0 and 1.")
 
         self.gestures = gestures
-        self.remaining_gestures: List[Tuple[type, dict]] = (
+        self.remaining_gestures: List[Tuple[type, Dict[bpy.types.Bone, Dict[str, Any]]]] = (
             gestures  # Remaining gestures over time, all at the beginning
         )
-        self.current_gestures: List[Tuple[Gesture, dict]] = (
+        self.current_gestures: List[Tuple[Gesture, Dict[bpy.types.Bone, Dict[str, Any]]]] = (
             []
         )  # Current gestures over time, empty at the beginning
         self.scene = scene
@@ -87,7 +89,7 @@ class GestureSequence:
         self.hand_rotation_range = hand_rotation_range
         self.momentum_weight = momentum_weight
 
-    def _get_end_frame(self) -> int:
+    def __get_end_frame(self) -> int:
         """
         Get the end frame of the gesture sequence.
 
@@ -103,7 +105,7 @@ class GestureSequence:
 
         return end_frame
 
-    def _update_current_gestures(self, current_frame: int) -> None:
+    def __update_current_gestures(self, current_frame: int) -> None:
         """
         Update the current gestures over time by removing the ones that have ended.
 
@@ -123,7 +125,7 @@ class GestureSequence:
             new_current_gestures.append(current_gesture)
         self.current_gestures = new_current_gestures
 
-    def _update_remaining_gestures(self, current_frame: int) -> None:
+    def __update_remaining_gestures(self, current_frame: int) -> None:
         """
         Update the remaining gestures over time by adding the ones that have started.
 
@@ -148,12 +150,12 @@ class GestureSequence:
                 new_remaining_gestures.append((gesture_type, gesture_args))
         self.remaining_gestures = new_remaining_gestures
 
-    def _get_default_displacement_data(self) -> dict:
+    def __get_default_displacement_data(self) -> Dict[bpy.types.Bone, Dict[str, Any]]:
         """
         Get the default displacement data, with no movement.
 
         Returns:
-            dict: The default displacement data.
+            Dict[bpy.types.Bone, Dict[str, Any]]: The default displacement data.
         """
         bones = [self.arm, self.forearm, self.hand]
         displacement_data = {}
@@ -165,20 +167,20 @@ class GestureSequence:
 
         return displacement_data
 
-    def _get_displacement_data(
-        self, current_frame: int, previous_displacement_data: dict
-    ) -> dict:
+    def __get_displacement_data(
+        self, current_frame: int, previous_displacement_data: Dict[bpy.types.Bone, Dict[str, Any]]
+    ) -> Dict[bpy.types.Bone, Dict[str, Any]]:
         """
         Get the displacement data for the current frame.
 
         Args:
             current_frame (int): The current frame.
-            previous_displacement_data (dict): The displacement data for the previous frame.
+            previous_displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data for the previous frame.
 
         Returns:
-            dict: The displacement data for the current frame.
+            Dict[bpy.types.Bone, Dict[str, Any]]: The displacement data for the current frame.
         """
-        displacement_data = self._get_default_displacement_data()
+        displacement_data = self.__get_default_displacement_data()
 
         # Compute movement difference for current frame
         for gesture_object, _ in self.current_gestures:
@@ -224,7 +226,7 @@ class GestureSequence:
 
         return displacement_data
 
-    def _get_limited_value(
+    def __get_limited_value(
         self, current: float, displacement_value: float, minimum: float, maximum: float
     ) -> float:
         """
@@ -241,43 +243,53 @@ class GestureSequence:
         """
         next = current + displacement_value
 
-        def _slow_factor(x, k=10):
+        def __slow_factor(x: float, k: float = 10.0) -> float:
+            """
+            Get the slow down displacement factor.
+            
+            Args:
+                x (float): The value.
+                k (float, optional): The factor. Defaults to 10.0.
+                
+            Returns:
+                float: The slowed down factor.
+            """
             return -2 / (1 + math.exp(-k * abs(x))) + 2
 
         if next < minimum and next < current:
-            return displacement_value * _slow_factor(minimum - next)
+            return displacement_value * __slow_factor(minimum - next)
         elif next > maximum and next > current:
-            return displacement_value * _slow_factor(next - maximum)
+            return displacement_value * __slow_factor(next - maximum)
         else:
             return displacement_value
 
-    def _insert_location_keyframe(
-        self, bone: bpy.types.Bone, displacement_data: dict
+    def __insert_location_keyframe(
+        self, bone: bpy.types.Bone, displacement_data: Dict[bpy.types.Bone, Dict[str, Any]]
     ) -> None:
         """
         Insert a keyframe for the bone location with the displacement data for the current frame if necessary.
 
         Args:
             bone (bpy.types.Bone): The bone.
-            displacement_data (dict): The displacement data for the current frame.
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data for the current frame.
         """
         if displacement_data[bone]["location"] == Vector((0, 0, 0)):
             return
 
         # Limit displacement location
-        displacement_data[bone]["location"].x = self._get_limited_value(
+        displacement_data[bone]["location"].x = self.__get_limited_value(
             bone.location.x,
             displacement_data[bone]["location"].x,
             self.location_range[0].x,
             self.location_range[1].x,
         )
-        displacement_data[bone]["location"].y = self._get_limited_value(
+        displacement_data[bone]["location"].y = self.__get_limited_value(
             bone.location.y,
             displacement_data[bone]["location"].y,
             self.location_range[0].y,
             self.location_range[1].y,
         )
-        displacement_data[bone]["location"].z = self._get_limited_value(
+        displacement_data[bone]["location"].z = self.__get_limited_value(
             bone.location.z,
             displacement_data[bone]["location"].z,
             self.location_range[0].z,
@@ -288,15 +300,15 @@ class GestureSequence:
         bone.location += displacement_data[bone]["location"]
         bone.keyframe_insert(data_path="location", index=-1)
 
-    def _insert_rotation_keyframe(
-        self, bone: bpy.types.Bone, displacement_data: dict
+    def __insert_rotation_keyframe(
+        self, bone: bpy.types.Bone, displacement_data: Dict[bpy.types.Bone, Dict[str, Any]]
     ) -> None:
         """
         Insert a keyframe for the bone rotation with the displacement data for the current frame if necessary.
 
         Args:
             bone (bpy.types.Bone): The bone.
-            displacement_data (dict): The displacement data for the current frame.
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data for the current frame.
         """
         if displacement_data[bone]["rotation_euler"] == Euler((0, 0, 0)):
             return
@@ -310,19 +322,19 @@ class GestureSequence:
                 rotation_range = self.forearm_rotation_range
             case self.hand:
                 rotation_range = self.hand_rotation_range
-        displacement_data[bone]["rotation_euler"].x = self._get_limited_value(
+        displacement_data[bone]["rotation_euler"].x = self.__get_limited_value(
             bone.rotation_euler.x,
             displacement_data[bone]["rotation_euler"].x,
             rotation_range[0].x,
             rotation_range[1].x,
         )
-        displacement_data[bone]["rotation_euler"].y = self._get_limited_value(
+        displacement_data[bone]["rotation_euler"].y = self.__get_limited_value(
             bone.rotation_euler.y,
             displacement_data[bone]["rotation_euler"].y,
             rotation_range[0].y,
             rotation_range[1].y,
         )
-        displacement_data[bone]["rotation_euler"].z = self._get_limited_value(
+        displacement_data[bone]["rotation_euler"].z = self.__get_limited_value(
             bone.rotation_euler.z,
             displacement_data[bone]["rotation_euler"].z,
             rotation_range[0].z,
@@ -335,40 +347,40 @@ class GestureSequence:
         bone.rotation_euler.z += displacement_data[bone]["rotation_euler"].z
         bone.keyframe_insert(data_path="rotation_euler", index=-1)
 
-    def _insert_keyframe(self, bone: bpy.types.Bone, displacement_data: dict) -> None:
+    def __insert_keyframe(self, bone: bpy.types.Bone, displacement_data: Dict[bpy.types.Bone, Dict[str, Any]]) -> None:
         """
         Insert a keyframe for the bone with the displacement data for the current frame if necessary.
 
         Args:
             bone (bpy.types.Bone): The bone.
-            displacement_data (dict): The displacement data for the current frame.
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data for the current frame.
         """
-        self._insert_location_keyframe(bone, displacement_data)
-        self._insert_rotation_keyframe(bone, displacement_data)
+        self.__insert_location_keyframe(bone, displacement_data)
+        self.__insert_rotation_keyframe(bone, displacement_data)
 
     def apply(self) -> None:
         """
         Apply the gesture sequence to the armature.
         """
         start_frame = 1
-        end_frame = self._get_end_frame()
+        end_frame = self.__get_end_frame()
 
         # Apply gestures over time
-        previous_displacement_data = self._get_default_displacement_data()
+        previous_displacement_data = self.__get_default_displacement_data()
         for current_frame in range(start_frame, end_frame):
             bpy.context.scene.frame_set(current_frame)
 
             # Update current and remaining gestures
-            self._update_current_gestures(current_frame)
-            self._update_remaining_gestures(current_frame)
+            self.__update_current_gestures(current_frame)
+            self.__update_remaining_gestures(current_frame)
 
             # Set the armature location and rotation for the current frame
-            displacement_data = self._get_displacement_data(
+            displacement_data = self.__get_displacement_data(
                 current_frame, previous_displacement_data
             )
-            self._insert_keyframe(self.arm, displacement_data)
-            self._insert_keyframe(self.forearm, displacement_data)
-            self._insert_keyframe(self.hand, displacement_data)
+            self.__insert_keyframe(self.arm, displacement_data)
+            self.__insert_keyframe(self.forearm, displacement_data)
+            self.__insert_keyframe(self.hand, displacement_data)
 
             previous_displacement_data = displacement_data
 
