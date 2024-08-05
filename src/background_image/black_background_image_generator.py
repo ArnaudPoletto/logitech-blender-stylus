@@ -1,8 +1,6 @@
-import cv2
-import bpy
-import random
+# This file contains the black background image generator class.
+
 import numpy as np
-from typing import Tuple
 
 from background_image.background_image_generator import BackgroundImageGenerator
 
@@ -28,7 +26,13 @@ class BlackBackgroundImageGenerator(BackgroundImageGenerator):
         self.width = width
         self.height = height
 
-    def _get_background_image(self) -> np.array:
+    def get_background_image(self) -> np.ndarray:
+        """
+        Get the background image.
+        
+        Returns:
+            np.ndarray: The background image.
+        """
         background_image = np.zeros((self.height, self.width, 4), dtype=np.float32)
 
         return background_image

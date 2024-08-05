@@ -1,3 +1,5 @@
+# This file contains the random background image generator class.
+
 import cv2
 import random
 import numpy as np
@@ -6,7 +8,6 @@ from typing import Tuple
 from background_image.background_image_generator import BackgroundImageGenerator
 
 
-# TODO: add documentation
 class RandomBackgroundImageGenerator(BackgroundImageGenerator):
     """
     A random background image generator.
@@ -139,7 +140,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
         self.max_blur = max_blur
         self.color_skew_factor = color_skew_factor
 
-    def _get_background_image(self) -> np.array:
+    def get_background_image(self) -> np.ndarray:
         background_image = np.ones((self.height, self.width, 4), dtype=np.float32)
 
         # Add random polygons as patches
