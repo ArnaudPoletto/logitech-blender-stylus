@@ -1,8 +1,9 @@
+# This file contains the translation gesture class.
+
 import bpy
-import math
+from typing import Dict, Any
 from mathutils import Vector
 
-from utils.axis import Axis
 from gestures.gesture import Gesture
 
 
@@ -51,7 +52,21 @@ class TranslationGesture(Gesture):
         # The object is always instantiated at the start frame, so we can store the initial location
         self.initial_location = arm.location.copy()
 
-    def apply(self, displacement_data: dict, current_frame: int) -> dict:
+    def apply(
+        self,
+        displacement_data: Dict[bpy.types.Bone, Dict[str, Any]],
+        current_frame: int,
+    ) -> Dict[bpy.types.Bone, Dict[str, Any]]:
+        """
+        Apply the translation to the armature.
+        
+        Args:
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data.
+            current_frame (int): The current frame.
+        
+        Returns:
+            Dict[bpy.types.Bone, Dict[str, Any]]: The updated displacement data.
+        """
         translation = self.vector.copy()
         if not self.relative:
             translation -= self.initial_location

@@ -1,3 +1,5 @@
+# This file contains the random background image generator class.
+
 import cv2
 import random
 import numpy as np
@@ -6,7 +8,6 @@ from typing import Tuple
 from background_image.background_image_generator import BackgroundImageGenerator
 
 
-# TODO: add documentation
 class RandomBackgroundImageGenerator(BackgroundImageGenerator):
     """
     A random background image generator.
@@ -71,57 +72,57 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
             ValueError: If the color skew factor is less than or equal to 0.
         """
         if n_patches_range[0] <= 0:
-            raise ValueError("Number of patches must be greater than 0")
+            raise ValueError("❌ Number of patches must be greater than 0")
         if n_patches_range[1] < n_patches_range[0]:
             raise ValueError(
-                "Upper bound of number of patches must be greater than lower bound"
+                "❌ Upper bound of number of patches must be greater than lower bound"
             )
         if n_patch_corners_range[0] <= 0:
-            raise ValueError("Number of patch corners must be greater than 0")
+            raise ValueError("❌ Number of patch corners must be greater than 0")
         if n_patch_corners_range[1] < n_patch_corners_range[0]:
             raise ValueError(
-                "Upper bound of number of patch corners must be greater than lower bound"
+                "❌ Upper bound of number of patch corners must be greater than lower bound"
             )
         if patch_size_range[0] <= 0:
-            raise ValueError("Minimum patch size must be greater than 0")
+            raise ValueError("❌ Minimum patch size must be greater than 0")
         if patch_size_range[1] > min(width, height):
-            raise ValueError("Maximum patch size must be less than width and height")
+            raise ValueError("❌ Maximum patch size must be less than width and height")
         if patch_size_range[1] < patch_size_range[0]:
             raise ValueError(
-                "Upper bound of minimum patch size must be greater than lower bound"
+                "❌ Upper bound of minimum patch size must be greater than lower bound"
             )
         if n_lines_range[0] <= 0:
-            raise ValueError("Number of lines must be greater than 0")
+            raise ValueError("❌ Number of lines must be greater than 0")
         if n_lines_range[1] < n_lines_range[0]:
             raise ValueError(
-                "Upper bound of number of lines must be greater than lower bound"
+                "❌ Upper bound of number of lines must be greater than lower bound"
             )
         if line_size_range[0] <= 0:
-            raise ValueError("Minimum line size must be greater than 0")
+            raise ValueError("❌ Minimum line size must be greater than 0")
         if line_size_range[1] > min(width, height):
-            raise ValueError("Minimum line size must be less than width and height")
+            raise ValueError("❌ Minimum line size must be less than width and height")
         if n_line_points_range[0] <= 0:
-            raise ValueError("Number of line points must be greater than 0")
+            raise ValueError("❌ Number of line points must be greater than 0")
         if n_line_points_range[1] < n_line_points_range[0]:
             raise ValueError(
-                "Upper bound of number of line points must be greater than lower bound"
+                "❌ Upper bound of number of line points must be greater than lower bound"
             )
         if line_thickness_range[0] <= 0:
-            raise ValueError("Minimum line thickness must be greater than 0")
+            raise ValueError("❌ Minimum line thickness must be greater than 0")
         if line_thickness_range[1] < line_thickness_range[0]:
             raise ValueError(
-                "Upper bound of minimum line thickness must be greater than lower bound"
+                "❌ Upper bound of minimum line thickness must be greater than lower bound"
             )
         if smooth_gaussian_kernel_size <= 0:
-            raise ValueError("Smooth Gaussian kernel size must be greater than 0")
+            raise ValueError("❌ Smooth Gaussian kernel size must be greater than 0")
         if smooth_gaussian_kernel_size % 2 == 0:
-            raise ValueError("Smooth Gaussian kernel size must be odd")
+            raise ValueError("❌ Smooth Gaussian kernel size must be odd")
         if n_blur_steps <= 0:
-            raise ValueError("Number of blur steps must be greater than 0")
+            raise ValueError("❌ Number of blur steps must be greater than 0")
         if max_blur <= 0:
-            raise ValueError("Maximum blur must be greater than 0")
+            raise ValueError("❌ Maximum blur must be greater than 0")
         if color_skew_factor <= 0:
-            raise ValueError("Color skew factor must be greater than 0")
+            raise ValueError("❌ Color skew factor must be greater than 0")
 
         super(RandomBackgroundImageGenerator, self).__init__(width=width, height=height)
 
@@ -139,7 +140,7 @@ class RandomBackgroundImageGenerator(BackgroundImageGenerator):
         self.max_blur = max_blur
         self.color_skew_factor = color_skew_factor
 
-    def _get_background_image(self) -> np.array:
+    def get_background_image(self) -> np.ndarray:
         background_image = np.ones((self.height, self.width, 4), dtype=np.float32)
 
         # Add random polygons as patches

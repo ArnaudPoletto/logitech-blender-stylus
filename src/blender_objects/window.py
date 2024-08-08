@@ -1,3 +1,5 @@
+# This file contains the window class.
+
 import bpy
 from typing import Tuple
 from mathutils import Vector
@@ -28,9 +30,9 @@ class Window(RelativeBlenderObject):
             ValueError: If the scale is not a 2D vector.
         """
         if len(relative_location) != 2:
-            raise ValueError("The location must be a 2D vector.")
+            raise ValueError("❌ The location must be a 2D vector.")
         if len(scale) != 2:
-            raise ValueError("The scale must be a 2D vector.")
+            raise ValueError("❌ The scale must be a 2D vector.")
         
         relative_location = Vector((relative_location.x, relative_location.y, 0))
         scale = Vector((scale.x, scale.y, 1))
@@ -43,6 +45,14 @@ class Window(RelativeBlenderObject):
     def get_bounds(
         self,
     ) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]:
+        """
+        Get the bounds of the window.
+        
+        Returns:
+            Tuple[float, float]: The bounds of the window in the x-direction.
+            Tuple[float, float]: The bounds of the window in the y-direction.
+            Tuple[float, float]: The bounds of the window in the z-direction.
+        """
         min_x = -self.scale.x / 2
         max_x = self.scale.x / 2
         min_y = -self.scale.y / 2
@@ -55,6 +65,13 @@ class Window(RelativeBlenderObject):
         collection: bpy.types.Collection,
         blender_object: bpy.types.Object,
     ) -> None:
+        """
+        Apply the window to the collection.
+        
+        Args:
+            collection (bpy.types.Collection): The Blender collection to which to apply the window.
+            blender_object (bpy.types.Object): The Blender object to which to apply the window.
+        """
         bpy.ops.object.mode_set(mode='OBJECT')
         
         # Add cube of window shape into the wall

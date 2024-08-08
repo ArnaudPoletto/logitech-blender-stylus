@@ -1,8 +1,7 @@
-import cv2
+# This file contains the background image generator class, which is a base class for all background image generators.
+
 import bpy
-import random
 import numpy as np
-from typing import Tuple
 from abc import abstractmethod
 
 
@@ -27,23 +26,23 @@ class BackgroundImageGenerator:
             ValueError: If the height is less than or equal to 0.
         """
         if width <= 0:
-            raise ValueError("Width must be greater than 0")
+            raise ValueError("❌ Width must be greater than 0")
         if height <= 0:
-            raise ValueError("Height must be greater than 0")
+            raise ValueError("❌ Height must be greater than 0")
 
         self.width = width
         self.height = height
         self.image_node = None
 
     @abstractmethod
-    def _get_background_image(self) -> np.array:
+    def get_background_image(self) -> np.ndarray:
         """
         Get the background image.
         
         Returns:
-            np.array: The background image.
+            np.ndarray: The background image.
         """
-        raise NotImplementedError("The _get_background_image method must be implemented.")
+        raise NotImplementedError("❌ The get_background_image method must be implemented.")
 
     def apply_to_scene(self) -> None:
         """
@@ -57,13 +56,13 @@ class BackgroundImageGenerator:
         # Find scale node
         scale_node = tree.nodes.get("Scale")
         if scale_node is None:
-            raise ValueError("Scale node not found")
+            raise ValueError("❌ Scale node not found")
 
         # Create new image node if it does not exist
         if self.image_node is None:
             image_node = tree.nodes.new("CompositorNodeImage")
             image_node.location = (100, 700)
-            background_image = self._get_background_image()
+            background_image = self.get_background_image()
             image = bpy.data.images.new(
                 "BackgroundImage", width=self.width, height=self.height
             )

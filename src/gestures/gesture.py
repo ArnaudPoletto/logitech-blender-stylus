@@ -1,4 +1,7 @@
+# This file contains the gesture class, which is an abstract class for all gestures.
+
 import bpy
+from typing import Dict, Any
 from abc import abstractmethod
 
 
@@ -36,14 +39,14 @@ class Gesture:
         """
         if start_frame < 0 or end_frame < 0:
             raise ValueError(
-                "The start frame and end frame must be greater than or equal to 0."
+                "❌ The start frame and end frame must be greater than or equal to 0."
             )
         if start_frame >= end_frame:
-            raise ValueError("The start frame must be less than the end frame.")
+            raise ValueError("❌ The start frame must be less than the end frame.")
         if scene is None:
-            raise ValueError("The scene must not be None.")
+            raise ValueError("❌ The scene must not be None.")
         if arm is None or forearm is None or hand is None:
-            raise ValueError("The arm, forearm, and hand bones must not be None.")
+            raise ValueError("❌ The arm, forearm, and hand bones must not be None.")
 
         self.start_frame = start_frame
         self.end_frame = end_frame
@@ -53,15 +56,19 @@ class Gesture:
         self.hand = hand
 
     @abstractmethod
-    def apply(self, displacement_data: dict, current_frame: int) -> dict:
+    def apply(
+        self,
+        displacement_data: Dict[bpy.types.Bone, Dict[str, Any]],
+        current_frame: int,
+    ) -> Dict[bpy.types.Bone, Dict[str, Any]]:
         """
         Apply the gesture to the armature.
 
         Args:
-            displacement_data (dict): The displacement data to update.
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data to update.
             current_frame (int): The current frame of the gesture.
 
         Returns:
-            dict: The updated displacement data.
+            Dict[bpy.types.Bone, Dict[str, Any]]: The updated displacement data.
         """
-        raise NotImplementedError("The apply method must be implemented.")
+        raise NotImplementedError("❌ The apply method must be implemented.")

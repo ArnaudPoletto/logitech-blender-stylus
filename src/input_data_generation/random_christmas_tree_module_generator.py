@@ -1,6 +1,8 @@
+# This file contains the random christmas tree module generator class.
+
 import random
 import numpy as np
-from typing import List, Tuple
+from typing import Tuple, Dict, Any
 
 from utils.seed import set_seed
 from config.config import RESOLUTION_DIGITS, MIN_PRIORITY
@@ -63,59 +65,59 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
         """
         if height_range[0] <= 0:
             raise ValueError(
-                "The minimum height of the christmas tree must be greater than 0."
+                "❌ The minimum height of the christmas tree must be greater than 0."
             )
         if height_range[1] < height_range[0]:
             raise ValueError(
-                "The maximum height of the christmas tree must be greater than the minimum height."
+                "❌ The maximum height of the christmas tree must be greater than the minimum height."
             )
         if radius_range[0] <= 0:
             raise ValueError(
-                "The minimum radius of the christmas tree must be greater than 0."
+                "❌ The minimum radius of the christmas tree must be greater than 0."
             )
         if radius_range[1] < radius_range[0]:
             raise ValueError(
-                "The maximum radius of the christmas tree must be greater than the minimum radius."
+                "❌ The maximum radius of the christmas tree must be greater than the minimum radius."
             )
         if n_leds_range[0] <= 0:
             raise ValueError(
-                "The minimum number of leds of the christmas tree must be greater than 0."
+                "❌ The minimum number of leds of the christmas tree must be greater than 0."
             )
         if n_leds_range[1] < n_leds_range[0]:
             raise ValueError(
-                "The maximum number of leds of the christmas tree must be greater than the minimum number of leds."
+                "❌ The maximum number of leds of the christmas tree must be greater than the minimum number of leds."
             )
         if led_radius_range[0] <= 0:
             raise ValueError(
-                "The minimum radius of the leds of the christmas tree must be greater than 0."
+                "❌ The minimum radius of the leds of the christmas tree must be greater than 0."
             )
         if led_radius_range[1] < led_radius_range[0]:
             raise ValueError(
-                "The maximum radius of the leds of the christmas tree must be greater than the minimum radius of the leds."
+                "❌ The maximum radius of the leds of the christmas tree must be greater than the minimum radius of the leds."
             )
         if emission_range[0] < 0:
             raise ValueError(
-                "The minimum emission of the leds of the christmas tree must be greater than or equal to 0."
+                "❌ The minimum emission of the leds of the christmas tree must be greater than or equal to 0."
             )
         if emission_range[1] < emission_range[0]:
             raise ValueError(
-                "The maximum emission of the leds of the christmas tree must be greater than the minimum emission of the leds."
+                "❌ The maximum emission of the leds of the christmas tree must be greater than the minimum emission of the leds."
             )
         if flicker_probability_range[0] < 0:
             raise ValueError(
-                "The minimum flicker probability of the leds of the christmas tree must be greater than or equal to 0."
+                "❌ The minimum flicker probability of the leds of the christmas tree must be greater than or equal to 0."
             )
         if flicker_probability_range[1] > 1:
             raise ValueError(
-                "The maximum flicker probability of the leds of the christmas tree must be less than or equal to 1."
+                "❌ The maximum flicker probability of the leds of the christmas tree must be less than or equal to 1."
             )
         if flicker_probability_range[1] < flicker_probability_range[0]:
             raise ValueError(
-                "The maximum flicker probability of the leds of the christmas tree must be greater than the minimum flicker probability."
+                "❌ The maximum flicker probability of the leds of the christmas tree must be greater than the minimum flicker probability."
             )
         if padding < 0:
             raise ValueError(
-                "The padding around the christmas tree must be greater than or equal to 0."
+                "❌ The padding around the christmas tree must be greater than or equal to 0."
             )
 
         super(RandomChristmasTreeModuleGenerator, self).__init__(
@@ -137,11 +139,26 @@ class RandomChristmasTreeModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-    ) -> Tuple[dict, List[Tuple[int, int, int, int]]]:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Generate the christmas tree module.
+
+        Args:
+            wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
+            existing_objects_per_wall (Dict[str, Any] | None): The existing objects for each wall.
+
+        Raises:
+            ValueError: If the existing objects per wall is not provided.
+
+        Returns:
+            Tuple[Dict[str, Any], Dict[str, Any]]: The christmas tree data and the updated existing objects per wall.
+        """
+        if existing_objects_per_wall is None:
+            raise ValueError("❌ The existing objects per wall must be provided.")
         set_seed()
-        
+
         wall_scale = wall_scales_per_wall[self.type]
         existing_objects = existing_objects_per_wall[self.type]
 

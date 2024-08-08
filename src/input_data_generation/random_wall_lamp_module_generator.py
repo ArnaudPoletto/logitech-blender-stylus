@@ -1,19 +1,21 @@
+# This file contains the random wall lamp module generator class.
+
 import random
 import numpy as np
 from tqdm import tqdm
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
-from config.config import MIN_PRIORITY
 from utils.seed import set_seed
-from config.config import RESOLUTION_DIGITS
 from input_data_generation.module_generator import ModuleGenerator
 from input_data_generation.module_generator_type import ModuleGeneratorType
+from config.config import MIN_PRIORITY, RESOLUTION_DIGITS
+
 
 class RandomWallLampModuleGenerator(ModuleGenerator):
     """
     A random wall lamp generator, linked to an input data generator to generate random wall lamp data.
     """
-    
+
     def __init__(
         self,
         name: str,
@@ -25,10 +27,10 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
         padding: float,
         weight: float = 1.0,
         priority: int = MIN_PRIORITY,
-        ) -> None:
+    ) -> None:
         """
         Initialize the random wall lamp generator.
-        
+
         Args:
             name (str): The prefix of the wall lamps name.
             id (str): The prefix of the wall lamps id.
@@ -39,7 +41,7 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
             padding (float): The padding between the wall lamps.
             weight (float): The weight of the module, used to determine the probability of the module being selected. Defaults to 1.0.
             priority (int): The priority of the module, used to determine the order of the module being selected. Defaults to the minimum priority.
-            
+
         Raises:
             ValueError: If the number of wall lamps is less than -1.
             ValueError: If the minimum xy scale is less than 0.
@@ -52,23 +54,27 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
         """
         if n_wall_lamps < -1:
             raise ValueError(
-                "The number of wall lamps must be greater than or equal to -1."
+                "❌ The number of wall lamps must be greater than or equal to -1."
             )
         if xy_scale_range[0] < 0:
-            raise ValueError("The minimum xy scale must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum xy scale must be greater than or equal to 0."
+            )
         if xy_scale_range[1] < xy_scale_range[0]:
             raise ValueError(
-                "The maximum xy scale must be greater than or equal to the minimum xy scale."
+                "❌ The maximum xy scale must be greater than or equal to the minimum xy scale."
             )
         if emission_strength_range[0] < 0:
-            raise ValueError("The minimum emission strength must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum emission strength must be greater than or equal to 0."
+            )
         if emission_strength_range[1] < emission_strength_range[0]:
             raise ValueError(
-                "The maximum emission strength must be greater than or equal to the minimum emission strength."
+                "❌ The maximum emission strength must be greater than or equal to the minimum emission strength."
             )
         if padding < 0:
-            raise ValueError("The padding must be greater than or equal to 0.")
-            
+            raise ValueError("❌ The padding must be greater than or equal to 0.")
+
         super(RandomWallLampModuleGenerator, self).__init__(
             type=ModuleGeneratorType.CEILING,
             name=name,
@@ -76,27 +82,43 @@ class RandomWallLampModuleGenerator(ModuleGenerator):
             weight=weight,
             priority=priority,
         )
-        
+
         self.room_id = room_id
         self.n_wall_lamps = n_wall_lamps
         self.xy_scale_range = xy_scale_range
         self.emission_strength_range = emission_strength_range
         self.padding = padding
-        
+
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-    ) -> Tuple[dict, dict]:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """
+        Generate the wall lamps.
+
+        Args:
+            wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
+            existing_objects_per_wall (Dict[str, Any] | None): The existing objects for each wall.
+
+        Raises:
+            ValueError: If the existing objects per wall is not provided.
+
+        Returns:
+            Dict[str, Any]: The wall lamps data.
+        """
+        if existing_objects_per_wall is None:
+            raise ValueError("❌ The existing objects per wall must be provided.")
+
         set_seed()
-        
+
         wall_scale = wall_scales_per_wall[self.type]
         existing_objects = existing_objects_per_wall[self.type]
-        
+
         width, length = wall_scale
         resolution = 10**RESOLUTION_DIGITS
         padding_resolution = int(self.padding * resolution)
-        
+
         # Generate wall lamps one by one
         wall_lamps_data = {"blender_objects": {}}
         n_placed_wall_lamps = 0

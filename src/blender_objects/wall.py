@@ -1,3 +1,5 @@
+# This file contains the wall class.
+
 import bpy
 import numpy as np
 from mathutils import Vector, Euler
@@ -31,7 +33,7 @@ class Wall(BlenderObject):
             ValueError: If the scale is not a 2D vector.
         """
         if len(scale) != 2:
-            raise ValueError("The scale must be a 2D vector.")
+            raise ValueError("❌ The scale must be a 2D vector.")
 
         scale = Vector((scale.x, scale.y, 1))
         super(Wall, self).__init__(
@@ -41,7 +43,7 @@ class Wall(BlenderObject):
             scale=scale,
         )
 
-    def _relative_blender_object_is_in_bounds(
+    def __relative_blender_object_is_in_bounds(
         self, relative_blender_object: RelativeBlenderObject
     ) -> bool:
         """
@@ -78,7 +80,7 @@ class Wall(BlenderObject):
             and relative_blender_object_max_y <= wall_max_y
         )
 
-    def _relative_blender_object_does_not_intersect(
+    def __relative_blender_object_does_not_intersect(
         self, relative_blender_object: RelativeBlenderObject
     ) -> bool:
         """
@@ -86,6 +88,10 @@ class Wall(BlenderObject):
 
         Args:
             relative_blender_object (RelativeBlenderObject): The relative Blender object to add to the wall.
+            
+        Raises:
+            ValueError: If the relative Blender object intersects with existing decorators.
+            ValueError: If the relative Blender object is not in bounds of the wall.
 
         Returns:
             bool: Whether the decorator does not intersect existing decorators.
@@ -125,17 +131,16 @@ class Wall(BlenderObject):
     def add_relative_blender_object(
         self, relative_blender_object: RelativeBlenderObject
     ) -> None:
-        if not self._relative_blender_object_is_in_bounds(relative_blender_object):
-            pass
-            # raise ValueError(
-            #    f"Relative Blender object {relative_blender_object.name} is not in bounds of the wall."
-            # )
+        if not self.__relative_blender_object_is_in_bounds(relative_blender_object):
+            raise ValueError(
+               f"❌ Relative Blender object {relative_blender_object.name} is not in bounds of the wall."
+            )
 
-        if not self._relative_blender_object_does_not_intersect(
+        if not self.__relative_blender_object_does_not_intersect(
             relative_blender_object
         ):
             raise ValueError(
-                f"Relative Blender object {relative_blender_object.name} intersects with existing decorators."
+                f"❌ Relative Blender object {relative_blender_object.name} intersects with existing decorators."
             )
 
         super(Wall, self).add_relative_blender_object(relative_blender_object)
@@ -144,6 +149,12 @@ class Wall(BlenderObject):
         self,
         collection: bpy.types.Collection,
     ) -> None:
+        """
+        Apply the wall to a Blender collection.
+        
+        Args:
+            collection (bpy.types.Collection): The collection to add the wall to.
+        """
         # Add wall
         bpy.ops.mesh.primitive_plane_add(size=1)
         wall_object = bpy.context.view_layer.objects.active

@@ -1,7 +1,9 @@
+# This file contains the random sun module generator class.
+
 import bpy
 import math
 import random
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 from utils.seed import set_seed
 from config.config import MAX_PRIORITY
@@ -34,10 +36,12 @@ class RandomSunModuleGenerator(ModuleGenerator):
             ValueError: If the maximum energy is less than the minimum energy.
         """
         if energy_range[0] < 0:
-            raise ValueError("The minimum energy must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum energy must be greater than or equal to 0."
+            )
         if energy_range[1] < energy_range[0]:
             raise ValueError(
-                "The maximum energy must be greater than or equal to the minimum energy."
+                "❌ The maximum energy must be greater than or equal to the minimum energy."
             )
 
         super(RandomSunModuleGenerator, self).__init__(
@@ -52,9 +56,9 @@ class RandomSunModuleGenerator(ModuleGenerator):
 
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-    ) -> dict:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any] | None]:
         set_seed()
 
         # Get random sun parameters
@@ -77,6 +81,8 @@ class RandomSunModuleGenerator(ModuleGenerator):
         }
 
         # Also set the background emission to that value
-        bpy.context.scene.world.node_tree.nodes["Emission"].inputs["Strength"].default_value = energy
+        bpy.context.scene.world.node_tree.nodes["Emission"].inputs[
+            "Strength"
+        ].default_value = energy
 
         return sun_data, existing_objects_per_wall

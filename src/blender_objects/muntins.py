@@ -1,3 +1,5 @@
+# This file contains the muntins window decorator class, which is a window decorator that adds muntins to a window.
+
 import bpy
 from mathutils import Vector
 
@@ -32,14 +34,14 @@ class Muntins(WindowDecorator):
             ValueError: If the number of muntins in the height is less than 1.
         """
         if size <= 0:
-            raise ValueError("The size of the muntins must be greater than 0.")
+            raise ValueError("❌ The size of the muntins must be greater than 0.")
         if n_muntins_width < 1:
             raise ValueError(
-                "The number of muntins in the width must be greater than 0."
+                "❌ The number of muntins in the width must be greater than 0."
             )
         if n_muntins_height < 1:
             raise ValueError(
-                "The number of muntins in the height must be greater than 0."
+                "❌ The number of muntins in the height must be greater than 0."
             )
 
         super(Muntins, self).__init__(name=name)
@@ -48,7 +50,7 @@ class Muntins(WindowDecorator):
         self.n_muntins_width = n_muntins_width
         self.n_muntins_height = n_muntins_height
 
-    def _apply_muntins(
+    def __apply_muntins(
         self,
         collection: bpy.types.Collection,
         blender_object: bpy.types.Object,
@@ -70,7 +72,7 @@ class Muntins(WindowDecorator):
         axis_name = "width" if axis == Axis.X_AXIS else "height"
         if n_muntins * self.size > blender_object.scale[axis.index()]:
             raise ValueError(
-                f"The total {axis_name} of the muntins is greater than the {axis_name} of the window."
+                f"❌ The total {axis_name} of the muntins is greater than the {axis_name} of the window."
             )
 
         for i in range(n_muntins):
@@ -104,12 +106,19 @@ class Muntins(WindowDecorator):
         collection: bpy.types.Collection,
         blender_object: bpy.types.Object,
     ) -> None:
+        """
+        Apply the muntins to a Blender object.
+        
+        Args:
+            collection (bpy.types.Collection): The collection to add the muntins to.
+            blender_object (bpy.types.Object): The Blender object to add the muntins to.
+        """
         bpy.ops.object.mode_set(mode="OBJECT")
 
-        self._apply_muntins(
+        self.__apply_muntins(
             collection, blender_object, Axis.X_AXIS, self.n_muntins_width
         )
-        self._apply_muntins(
+        self.__apply_muntins(
             collection, blender_object, Axis.Y_AXIS, self.n_muntins_height
         )
         bpy.context.view_layer.update()

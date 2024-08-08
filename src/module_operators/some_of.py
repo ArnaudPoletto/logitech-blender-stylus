@@ -32,7 +32,7 @@ class SomeOf(ModuleOperator):
         if "gestures" in update_data:
             if update_data["gestures"].keys() & input_data["gestures"].keys():
                 raise ValueError(
-                    "Gesture names must be unique: cannot add the same gesture twice."
+                    "❌ Gesture names must be unique: cannot add the same gesture twice."
                 )
             input_data["gestures"].update(update_data["gestures"])
 
@@ -42,7 +42,7 @@ class SomeOf(ModuleOperator):
                 & input_data["blender_objects"].keys()
             ):
                 raise ValueError(
-                    "Blender object names must be unique: cannot add the same object twice."
+                    "❌ Blender object names must be unique: cannot add the same object twice."
                 )
             input_data["blender_objects"].update(update_data["blender_objects"])
             

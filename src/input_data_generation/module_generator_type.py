@@ -1,3 +1,5 @@
+# This file contains the module generator type enumeration.
+
 from enum import Enum
 from typing import List
 
@@ -15,11 +17,11 @@ class ModuleGeneratorType(Enum):
     RIGHT_WALL = "right_wall"
     FRONT_WALL = "front_wall"
     BACK_WALL = "back_wall"
-    
+
     def get_vertical_wall_types() -> List["ModuleGeneratorType"]:
         """
         Get the vertical wall types.
-        
+
         Returns:
             List[ModuleGeneratorType]: The vertical wall types.
         """

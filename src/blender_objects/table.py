@@ -1,3 +1,5 @@
+# This file contains the table class.
+
 import bpy
 from typing import Tuple
 from mathutils import Vector
@@ -34,7 +36,7 @@ class Table(RelativeBlenderObject):
         """
         if top_thickness <= 0 or top_thickness >= scale.z:
             raise ValueError(
-                "The top thickness must be a positive number and less than the height."
+                "❌ The top thickness must be a positive number and less than the height."
             )
         if (
             leg_thickness <= 0
@@ -42,7 +44,7 @@ class Table(RelativeBlenderObject):
             or leg_thickness >= scale.y / 2
         ):
             raise ValueError(
-                "The leg thickness must be a positive number and less than half the width or depth."
+                "❌ The leg thickness must be a positive number and less than half the width or depth."
             )
 
         relative_location = Vector((relative_location.x, relative_location.y, 0))
@@ -58,16 +60,31 @@ class Table(RelativeBlenderObject):
     def get_bounds(
         self,
     ) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]:
+        """
+        Get the bounds of the table from its relative location.
+        
+        Returns:
+            Tuple[float, float]: The bounds of the table in the x-direction.
+            Tuple[float, float]: The bounds of the table in the y-direction.
+            Tuple[float, float]: The bounds of the table in the z-direction.
+        """
         min_x = -self.scale.x / 2
         max_x = self.scale.x / 2
         min_y = -self.scale.y / 2
         max_y = self.scale.y / 2
 
-        return (min_x, max_x), (min_y, max_y), (0, 0)
+        return (min_x, max_x), (min_y, max_y), (0.0, 0.0)
 
     def apply_to_collection(
         self, collection: bpy.types.Collection, blender_object: bpy.types.Object
     ) -> None:
+        """
+        Apply the table to a Blender collection.
+        
+        Args:
+            collection (bpy.types.Collection): The collection to which the table is applied.
+            blender_object (bpy.types.Object): The Blender object to which the table is applied.
+        """
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Add top

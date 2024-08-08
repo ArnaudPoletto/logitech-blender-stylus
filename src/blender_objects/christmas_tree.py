@@ -1,3 +1,5 @@
+# This file contains the Christmas tree class.
+
 import bpy
 import math
 import random
@@ -46,25 +48,25 @@ class ChristmasTree(RelativeBlenderObject):
             ValueError: If the maximum emission of the LEDs is less than the minimum emission.
         """
         if height <= 0:
-            raise ValueError("The height of the Christmas tree must be greater than 0.")
+            raise ValueError("❌ The height of the Christmas tree must be greater than 0.")
         if radius <= 0:
-            raise ValueError("The radius of the Christmas tree must be greater than 0.")
+            raise ValueError("❌ The radius of the Christmas tree must be greater than 0.")
         if n_leds <= 0:
-            raise ValueError("The number of LEDs must be greater than 0.")
+            raise ValueError("❌ The number of LEDs must be greater than 0.")
         if led_radius_range[0] <= 0:
-            raise ValueError("The minimum radius of the LEDs must be greater than 0.")
+            raise ValueError("❌ The minimum radius of the LEDs must be greater than 0.")
         if led_radius_range[1] < led_radius_range[0]:
             raise ValueError(
-                "The maximum radius of the LEDs must be greater than the minimum radius."
+                "❌ The maximum radius of the LEDs must be greater than the minimum radius."
             )
         if emission_range[0] < 0:
-            raise ValueError("The minimum emission of the LEDs must be greater than 0.")
+            raise ValueError("❌ The minimum emission of the LEDs must be greater than 0.")
         if emission_range[1] < emission_range[0]:
             raise ValueError(
-                "The maximum emission of the LEDs must be greater than the minimum emission."
+                "❌ The maximum emission of the LEDs must be greater than the minimum emission."
             )
         if flicker_probability < 0 or flicker_probability > 1:
-            raise ValueError("The flicker probability must be between 0 and 1.")
+            raise ValueError("❌ The flicker probability must be between 0 and 1.")
 
         # Define relative location at center of the base and object relative location at the center of the object
         self.object_relative_location = Vector(
@@ -87,16 +89,31 @@ class ChristmasTree(RelativeBlenderObject):
     def get_bounds(
         self,
     ) -> Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]:
+        """
+        Get the bounds of the Christmas tree.
+        
+        Returns:
+            Tuple[float, float]: The bounds of the Christmas tree in the x-direction.
+            Tuple[float, float]: The bounds of the Christmas tree in the y-direction.
+            Tuple[float, float]: The bounds of the Christmas tree in the z-direction.
+        """
         min_x = -self.radius
         max_x = self.radius
         min_y = -self.radius
         max_y = self.radius
 
-        return (min_x, max_x), (min_y, max_y), (0, 0)
+        return (min_x, max_x), (min_y, max_y), (0.0, 0.0)
 
     def apply_to_collection(
         self, collection: bpy.types.Collection, blender_object: bpy.types.Object
     ) -> None:
+        """
+        Apply the Christmas tree to a Blender collection.
+        
+        Args:
+            collection (bpy.types.Collection): The collection to add the Christmas tree to.
+            blender_object (bpy.types.Object): The Blender object to add the Christmas tree to.
+        """
         bpy.ops.object.mode_set(mode="OBJECT")
 
         # Add Christmas tree to the collection, a cone with a cylinder as the base

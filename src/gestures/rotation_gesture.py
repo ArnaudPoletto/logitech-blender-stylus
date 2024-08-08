@@ -1,8 +1,9 @@
-import bpy
-import math
-from mathutils import Euler
+# This file contains the rotation gesture class.
 
-from utils.axis import Axis
+import bpy
+from mathutils import Euler
+from typing import Dict, Any
+
 from gestures.gesture import Gesture
 
 
@@ -35,7 +36,7 @@ class RotationGesture(Gesture):
             hand (bpy.types.Bone): The hand bone.
             bone (bpy.types.Bone): The bone to rotate.
             euler (Vector): The euler rotation to apply.
-            relative (bool): Whether the translation is relative to the current rotation. Defaults to True.
+            relative (bool, optional): Whether the translation is relative to the current rotation. Defaults to True.
         """
         super(RotationGesture, self).__init__(
             start_frame=start_frame,
@@ -54,7 +55,21 @@ class RotationGesture(Gesture):
         # The object is always instantiated at the start frame, so we can store the initial rotation
         self.initial_rotation = self.bone.rotation_euler.copy()
 
-    def apply(self, displacement_data: dict, current_frame: int) -> dict:
+    def apply(
+        self,
+        displacement_data: Dict[bpy.types.Bone, Dict[str, Any]],
+        current_frame: int,
+    ) -> Dict[bpy.types.Bone, Dict[str, Any]]:
+        """
+        Apply the rotation gesture to the armature.
+
+        Args:
+            displacement_data (Dict[bpy.types.Bone, Dict[str, Any]]): The displacement data.
+            current_frame (int): The current frame.
+
+        Returns:
+            Dict[bpy.types.Bone, Dict[str, Any]]: The updated displacement data.
+        """
         euler = self.euler.copy()
         if not self.relative:
             euler.x -= self.initial_rotation.x

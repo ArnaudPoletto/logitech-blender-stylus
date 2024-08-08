@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any
 
 from config.config import MIN_PRIORITY
 from module_operators.module_operator import ModuleOperator
@@ -20,16 +20,16 @@ class OneOf(ModuleOperator):
         
         Args:
             modules (List[ModuleGenerator|ModuleOperator]): The modules to select from.
-            weight (float): The weight of the operator, used to determine the probability of the operator being selected. Defaults to 1.0. 
-            priority (int): The priority of the operator, used to determine the order of the operator being selected. Defaults to the minimum priority.
+            weight (float, optional): The weight of the operator, used to determine the probability of the operator being selected. Defaults to 1.0. 
+            priority (int, optional): The priority of the operator, used to determine the order of the operator being selected. Defaults to the minimum priority.
         """
         super().__init__(modules=modules, weight=weight, priority=priority)
         
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-        ) -> Tuple[dict, dict]:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+        ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """
         Generate one of the modules based on their weights.
         
@@ -38,8 +38,8 @@ class OneOf(ModuleOperator):
             existing_objects_per_wall (dict): The existing objects for each wall.
         
         Returns:
-            dict: The generated data.
-            dict: The updated data of existing objects.
+            Dict[str, Any]: The generated data.
+            Dict[str, Any]: The updated data of existing objects.
         """
         probabilities = [module.weight for module in self.modules]
         probabilities = [probability / sum(probabilities) for probability in probabilities]

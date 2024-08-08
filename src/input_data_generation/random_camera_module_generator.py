@@ -1,6 +1,8 @@
+# This file contains the random camera module generator class.
+
 import math
 import random
-from typing import Tuple
+from typing import Tuple, Dict, Any
 from mathutils import Vector
 
 from utils.seed import set_seed
@@ -13,6 +15,7 @@ class RandomCameraModuleGenerator(ModuleGenerator):
     """
     A random camera module generator, linked to an input data generator to generate random comera data.
     """
+
     def __init__(
         self,
         name: str,
@@ -23,10 +26,10 @@ class RandomCameraModuleGenerator(ModuleGenerator):
         type: str,
         focal_length: float,
         fov: float,
-        ) -> None:
+    ) -> None:
         """
         Initialize the random camera module generator.
-        
+
         Args:
             name (str): The name of the random camera module generator.
             id (str): The id of the random camera module generator.
@@ -36,7 +39,7 @@ class RandomCameraModuleGenerator(ModuleGenerator):
             type (str): The type of the camera.
             focal_length (float): The focal length of the camera.
             fov (float): The field of view of the camera.
-            
+
         Raises:
             ValueError: If the minimum xy distance is less than 0.
             ValueError: If the maximum xy distance is less than the minimum xy distance.
@@ -44,62 +47,82 @@ class RandomCameraModuleGenerator(ModuleGenerator):
             ValueError: If the maximum z distance is less than the minimum z distance.
         """
         if xy_distance_range[0] < 0:
-            raise ValueError("The minimum xy distance must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum xy distance must be greater than or equal to 0."
+            )
         if xy_distance_range[1] < xy_distance_range[0]:
-            raise ValueError("The maximum xy distance must be greater than or equal to the minimum xy distance.")
+            raise ValueError(
+                "❌ The maximum xy distance must be greater than or equal to the minimum xy distance."
+            )
         if z_distance_range[0] < 0:
-            raise ValueError("The minimum z distance must be greater than or equal to 0.")
+            raise ValueError(
+                "❌ The minimum z distance must be greater than or equal to 0."
+            )
         if z_distance_range[1] < z_distance_range[0]:
-            raise ValueError("The maximum z distance must be greater than or equal to the minimum z distance.")
-        
-        
+            raise ValueError(
+                "❌ The maximum z distance must be greater than or equal to the minimum z distance."
+            )
+
         super(RandomCameraModuleGenerator, self).__init__(
             type=ModuleGeneratorType.GLOBAL,
             name=name,
             id=id,
             priority=MAX_PRIORITY,
         )
-        
+
         self.xy_distance_range = xy_distance_range
         self.z_distance_range = z_distance_range
         self.fixation_point_range = fixation_point_range
         self.type = type
         self.focal_length = focal_length
         self.fov = fov
-        
+
     def generate(
         self,
-        wall_scales_per_wall: dict = None,
-        existing_objects_per_wall: dict = None,
-        fixation_point: Vector | None = None,
-    ) -> Tuple[dict, dict]:
+        wall_scales_per_wall: Dict[str, Any] | None = None,
+        existing_objects_per_wall: Dict[str, Any] | None = None,
+    ) -> Tuple[Dict[str, Any], Dict[str, Any] | None]:
+        """
+        Generate the random camera module.
+
+        Args:
+            wall_scales_per_wall (Dict[str, Any] | None): The scale of each wall.
+            existing_objects_per_wall (Dict[str, Any] | None): The existing objects for each wall.
+
+        Returns:
+            Dict[str, Any]: The camera data.
+            Dict[str, Any] | None: Updated data of existing objects for the room.
+        """
         set_seed()
-        
+
         # Generate random camera data as polar coordinates
         xy_distance = random.uniform(*self.xy_distance_range)
         z_distance = random.uniform(*self.z_distance_range)
         alpha = random.uniform(0, 2 * math.pi)
-        
+
         # Convert polar coordinates to cartesian coordinates
         x = xy_distance * math.cos(alpha)
         y = xy_distance * math.sin(alpha)
         z = z_distance
         camera_location = Vector((x, y, z))
-        
+
         # Get fixation point and rotation needed to look at the fixation point
-        if fixation_point == None:
-            fixation_point = Vector((
+        fixation_point = Vector(
+            (
                 random.uniform(-self.fixation_point_range, self.fixation_point_range),
                 random.uniform(-self.fixation_point_range, self.fixation_point_range),
                 random.uniform(-self.fixation_point_range, self.fixation_point_range),
-            ))
+            )
+        )
 
         if fixation_point == camera_location:
-            raise ValueError("❌ The camera position and the fixation point must be different.")
-        
+            raise ValueError(
+                "❌ The camera position and the fixation point must be different."
+            )
+
         fixation_direction = (fixation_point - camera_location).normalized()
         rotation = fixation_direction.to_track_quat("-Z", "Y").to_euler()
-        
+
         # Generate camera data
         camera_data = {
             "blender_objects": {
@@ -120,12 +143,9 @@ class RandomCameraModuleGenerator(ModuleGenerator):
                         "type": self.type,
                         "focal_length": self.focal_length,
                         "fov": self.fov,
-                    }
+                    },
                 }
             }
         }
-        
+
         return camera_data, existing_objects_per_wall
-            
-            
-            

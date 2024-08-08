@@ -1,8 +1,9 @@
+# This file contains the blender object class, which is the base class for all blender objects.
+
 import bpy
 from typing import List
 from abc import abstractmethod
 from mathutils import Vector, Euler
-
 
 
 class BlenderObject:
@@ -33,13 +34,13 @@ class BlenderObject:
             ValueError: If the scale values are not positive.
         """
         if len(location) != 3:
-            raise ValueError("The location must be a 3D vector.")
+            raise ValueError("❌ The location must be a 3D vector.")
         if len(rotation) != 3:
-            raise ValueError("The rotation must be a 3D vector.")
+            raise ValueError("❌ The rotation must be a 3D vector.")
         if len(scale) != 3:
-            raise ValueError("The scale must be a 3D vector.")
+            raise ValueError("❌ The scale must be a 3D vector.")
         if any(value <= 0 for value in scale):
-            raise ValueError("The scale values must be positive.")
+            raise ValueError("❌ The scale values must be positive.")
 
         self.name = name
         self.location = location
@@ -67,5 +68,5 @@ class BlenderObject:
             collection (bpy.types.Collection): The collection to add the Blender object to.
         """
         raise NotImplementedError(
-            "The apply_to_collection method must be implemented in the subclass."
+            "❌ The apply_to_collection method must be implemented in the subclass."
         )
